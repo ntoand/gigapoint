@@ -166,7 +166,7 @@ void Shader::transmitUniform(string name, float f1, float f2, float f3)
     glUniform3f(uniforms.at(name), f1, f2, f3);
 }
 
-void Shader::transmitUniform(string name, float* mat)
+void Shader::transmitUniform(string name, const float mat[16])
 {
     glUniformMatrix4fv(uniforms.at(name), 1, GL_FALSE, mat);
 }

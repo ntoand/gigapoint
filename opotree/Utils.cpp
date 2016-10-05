@@ -48,7 +48,7 @@ int Utils::testFrustum(float V[6][4], const float b[6])
     return (c0 + c1 + c2 + c3 + c4 + c5 == 48) ? 1 : 0;
 }
 
-void Utils::getFrustum(float V[6][4], float X[16])
+void Utils::getFrustum(float V[6][4], const float X[16])
 {
     int i;
 

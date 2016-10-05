@@ -3,6 +3,12 @@
 
 #include <string>
 
+/*
+#ifndef uint
+#define uint unsigned int
+#endif
+*/
+
 #define PI 3.14159265f
 
 #ifndef MIN
@@ -25,7 +31,7 @@ class Utils {
 public:
 	static int testPlane(const float V[4], const float b[6]);
 	static int testFrustum(float V[6][4], const float b[6]);
-	static void getFrustum(float V[6][4], float X[16]);
+	static void getFrustum(float V[6][4], const float X[16]);
 	static char* getFileContent(std::string path);
 
 };
