@@ -53,8 +53,9 @@ void OPotreeRenderPass::initialize()
 	// Initialize
 	//pointcloud = new PointCloud("ripple/");
 	//pointcloud = new PointCloud("srsota/");
-	pointcloud = new PointCloud("grass/");
+	//pointcloud = new PointCloud("grass/");
 	//pointcloud = new PointCloud("P100/");
+	pointcloud = new PointCloud("century/");
 	
 	//graphics
 	//glEnable(GL_POINT_SPRITE);

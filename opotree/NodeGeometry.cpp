@@ -38,11 +38,10 @@ void NodeGeometry::addPoint(float x, float y, float z) {
 }
 
 void NodeGeometry::addColor(float r, float g, float b) {
-	/*
 	colors.push_back(r); 
 	colors.push_back(g);
 	colors.push_back(b);
-	*/
+	/*
 	switch(index) {
 		case 0:
 			colors.push_back(1.0); colors.push_back(1.0); colors.push_back(1.0); 
@@ -60,6 +59,7 @@ void NodeGeometry::addColor(float r, float g, float b) {
 			colors.push_back(0.6); colors.push_back(0.6); colors.push_back(0.6); 
 			break;
 	};
+	*/
 }
 
 void NodeGeometry::setBBox(const float* bb) {
