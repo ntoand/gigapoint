@@ -18,7 +18,6 @@ public:
 	virtual void render(Renderer* client, const DrawContext& context);
 
 private:
-	//MyTriangle* triangle;
 	PointCloud* pointcloud;
 };
 
@@ -27,11 +26,18 @@ class OPotreeApplication: public EngineModule
 public:
 	OPotreeApplication(): EngineModule("OPotreeApplication") {}
 
+	virtual void initialize();
+
 	virtual void initializeRenderer(Renderer* r) 
 	{ 
 		r->addRenderPass(new OPotreeRenderPass(r));
 	}
 };
+
+void OPotreeApplication::initialize() {
+	Camera* cam = getEngine()->getDefaultCamera();
+	cam->getController()->setSpeed(100);
+}
 
 int main(int argc, char** argv)
 {
@@ -45,7 +51,10 @@ void OPotreeRenderPass::initialize()
 	RenderPass::initialize();
 
 	// Initialize
-	pointcloud = new PointCloud("ripple/");
+	//pointcloud = new PointCloud("ripple/");
+	//pointcloud = new PointCloud("srsota/");
+	pointcloud = new PointCloud("grass/");
+	//pointcloud = new PointCloud("P100/");
 	
 	//graphics
 	//glEnable(GL_POINT_SPRITE);
@@ -67,10 +76,13 @@ void OPotreeRenderPass::render(Renderer* client, const DrawContext& context)
 		if(oglError) return;
 	
 		// Test and draw
-		//triangle->draw(context);
-		//node->draw(context);
+		// get camera location in world coordinate
+
+		Vector3f cp = context.camera->convertLocalToWorldPosition(Vector3f(0, 0, 0));
+		float campos[3] = {cp[0], cp[1], cp[2]};
+
 		float* MVP = (context.projection*context.modelview).cast<float>().data();
-		pointcloud->updateVisibility(MVP);
+		pointcloud->updateVisibility(MVP, campos);
 		pointcloud->draw(MVP);
 
 		if(oglError) return;

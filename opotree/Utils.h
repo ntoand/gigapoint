@@ -33,6 +33,7 @@ public:
 	static int testFrustum(float V[6][4], const float b[6]);
 	static void getFrustum(float V[6][4], const float X[16]);
 	static char* getFileContent(std::string path);
+	static float distance(const float v1[3], const float v2[3]);
 
 };
 

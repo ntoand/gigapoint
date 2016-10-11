@@ -10,6 +10,7 @@
 typedef struct Option_t {
 	unsigned int visiblePointTarget;
 	int minNodePixelSize;
+	bool moveToCentre;
 } Option;
 
 struct NodeWeight {
@@ -32,14 +33,17 @@ private:
 	Material* material;
 	NodeGeometry* root;
 	list<NodeGeometry*> displayList;
+	int preDisplayListSize;
 
 	Option option;
+	int numVisibleNodes;
+	unsigned int numVisiblePoints;
 
 public:
 	PointCloud(string datadir);
 	~PointCloud();
 
-	int updateVisibility(const float MVP[16]);
+	int updateVisibility(const float MVP[16], const float campos[3]);
 	void draw(const float MVP[16]);
 };
 

@@ -8,8 +8,9 @@ using namespace std;
 PointCloud::PointCloud(string datadir) {
 
 	// Option
-	option.visiblePointTarget = 100000;
+	option.visiblePointTarget = 5*1000*1000;
 	option.minNodePixelSize = 100;
+	option.moveToCentre = true;
 
 	// PC Info
 	if(PCLoader::loadPCInfo(datadir, pcinfo) != 0) {
@@ -23,6 +24,7 @@ PointCloud::PointCloud(string datadir) {
 	list<string> uniforms;
 	attributes.clear(); uniforms.clear();
 	attributes.push_back("VertexPosition");
+	attributes.push_back("VertexColor");
 	uniforms.push_back("MVP");
 	Shader* shader = new Shader("simple");
 	shader->load("shaders/simple", attributes, uniforms);
@@ -32,13 +34,12 @@ PointCloud::PointCloud(string datadir) {
 	// root node
 	string name = "r";
 	root = new NodeGeometry(name);
-	if(root->loadBinData(pcinfo)) {
+	if(root->loadData(pcinfo)) {
 		cout << "fail to load node: " << name << endl;
 		return;
 	}
-	root->parent = NULL;
-	root->printInfo();
 
+	preDisplayListSize = 0;
 }
 
 PointCloud::~PointCloud() {
@@ -46,31 +47,72 @@ PointCloud::~PointCloud() {
 
 }
 
-int PointCloud::updateVisibility(const float MVP[16]) {
+int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 	float V[6][4];
     Utils::getFrustum(V, MVP);
 
     priority_queue<NodeWeight> priority_queue;
 
-    unsigned int point_count = 0;
-
-    NodeWeight nw(root, 1);
-    priority_queue.push(nw);
+    priority_queue.push(NodeWeight(root, 1));
     displayList.clear();
+    numVisibleNodes = 0;
+    numVisiblePoints = 0;
 
     while(priority_queue.size() > 0){
     	NodeGeometry* node = priority_queue.top().node;
     	priority_queue.pop();
     	bool visible = false;
-    	if(Utils::testFrustum(V, node->getBBox()) >= 0 && point_count + node->getNumPoints() < option.visiblePointTarget)
+    	if(Utils::testFrustum(V, node->getBBox()) >= 0 && numVisiblePoints + node->getNumPoints() < option.visiblePointTarget)
     		visible = true;
-	       
-	    if(visible) {
-	    	displayList.push_back(node);
-	    }
+	    
+	    if(!visible)
+	    	continue; 
+
+	    numVisibleNodes++;
+		numVisiblePoints += node->getNumPoints();
+
+		node->loadData(pcinfo);
+		displayList.push_back(node);
+		
+		// add children to priority_queue
+		for(int i=0; i < 8; i++) {
+			if(node->getChild(i) == NULL)
+				continue;
+			//calculte weight
+			float* centre = node->getSphereCentre();
+			float radius = node->getSphereRadius();
+			float distance = Utils::distance(centre, campos);
+			float fov = 0.436332;
+			float pr = 1 / tan(fov) * radius / sqrt(distance*distance - radius*radius);
+			float weight = pr;
+			if(distance - radius < 0)
+				weight = FLT_MAX;
+
+			float screenpixelradius = 600*pr;
+			if(screenpixelradius < 100)
+				continue;
+
+			priority_queue.push(NodeWeight(node->getChild(i), weight));
+			//priority_queue.push(NodeWeight(node->getChild(i), 1.0/node->getChild(i)->getLevel()));
+		}
+
     }
 
-	return 0;
+    if(displayList.size() != preDisplayListSize) {
+    	preDisplayListSize = displayList.size();
+    	cout << "# vis nodes: " << displayList.size() << " # points: " << numVisiblePoints << endl;
+    	/*
+    	cout << "nodes: " << endl;
+    	for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
+			NodeGeometry* node = *it;
+			//cout << node->getName() << " ";
+			node->printInfo();
+		}
+		cout << endl;
+		*/
+    }
+
+    return 0;
 }
 
 void PointCloud::draw(const float MVP[16]) {
@@ -81,7 +123,6 @@ void PointCloud::draw(const float MVP[16]) {
 
 	for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
 		NodeGeometry* node = *it;
-		node->initVBO(shader);
-		node->draw();
+		node->draw(shader);
 	}
 }

@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 2.8.1) 
 project(opotree)
 
-set(LOCAL_TEST OFF)
+set(NO_GRAPHICS OFF)
 
-IF(${LOCAL_TEST})
-	add_executable(opotree main_test.cpp cJSON.cpp PCLoader.cpp NodeGeometry.cpp)
+IF(${NO_GRAPHICS})
+	add_definitions(-DNO_GRAPHICS)
+	add_executable(opotree main_test.cpp cJSON.cpp PCLoader.cpp)
 	target_link_libraries(opotree )
 
 ELSE()

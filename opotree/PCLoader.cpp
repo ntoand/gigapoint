@@ -76,7 +76,14 @@ int PCLoader::loadPCInfo(const string data_dir, PCInfo& info) {
 		info.scale = cJSON_GetObjectItem(json, "scale")->valuedouble;
 		info.hierarchyStepSize = cJSON_GetObjectItem(json, "hierarchyStepSize")->valueint;
 
+		// other settings
 		info.dataDir = data_dir;
+
+		info.boundingBoxCentre[0] = (info.boundingBox[0] + info.boundingBox[3]) / 2;
+		info.boundingBoxCentre[1] = (info.boundingBox[1] + info.boundingBox[4]) / 2;
+		info.boundingBoxCentre[2] = (info.boundingBox[2] + info.boundingBox[5]) / 2;
+		//for(int i=0; i < 3; i++)
+		//	info.boundingBoxCentre[i] = info.boundingBox[i];
 	}
 
 	cJSON_Delete(json);
@@ -108,4 +115,82 @@ void PCLoader::printPCInfo(const PCInfo& info) {
 	cout << "Spacing: " << info.spacing << endl;
 	cout << "Scale: " << info.scale << endl;
 	cout << "hierarchyStepSize: " << info.hierarchyStepSize << endl << endl;
+}
+
+void PCLoader::addVectors(const float v1[3], const float v2[3], float v[3]) {
+	for(int i=0; i < 3; i++)
+		v[i] = v1[i] + v2[i];
+}
+
+void PCLoader::addVectors(const float v1[3], const float v2[3], const float v3[3], float v[3]) {
+	for(int i=0; i < 3; i++)
+		v[i] = v1[i] + v2[i] + v3[i];
+}
+
+int PCLoader::createChildAABB(const float pbbox[6], const int childIndex, float cbbox[6]) {
+	float bmin[3];
+	float bmax[3];
+	
+	float dHalfLength[3] = { (pbbox[3] - pbbox[0]) * 0.5,
+							 (pbbox[4] - pbbox[1]) * 0.5,
+							 (pbbox[5] - pbbox[2]) * 0.5 };
+	float xHalfLength[3] = { dHalfLength[0], 0, 0 };
+	float yHalfLength[3] = { 0, dHalfLength[1], 0 };
+	float zHalfLength[3] = { 0, 0, dHalfLength[2] };
+
+	float cmin[3] = { pbbox[0], pbbox[1], pbbox[2] };
+	float cmax[3] = { pbbox[0] + dHalfLength[0], 
+					  pbbox[1] + dHalfLength[1], 
+					  pbbox[2] + dHalfLength[2] };
+
+	switch (childIndex) {
+		case 1:
+			addVectors(cmin, zHalfLength, bmin);
+			addVectors(cmax, zHalfLength, bmax);
+			break;
+
+		case 3:
+			addVectors(cmin, zHalfLength, yHalfLength, bmin);
+			addVectors(cmax, zHalfLength, yHalfLength, bmax);
+			break;
+
+		case 0:
+			for(int i=0; i < 3; i++) {
+				bmin[i] = cmin[i]; bmax[i] = cmax[i];
+			}
+			break;
+
+		case 2:
+			addVectors(cmin, yHalfLength, bmin);
+			addVectors(cmax, yHalfLength, bmax);
+			break;
+
+		case 5:
+			addVectors(cmin, zHalfLength, xHalfLength, bmin);
+			addVectors(cmax, zHalfLength, xHalfLength, bmax);
+			break;
+
+		case 7:
+			addVectors(cmin, dHalfLength, bmin);
+			addVectors(cmax, dHalfLength, bmax);
+			break;
+
+		case 4:
+			addVectors(cmin, xHalfLength, bmin);
+			addVectors(cmax, xHalfLength, bmax);
+			break;
+
+		case 6:
+			addVectors(cmin, xHalfLength, yHalfLength, bmin);
+			addVectors(cmax, xHalfLength, yHalfLength, bmax);
+			break;
+
+		defaut:
+			break;
+	};
+
+	cbbox[0] = bmin[0]; cbbox[1] = bmin[1]; cbbox[2] = bmin[2];
+	cbbox[3] = bmax[0]; cbbox[4] = bmax[1]; cbbox[5] = bmax[2];
+
+	return 0;
 }
