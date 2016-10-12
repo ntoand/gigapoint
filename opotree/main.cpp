@@ -39,6 +39,7 @@ void OPotreeApplication::initialize() {
 	Utils::loadOption("opotree.json", option);
 	Camera* cam = getEngine()->getDefaultCamera();
 	cam->getController()->setSpeed(option.cameraSpeed);
+	cam->getController()->setFreeFlyEnabled(true);
 }
 
 int main(int argc, char** argv)

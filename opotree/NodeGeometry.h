@@ -33,9 +33,13 @@ private:
 	int numpoints;
 	int level;
 
+	bool hierachyloaded;
+	bool inqueue;
 	bool loaded;
 	bool initvbo;
 	bool visible;
+
+	PCInfo* info;
 
 	//data
 	vector<float> vertices;
@@ -63,6 +67,11 @@ public:
 	bool hasChildren() { return haschildren; }
 	float* getSphereCentre() { return spherecentre; }
 	float getSphereRadius() { return sphereradius; }
+	void setInQueue(bool b) { inqueue = b; }
+	float inQueue() { return inqueue; }
+
+	void setInfo(PCInfo* in) { info = in; }
+	PCInfo* getInfo() { return info; }
 
 	void setParent(NodeGeometry* p) { parent = p;}
 	void addChild(NodeGeometry* c) { children[c->getIndex()] = c; }
@@ -78,8 +87,9 @@ public:
 
 	void addPoint(float x, float y, float z);
 	void addColor(float r, float g, float b);
-	string getHierarchyPath(const PCInfo& info);
-	int loadData(const PCInfo& info, bool movetocentre = true);
+	string getHierarchyPath();
+	int loadHierachy(bool movetocentre = true);
+	int loadData();
 	void printInfo();
 	int initVBO();
 	void draw(Shader* sh);

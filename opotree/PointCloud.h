@@ -4,6 +4,8 @@
 #include <vector>
 #include <list>
 
+#include <omicron/Thread.h>
+
 #include "NodeGeometry.h"
 #include "Material.h"
 
@@ -23,7 +25,7 @@ struct NodeWeight {
 
 class PointCloud {
 private:
-	PCInfo pcinfo;
+	PCInfo* pcinfo;
 	Material* material;
 	NodeGeometry* root;
 	list<NodeGeometry*> displayList;
@@ -32,6 +34,9 @@ private:
 	Option option;
 	int numVisibleNodes;
 	unsigned int numVisiblePoints;
+
+	static list<omicron::Thread*> sNodeLoaderThread;
+	static int sNumLoaderThreads;
 
 public:
 	PointCloud(string cfgfile);

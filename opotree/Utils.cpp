@@ -195,6 +195,7 @@ int Utils::loadOption(const string filename, Option& option) {
             option.quality = QUALITY_SQUARE;
 
         option.cameraSpeed = cJSON_GetObjectItem(json, "cameraSpeed")->valueint;
+        option.numReadThread = cJSON_GetObjectItem(json, "numReadThread")->valueint;
     }
 
     cJSON_Delete(json);
@@ -214,10 +215,13 @@ void Utils::printOption(const Option& option) {
     cout << "sizeType: " << option.sizeType << endl;
     cout << "quality: " << option.quality << endl;
     cout << "cameraSpeed: " << option.cameraSpeed << endl;
+    cout << "numReadThread: " << option.numReadThread << endl;
 }
 
 // PC Loader
-int Utils::loadPCInfo(const string data_dir, PCInfo& info) {
+int Utils::loadPCInfo(const string data_dir, PCInfo* info) {
+
+    assert(info);
     
     string filename = data_dir + "cloud.js";
     cout << "Load PC info from file: " << filename << endl;
@@ -241,39 +245,39 @@ int Utils::loadPCInfo(const string data_dir, PCInfo& info) {
     }
     else {
 
-        info.version = cJSON_GetObjectItem(json, "version")->valuestring;
-        info.octreeDir = cJSON_GetObjectItem(json, "octreeDir")->valuestring;
+        info->version = cJSON_GetObjectItem(json, "version")->valuestring;
+        info->octreeDir = cJSON_GetObjectItem(json, "octreeDir")->valuestring;
 
         cJSON *bbox = cJSON_GetObjectItem(json, "boundingBox");
         assert(bbox);
-        info.boundingBox[0] = cJSON_GetObjectItem(bbox, "lx")->valuedouble;
-        info.boundingBox[1] = cJSON_GetObjectItem(bbox, "ly")->valuedouble;
-        info.boundingBox[2] = cJSON_GetObjectItem(bbox, "lz")->valuedouble;
-        info.boundingBox[3] = cJSON_GetObjectItem(bbox, "ux")->valuedouble;
-        info.boundingBox[4] = cJSON_GetObjectItem(bbox, "uy")->valuedouble;
-        info.boundingBox[5] = cJSON_GetObjectItem(bbox, "uz")->valuedouble;
+        info->boundingBox[0] = cJSON_GetObjectItem(bbox, "lx")->valuedouble;
+        info->boundingBox[1] = cJSON_GetObjectItem(bbox, "ly")->valuedouble;
+        info->boundingBox[2] = cJSON_GetObjectItem(bbox, "lz")->valuedouble;
+        info->boundingBox[3] = cJSON_GetObjectItem(bbox, "ux")->valuedouble;
+        info->boundingBox[4] = cJSON_GetObjectItem(bbox, "uy")->valuedouble;
+        info->boundingBox[5] = cJSON_GetObjectItem(bbox, "uz")->valuedouble;
 
         cJSON *tbbox = cJSON_GetObjectItem(json, "tightBoundingBox");
         assert(tbbox);
-        info.tightBoundingBox[0] = cJSON_GetObjectItem(tbbox, "lx")->valuedouble;
-        info.tightBoundingBox[1] = cJSON_GetObjectItem(tbbox, "ly")->valuedouble;
-        info.tightBoundingBox[2] = cJSON_GetObjectItem(tbbox, "lz")->valuedouble;
-        info.tightBoundingBox[3] = cJSON_GetObjectItem(tbbox, "ux")->valuedouble;
-        info.tightBoundingBox[4] = cJSON_GetObjectItem(tbbox, "uy")->valuedouble;
-        info.tightBoundingBox[5] = cJSON_GetObjectItem(tbbox, "uz")->valuedouble;
+        info->tightBoundingBox[0] = cJSON_GetObjectItem(tbbox, "lx")->valuedouble;
+        info->tightBoundingBox[1] = cJSON_GetObjectItem(tbbox, "ly")->valuedouble;
+        info->tightBoundingBox[2] = cJSON_GetObjectItem(tbbox, "lz")->valuedouble;
+        info->tightBoundingBox[3] = cJSON_GetObjectItem(tbbox, "ux")->valuedouble;
+        info->tightBoundingBox[4] = cJSON_GetObjectItem(tbbox, "uy")->valuedouble;
+        info->tightBoundingBox[5] = cJSON_GetObjectItem(tbbox, "uz")->valuedouble;
 
         cJSON *pointatt = cJSON_GetObjectItem(json, "pointAttributes");
         assert(pointatt);
-        info.pointByteSize = 0;
+        info->pointByteSize = 0;
         for (int i = 0; i < cJSON_GetArraySize(pointatt); i++) {
             string data_type = cJSON_GetArrayItem(pointatt, i)->valuestring;
             if(data_type == "POSITION_CARTESIAN") {
-                info.pointAttributes.push_back(POSITION_CARTESIAN);
-                info.pointByteSize += 3 * sizeof(float);
+                info->pointAttributes.push_back(POSITION_CARTESIAN);
+                info->pointByteSize += 3 * sizeof(float);
             }
             else if(data_type == "COLOR_PACKED") {
-                info.pointAttributes.push_back(COLOR_PACKED);
-                info.pointByteSize += 4 * sizeof(char);
+                info->pointAttributes.push_back(COLOR_PACKED);
+                info->pointByteSize += 4 * sizeof(char);
             }
             else {
                 cout << "Invalid data type" << endl;
@@ -282,16 +286,16 @@ int Utils::loadPCInfo(const string data_dir, PCInfo& info) {
         }
         cout << endl;
 
-        info.spacing = cJSON_GetObjectItem(json, "spacing")->valuedouble;
-        info.scale = cJSON_GetObjectItem(json, "scale")->valuedouble;
-        info.hierarchyStepSize = cJSON_GetObjectItem(json, "hierarchyStepSize")->valueint;
+        info->spacing = cJSON_GetObjectItem(json, "spacing")->valuedouble;
+        info->scale = cJSON_GetObjectItem(json, "scale")->valuedouble;
+        info->hierarchyStepSize = cJSON_GetObjectItem(json, "hierarchyStepSize")->valueint;
 
         // other settings
-        info.dataDir = data_dir;
+        info->dataDir = data_dir;
 
-        info.boundingBoxCentre[0] = (info.boundingBox[0] + info.boundingBox[3]) / 2;
-        info.boundingBoxCentre[1] = (info.boundingBox[1] + info.boundingBox[4]) / 2;
-        info.boundingBoxCentre[2] = (info.boundingBox[2] + info.boundingBox[5]) / 2;
+        info->boundingBoxCentre[0] = (info->boundingBox[0] + info->boundingBox[3]) / 2;
+        info->boundingBoxCentre[1] = (info->boundingBox[1] + info->boundingBox[4]) / 2;
+        info->boundingBoxCentre[2] = (info->boundingBox[2] + info->boundingBox[5]) / 2;
         //for(int i=0; i < 3; i++)
         //  info.boundingBoxCentre[i] = info.boundingBox[i];
     }
@@ -302,29 +306,29 @@ int Utils::loadPCInfo(const string data_dir, PCInfo& info) {
     return 0;
 }
 
-void Utils::printPCInfo(const PCInfo& info) {
+void Utils::printPCInfo(const PCInfo* info) {
     cout << "==== PC Info ====" << endl;
-    cout << "Version: " << info.version << endl;
-    cout << "dataDir: " << info.dataDir << endl;
-    cout << "octreeDir: " << info.octreeDir << endl;
+    cout << "Version: " << info->version << endl;
+    cout << "dataDir: " << info->dataDir << endl;
+    cout << "octreeDir: " << info->octreeDir << endl;
     cout << "boundingBox: ";
     for(int i=0; i < 6; i++)
-        cout << info.boundingBox[i] << " ";
+        cout << info->boundingBox[i] << " ";
     cout << endl;
 
     cout << "tightBoundingBox: ";
     for(int i=0; i < 6; i++)
-        cout << info.tightBoundingBox[i] << " ";
+        cout << info->tightBoundingBox[i] << " ";
     cout << endl;
 
     cout << "pointAttributes: ";
-    for(int i=0; i < info.pointAttributes.size(); i++)
-        cout << info.pointAttributes[i] << " ";
+    for(int i=0; i < info->pointAttributes.size(); i++)
+        cout << info->pointAttributes[i] << " ";
     cout << endl;
 
-    cout << "Spacing: " << info.spacing << endl;
-    cout << "Scale: " << info.scale << endl;
-    cout << "hierarchyStepSize: " << info.hierarchyStepSize << endl << endl;
+    cout << "Spacing: " << info->spacing << endl;
+    cout << "Scale: " << info->scale << endl;
+    cout << "hierarchyStepSize: " << info->hierarchyStepSize << endl << endl;
 }
 
 void Utils::addVectors(const float v1[3], const float v2[3], float v[3]) {

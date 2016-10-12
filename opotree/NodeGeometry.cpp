@@ -12,7 +12,8 @@ using namespace std;
 using namespace omega;
 
 NodeGeometry::NodeGeometry(string _name): numpoints(0), level(-1), parent(NULL), index(-1),
-										  loaded(false), initvbo(false), haschildren(false) {
+										  loaded(false), initvbo(false), haschildren(false),
+										  hierachyloaded(false), inqueue(false) {
 	name = _name;
 	tightbbox[0] = tightbbox[1] = tightbbox[2] = FLT_MAX;
 	tightbbox[3] = tightbbox[4] = tightbbox[5] = FLT_MIN;
@@ -41,25 +42,6 @@ void NodeGeometry::addColor(float r, float g, float b) {
 	colors.push_back(r); 
 	colors.push_back(g);
 	colors.push_back(b);
-	/*
-	switch(index) {
-		case 0:
-			colors.push_back(1.0); colors.push_back(1.0); colors.push_back(1.0); 
-			break;
-		case 2:
-			colors.push_back(1.0); colors.push_back(0.0); colors.push_back(0.0); 
-			break;
-		case 4:
-			colors.push_back(0.0); colors.push_back(1.0); colors.push_back(0.0); 
-			break;
-		case 6:
-			colors.push_back(0.0); colors.push_back(0.0); colors.push_back(1.0); 
-			break;
-		default:
-			colors.push_back(0.6); colors.push_back(0.6); colors.push_back(0.6); 
-			break;
-	};
-	*/
 }
 
 void NodeGeometry::setBBox(const float* bb) {
@@ -72,142 +54,161 @@ void NodeGeometry::setBBox(const float* bb) {
 	sphereradius = Utils::distance(spherecentre, bmin);
 }
 
-string NodeGeometry::getHierarchyPath(const PCInfo& info) {
+string NodeGeometry::getHierarchyPath() {
+	assert(info);
 	string path = "r/";
-	int numparts = level / info.hierarchyStepSize;
+	int numparts = level / info->hierarchyStepSize;
 	for(int i=0; i < numparts; i++) {
-		path += name.substr(1+i*info.hierarchyStepSize, info.hierarchyStepSize) + "/";
+		path += name.substr(1+i*info->hierarchyStepSize, info->hierarchyStepSize) + "/";
 	}
 	
 	return path;
 }
 
-int NodeGeometry::loadData(const PCInfo& info, bool movetocentre) {
+int NodeGeometry::loadHierachy(bool movetocentre) {
 
-	if(loaded)
+	if(level % info->hierarchyStepSize != 0)
 		return 0;
+
+	if(hierachyloaded)
+		return 0;
+
+	assert(info);
 
 	if(level == 0) { // root
 		if(movetocentre) {
 			float b[6];
 			for(int i=0; i < 6; i++)
-				b[i] = info.boundingBox[i] - info.boundingBoxCentre[i%3];
+				b[i] = info->boundingBox[i] - info->boundingBoxCentre[i%3];
 			setBBox(b);
 		} else {
-			setBBox(info.boundingBox);
+			setBBox(info->boundingBox);
 		}
 	} 
 
-	if(level % info.hierarchyStepSize == 0) { // && has chilren - load hierachy first
-		string hrc_filename = info.dataDir + info.octreeDir + "/" + getHierarchyPath(info) + name + ".hrc";
-		//cout << "Load hierachy file: " << hrc_filename << endl;
-		list<HRC_Item> stack;
-		list<HRC_Item> decoded;
+	string hrc_filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".hrc";
+	//cout << "Load hierachy file: " << hrc_filename << endl;
+	list<HRC_Item> stack;
+	list<HRC_Item> decoded;
 
-		FILE *f;long len; unsigned char *data;
-		f=fopen(hrc_filename.c_str(),"rb");
-		if(f == NULL){
-			std::cout << "Cannot find " << hrc_filename << "!!!" << std::endl;
-			return -1;
-		}
-		fseek(f,0,SEEK_END);len=ftell(f);fseek(f,0,SEEK_SET);
-		data= new unsigned char[len+1];fread(data,1,len,f);fclose(f);
+	FILE *f;long len; unsigned char *data;
+	f=fopen(hrc_filename.c_str(),"rb");
+	if(f == NULL){
+		std::cout << "Cannot find " << hrc_filename << "!!!" << std::endl;
+		return -1;
+	}
+	fseek(f,0,SEEK_END);len=ftell(f);fseek(f,0,SEEK_SET);
+	data= new unsigned char[len+1];fread(data,1,len,f);fclose(f);
 
-		// root of subtree
-		int offset = 0;
-		unsigned char children = data[offset];
-		numpoints = (data[offset+4] << 24) | (data[offset+3] << 16) | (data[offset+2] << 8) | data[offset+1]; // little andian
-		offset += 5;
+	// root of subtree
+	int offset = 0;
+	unsigned char children = data[offset];
+	numpoints = (data[offset+4] << 24) | (data[offset+3] << 16) | (data[offset+2] << 8) | data[offset+1]; // little andian
+	offset += 5;
 
-		std::bitset<8> x(children);
-		//cout << "Root children: " << x << endl;
-		//cout << "Root numpoints: " << numpoints << endl;
+	std::bitset<8> x(children);
+	//cout << "Root children: " << x << endl;
+	//cout << "Root numpoints: " << numpoints << endl;
 
-		stack.push_back(HRC_Item(name, children, numpoints));
+	stack.push_back(HRC_Item(name, children, numpoints));
 
-		while(stack.size() > 0){
+	while(stack.size() > 0){
 
-			HRC_Item snode = stack.front();
-			stack.pop_front();
+		HRC_Item snode = stack.front();
+		stack.pop_front();
 
-			unsigned char mask = 1;
-			for (int i=0; i < 8; i++) {
-				if( (int)(snode.children & mask) != 0) {
-					stringstream ss;
-					ss << i;
-					string childname = snode.name + ss.str();
-					unsigned char child_children = data[offset];
-					unsigned int child_numpoints = (data[offset+4] << 24) | (data[offset+3] << 16) | (data[offset+2] << 8) | data[offset+1];
-					
-					stack.push_back(HRC_Item(childname, child_children, child_numpoints));
-					decoded.push_back(HRC_Item(childname, child_children, child_numpoints));
+		unsigned char mask = 1;
+		for (int i=0; i < 8; i++) {
+			if( (int)(snode.children & mask) != 0) {
+				stringstream ss;
+				ss << i;
+				string childname = snode.name + ss.str();
+				unsigned char child_children = data[offset];
+				unsigned int child_numpoints = (data[offset+4] << 24) | (data[offset+3] << 16) | (data[offset+2] << 8) | data[offset+1];
+				
+				stack.push_back(HRC_Item(childname, child_children, child_numpoints));
+				decoded.push_back(HRC_Item(childname, child_children, child_numpoints));
 
-					offset += 5;
-				}
-				mask = mask * 2;
+				offset += 5;
 			}
-	
-			if(offset == len)
-				break;
+			mask = mask * 2;
 		}
 
-		map<string, NodeGeometry*> nodes;
-		nodes[name] = this;
-
-		for(list<HRC_Item>::iterator it = decoded.begin(); it != decoded.end(); it++) {
-			HRC_Item item = *it;
-			std::bitset<8> children_bit(item.children);
-			//cout << "Node: " << item.name << " children: " << children_bit << " numpoints: " << item.numpoints << endl;
-
-			string str_ind = item.name.substr(item.name.length()-1, 1);
-			//cout << "index str: " << str_ind << endl;
-
-			string parentname = item.name.substr(0, item.name.length()-1);
-			NodeGeometry* pnode = nodes[parentname];
-			assert(pnode);
-
-			NodeGeometry* cnode = new NodeGeometry(item.name);
-			assert(cnode);
-			int cindex = atoi(str_ind.c_str());
-			cnode->setLevel(item.name.length()-1);
-			cnode->setIndex(cindex);
-			cnode->setNumPoints(item.numpoints);
-			cnode->setHasChildren(item.children > 0);
-			float cbbox[6];
-			Utils::createChildAABB(pnode->getBBox(), cindex, cbbox);
-			cnode->setBBox(cbbox);
-			//cnode->printInfo();
-		
-			pnode->addChild(cnode);
-			nodes[item.name] = cnode;
-		}
+		if(offset == len)
+			break;
 	}
 
-	string filename = info.dataDir + info.octreeDir + "/" + getHierarchyPath(info) + name + ".bin";
+	map<string, NodeGeometry*> nodes;
+	nodes[name] = this;
+
+	for(list<HRC_Item>::iterator it = decoded.begin(); it != decoded.end(); it++) {
+		HRC_Item item = *it;
+		std::bitset<8> children_bit(item.children);
+		//cout << "Node: " << item.name << " children: " << children_bit << " numpoints: " << item.numpoints << endl;
+
+		string str_ind = item.name.substr(item.name.length()-1, 1);
+		//cout << "index str: " << str_ind << endl;
+
+		string parentname = item.name.substr(0, item.name.length()-1);
+		NodeGeometry* pnode = nodes[parentname];
+		assert(pnode);
+
+		NodeGeometry* cnode = new NodeGeometry(item.name);
+		assert(cnode);
+		int cindex = atoi(str_ind.c_str());
+		cnode->setLevel(item.name.length()-1);
+		cnode->setIndex(cindex);
+		cnode->setNumPoints(item.numpoints);
+		cnode->setHasChildren(item.children > 0);
+		float cbbox[6];
+		Utils::createChildAABB(pnode->getBBox(), cindex, cbbox);
+		cnode->setBBox(cbbox);
+		cnode->setInfo(pnode->getInfo());
+		//cnode->printInfo();
+	
+		pnode->addChild(cnode);
+		nodes[item.name] = cnode;
+	}
+
+	hierachyloaded = true;
+
+	return 0;
+}
+
+
+int NodeGeometry::loadData() {
+
+	if(loaded)
+		return 0;
+	
+	assert(info);
+
+	string filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".bin";
 	//cout << "Load file: " << filename << endl;
 	datafile = filename;
 	ifstream reader;
 	reader.open (filename.c_str(), ifstream::in | ifstream::binary);
 	
 	while(reader.good()) {
-		char* buffer = new char[info.pointByteSize];
-		reader.read(buffer, info.pointByteSize);
+		char* buffer = new char[info->pointByteSize];
+		reader.read(buffer, info->pointByteSize);
 
 		if(!reader.good()){
-            delete [] buffer;
+			if(buffer)
+            	delete [] buffer;
 			break;
 		}
 
 		int offset = 0;
-		for(int i = 0; i < info.pointAttributes.size(); i++){
-			int attribute = info.pointAttributes[i];
+		for(int i = 0; i < info->pointAttributes.size(); i++){
+			int attribute = info->pointAttributes[i];
 			
 			if(attribute == POSITION_CARTESIAN){
 				int* iBuffer = reinterpret_cast<int*>(buffer+offset);
 				float x, y, z;
-				x = (iBuffer[0] * info.scale) + bbox[0];
-				y = (iBuffer[1] * info.scale) + bbox[1];
-				z = (iBuffer[2] * info.scale) + bbox[2];
+				x = (iBuffer[0] * info->scale) + bbox[0];
+				y = (iBuffer[1] * info->scale) + bbox[1];
+				z = (iBuffer[2] * info->scale) + bbox[2];
 			
 				offset += 3 * sizeof(float);
 				addPoint(x, y, z);
@@ -227,7 +228,8 @@ int NodeGeometry::loadData(const PCInfo& info, bool movetocentre) {
 			}
 		}
 		
-		delete [] buffer;
+		if(buffer)
+			delete [] buffer;
 	}
 
 	reader.close();

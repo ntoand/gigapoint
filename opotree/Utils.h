@@ -49,6 +49,7 @@ typedef struct Option_t {
 	int sizeType;
 	int quality;
 	float cameraSpeed;
+	int numReadThread;
 } Option;
 
 typedef struct PCInfo_t {
@@ -77,8 +78,8 @@ public:
 	// PC loader
 	static int loadOption(const string cfgfile, Option& option);
 	static void printOption(const Option& option);
-	static int loadPCInfo(const string data_dir, PCInfo& info);
-	static void printPCInfo(const PCInfo& info);
+	static int loadPCInfo(const string data_dir, PCInfo* info);
+	static void printPCInfo(const PCInfo* info);
 	static void addVectors(const float v1[3], const float v2[3], float v[3]);
 	static void addVectors(const float v1[3], const float v2[3], const float v3[3], float v[3]);
 	static int createChildAABB(const float pbbox[6], const int childIndex, float cbbox[6]);
