@@ -2,7 +2,6 @@
 #define _NODE_GEOMETRY_H_
 
 #include "Utils.h"
-#include "PCLoader.h"
 #include "Shader.h"
 
 #include <string>

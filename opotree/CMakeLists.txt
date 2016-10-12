@@ -5,13 +5,13 @@ set(NO_GRAPHICS OFF)
 
 IF(${NO_GRAPHICS})
 	add_definitions(-DNO_GRAPHICS)
-	add_executable(opotree main_test.cpp cJSON.cpp PCLoader.cpp)
+	add_executable(opotree main_test.cpp cJSON.cpp Utils.cpp)
 	target_link_libraries(opotree )
 
 ELSE()
 	find_package(Omegalib)
 	include_directories(${OMEGA_INCLUDE_DIRS})
-	add_executable(opotree main.cpp Utils.cpp Shader.cpp cJSON.cpp PCLoader.cpp NodeGeometry.cpp Material.cpp PointCloud.cpp)
+	add_executable(opotree main.cpp Utils.cpp Shader.cpp cJSON.cpp NodeGeometry.cpp Material.cpp PointCloud.cpp)
 	target_link_libraries(opotree ${OMEGA_LIB})
 
 ENDIF()

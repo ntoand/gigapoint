@@ -13,7 +13,7 @@ void main()
     //gl_Position = gl_ModelViewProjectionMatrix * vec4(VertexPosition,1.0);
     //gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * vec4(VertexPosition,1.0);
 
-    gl_PointSize = 4.0;
+    gl_PointSize = 2.0;
 
     vcolor = VertexColor;
 }

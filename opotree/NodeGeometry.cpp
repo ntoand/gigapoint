@@ -100,7 +100,7 @@ int NodeGeometry::loadData(const PCInfo& info, bool movetocentre) {
 
 	if(level % info.hierarchyStepSize == 0) { // && has chilren - load hierachy first
 		string hrc_filename = info.dataDir + info.octreeDir + "/" + getHierarchyPath(info) + name + ".hrc";
-		cout << "Load hierachy file: " << hrc_filename << endl;
+		//cout << "Load hierachy file: " << hrc_filename << endl;
 		list<HRC_Item> stack;
 		list<HRC_Item> decoded;
 
@@ -113,8 +113,6 @@ int NodeGeometry::loadData(const PCInfo& info, bool movetocentre) {
 		fseek(f,0,SEEK_END);len=ftell(f);fseek(f,0,SEEK_SET);
 		data= new unsigned char[len+1];fread(data,1,len,f);fclose(f);
 
-		cout << "File lenght: " << len << endl;
-
 		// root of subtree
 		int offset = 0;
 		unsigned char children = data[offset];
@@ -122,8 +120,8 @@ int NodeGeometry::loadData(const PCInfo& info, bool movetocentre) {
 		offset += 5;
 
 		std::bitset<8> x(children);
-		cout << "Root children: " << x << endl;
-		cout << "Root numpoints: " << numpoints << endl;
+		//cout << "Root children: " << x << endl;
+		//cout << "Root numpoints: " << numpoints << endl;
 
 		stack.push_back(HRC_Item(name, children, numpoints));
 
@@ -176,11 +174,10 @@ int NodeGeometry::loadData(const PCInfo& info, bool movetocentre) {
 			cnode->setNumPoints(item.numpoints);
 			cnode->setHasChildren(item.children > 0);
 			float cbbox[6];
-			PCLoader::createChildAABB(pnode->getBBox(), cindex, cbbox);
+			Utils::createChildAABB(pnode->getBBox(), cindex, cbbox);
 			cnode->setBBox(cbbox);
-
-			cnode->printInfo();
-			
+			//cnode->printInfo();
+		
 			pnode->addChild(cnode);
 			nodes[item.name] = cnode;
 		}

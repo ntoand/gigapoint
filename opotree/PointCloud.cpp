@@ -5,19 +5,21 @@
 
 using namespace std;
 
-PointCloud::PointCloud(string datadir) {
+PointCloud::PointCloud(string cfgfile) {
 
 	// Option
-	option.visiblePointTarget = 20*1000*1000;
-	option.minNodePixelSize = 100;
-	option.moveToCentre = true;
+	if(Utils::loadOption(cfgfile, option) != 0){
+		cout << "Error: cannot load option " << endl;
+		return;
+	}
+	Utils::printOption(option);
 
 	// PC Info
-	if(PCLoader::loadPCInfo(datadir, pcinfo) != 0) {
+	if(Utils::loadPCInfo(option.dataDir, pcinfo) != 0) {
 		cout << "Error: cannot load pc info" << endl;
 		return;
 	}
-	PCLoader::printPCInfo(pcinfo);
+	Utils::printPCInfo(pcinfo);
 
 	// Shader + material
 	list<string> attributes;
@@ -88,8 +90,8 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 			if(distance - radius < 0)
 				weight = FLT_MAX;
 
-			float screenpixelradius = 600*pr;
-			if(screenpixelradius < 100)
+			float screenpixelradius = option.screenHeight * pr;
+			if(screenpixelradius < option.minNodePixelSize)
 				continue;
 
 			priority_queue.push(NodeWeight(node->getChild(i), weight));

@@ -7,12 +7,6 @@
 #include "NodeGeometry.h"
 #include "Material.h"
 
-typedef struct Option_t {
-	unsigned int visiblePointTarget;
-	int minNodePixelSize;
-	bool moveToCentre;
-} Option;
-
 struct NodeWeight {
 	NodeGeometry* node;
 	float weight;
@@ -40,7 +34,7 @@ private:
 	unsigned int numVisiblePoints;
 
 public:
-	PointCloud(string datadir);
+	PointCloud(string cfgfile);
 	~PointCloud();
 
 	int updateVisibility(const float MVP[16], const float campos[3]);

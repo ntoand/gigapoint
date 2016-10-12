@@ -35,8 +35,10 @@ public:
 };
 
 void OPotreeApplication::initialize() {
+	Option option;
+	Utils::loadOption("opotree.json", option);
 	Camera* cam = getEngine()->getDefaultCamera();
-	cam->getController()->setSpeed(10);
+	cam->getController()->setSpeed(option.cameraSpeed);
 }
 
 int main(int argc, char** argv)
@@ -51,11 +53,7 @@ void OPotreeRenderPass::initialize()
 	RenderPass::initialize();
 
 	// Initialize
-	//pointcloud = new PointCloud("ripple/");
-	//pointcloud = new PointCloud("srsota/");
-	//pointcloud = new PointCloud("grass/");
-	//pointcloud = new PointCloud("P100/");
-	pointcloud = new PointCloud("century/");
+	pointcloud = new PointCloud("opotree.json");
 	
 	//graphics
 	//glEnable(GL_POINT_SPRITE);
