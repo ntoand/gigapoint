@@ -1,7 +1,7 @@
 #ifndef _NODE_GEOMETRY_H_
 #define _NODE_GEOMETRY_H_
 
-#include "Util.h"
+#include "Utils.h"
 #include "PCLoader.h"
 #include "Shader.h"
 

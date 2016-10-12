@@ -159,10 +159,10 @@ int NodeGeometry::loadData(const PCInfo& info, bool movetocentre) {
 		for(list<HRC_Item>::iterator it = decoded.begin(); it != decoded.end(); it++) {
 			HRC_Item item = *it;
 			std::bitset<8> children_bit(item.children);
-			cout << "Node: " << item.name << " children: " << children_bit << " numpoints: " << item.numpoints << endl;
+			//cout << "Node: " << item.name << " children: " << children_bit << " numpoints: " << item.numpoints << endl;
 
 			string str_ind = item.name.substr(item.name.length()-1, 1);
-			cout << "index str: " << str_ind << endl;
+			//cout << "index str: " << str_ind << endl;
 
 			string parentname = item.name.substr(0, item.name.length()-1);
 			NodeGeometry* pnode = nodes[parentname];

@@ -8,7 +8,7 @@ using namespace std;
 PointCloud::PointCloud(string datadir) {
 
 	// Option
-	option.visiblePointTarget = 5*1000*1000;
+	option.visiblePointTarget = 20*1000*1000;
 	option.minNodePixelSize = 100;
 	option.moveToCentre = true;
 
@@ -97,11 +97,10 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 		}
 
     }
-
+/*
     if(displayList.size() != preDisplayListSize) {
     	preDisplayListSize = displayList.size();
     	cout << "# vis nodes: " << displayList.size() << " # points: " << numVisiblePoints << endl;
-    	/*
     	cout << "nodes: " << endl;
     	for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
 			NodeGeometry* node = *it;
@@ -109,9 +108,8 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 			node->printInfo();
 		}
 		cout << endl;
-		*/
     }
-
+*/
     return 0;
 }
 

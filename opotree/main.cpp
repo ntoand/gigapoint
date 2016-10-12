@@ -36,7 +36,7 @@ public:
 
 void OPotreeApplication::initialize() {
 	Camera* cam = getEngine()->getDefaultCamera();
-	cam->getController()->setSpeed(100);
+	cam->getController()->setSpeed(10);
 }
 
 int main(int argc, char** argv)
