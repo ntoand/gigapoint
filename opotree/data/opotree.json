@@ -1,5 +1,5 @@
 {
-	"dataDir": "century",
+	"dataDir": "century_hres",
 	"visiblePointTarget": 5000000,
 	"minNodePixelSize": 100,
 	"moveToCentre": 1,

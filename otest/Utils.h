@@ -1,0 +1,80 @@
+#ifndef _UTILS_H_
+#define _UTILS_H_
+
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
+
+#define PI 3.14159265f
+
+#ifndef MIN
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
+#ifndef MAX
+#define MAX(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+
+#define DEG(r) (180.0f * (r) / PI)
+#define RAD(d) (PI * (d) / 180.0f)
+
+#define DOT3(v, w) ((v)[0] * (w)[0] + \
+                    (v)[1] * (w)[1] + \
+                    (v)[2] * (w)[2])
+
+
+#define POSITION_CARTESIAN 0
+#define COLOR_PACKED 1
+
+#define MATERIAL_RGB 0
+#define MATERIAL_ELEVATION 1
+#define MATERIAL_TREEDEPTH 2
+
+#define SIZE_FIXED 0
+#define SIZE_ADAPTIVE 1
+
+#define QUALITY_SQUARE 0
+#define QUALITY_CIRCLE 1
+
+typedef struct Option_t {
+	string dataDir;
+	unsigned int visiblePointTarget;
+	int minNodePixelSize;
+	int screenHeight;
+	bool moveToCentre;
+	int material;
+	int pointSize;
+	int sizeType;
+	int quality;
+	float cameraSpeed;
+	int numReadThread;
+	int maxNodeInMem;
+} Option;
+
+typedef struct PCInfo_t {
+	string version;
+	string dataDir;
+	string octreeDir;
+	float boundingBox[6];
+	float boundingBoxCentre[3];
+	float tightBoundingBox[6];
+	vector<int> pointAttributes;
+	float spacing;
+	float scale;
+	int hierarchyStepSize;
+	int pointByteSize;
+} PCInfo;
+
+class Utils {
+
+public:
+	static int testPlane(const float V[4], const float b[6]);
+	static int testFrustum(float V[6][4], const float b[6]);
+	static void getFrustum(float V[6][4], const float X[16]);
+	static char* getFileContent(std::string path);
+	static float distance(const float v1[3], const float v2[3]);
+};
+
+#endif
