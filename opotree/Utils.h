@@ -50,6 +50,7 @@ typedef struct Option_t {
 	int quality;
 	float cameraSpeed;
 	int numReadThread;
+	int maxNodeInMem;
 } Option;
 
 typedef struct PCInfo_t {

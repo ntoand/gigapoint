@@ -13,10 +13,11 @@ using namespace omega;
 
 NodeGeometry::NodeGeometry(string _name): numpoints(0), level(-1), parent(NULL), index(-1),
 										  loaded(false), initvbo(false), haschildren(false),
-										  hierachyloaded(false), inqueue(false) {
+										  hierachyloaded(false), inqueue(false),
+										  vertexbuffer(-1), colorbuffer(-1) {
 	name = _name;
-	tightbbox[0] = tightbbox[1] = tightbbox[2] = FLT_MAX;
-	tightbbox[3] = tightbbox[4] = tightbbox[5] = FLT_MIN;
+	//tightbbox[0] = tightbbox[1] = tightbbox[2] = FLT_MAX;
+	//tightbbox[3] = tightbbox[4] = tightbbox[5] = FLT_MIN;
 	for(int i=0; i < 8; i++)
 		children[i] = NULL;
 	level = name.length() - 1;
@@ -34,8 +35,8 @@ void NodeGeometry::addPoint(float x, float y, float z) {
 	vertices.push_back(z);
 	
 	//numpoints++;
-	tightbbox[0] = min(tightbbox[0], x); tightbbox[1] = min(tightbbox[1], y); tightbbox[2] = min(tightbbox[2], z);
-	tightbbox[3] = max(tightbbox[3], x); tightbbox[4] = max(tightbbox[4], y); tightbbox[5] = max(tightbbox[5], z);
+	//tightbbox[0] = min(tightbbox[0], x); tightbbox[1] = min(tightbbox[1], y); tightbbox[2] = min(tightbbox[2], z);
+	//tightbbox[3] = max(tightbbox[3], x); tightbbox[4] = max(tightbbox[4], y); tightbbox[5] = max(tightbbox[5], z);
 }
 
 void NodeGeometry::addColor(float r, float g, float b) {
@@ -248,11 +249,13 @@ void NodeGeometry::printInfo() {
 		cout << bbox[i] << " ";
 	cout << endl;
 
+	/*
 	cout << "tight bbox: ";
 	for(int i=0; i < 6; i++)
 		cout << tightbbox[i] << " ";
 	cout << endl;
-	
+	*/
+
 	if(!loaded)
 		return;
 
@@ -315,4 +318,18 @@ void NodeGeometry::draw(Shader* shader) {
     );
 
 	glDrawArrays(GL_POINTS, 0, vertices.size()/3);
+}
+
+void NodeGeometry::freeData() {
+	//cout << "Free data for node: " << name << endl;
+	if(initvbo) {
+		glDeleteBuffers(1, &vertexbuffer);
+		glDeleteBuffers(1, &colorbuffer);
+		initvbo = false;
+	}
+	if(loaded) {
+		vertices.clear();
+		colors.clear();
+		loaded = false;
+	}
 }

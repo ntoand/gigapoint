@@ -8,6 +8,7 @@
 
 #include "NodeGeometry.h"
 #include "Material.h"
+#include "LRU.h"
 
 struct NodeWeight {
 	NodeGeometry* node;
@@ -37,6 +38,8 @@ private:
 
 	static list<omicron::Thread*> sNodeLoaderThread;
 	static int sNumLoaderThreads;
+
+	LRUCache* lrucache;
 
 public:
 	PointCloud(string cfgfile);

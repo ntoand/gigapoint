@@ -1,0 +1,14 @@
+{
+	"dataDir": "century",
+	"visiblePointTarget": 20000000,
+	"minNodePixelSize": 100,
+	"moveToCentre": 1,
+	"screenHeight": 3072,
+	"meterial": "rgb",
+	"pointSize": 1,
+	"sizeType": "fixed",
+	"quality": "square",
+	"cameraSpeed": 10,
+	"numReadThread": 2,
+	"maxNodeInMem": 10000
+}

@@ -196,6 +196,7 @@ int Utils::loadOption(const string filename, Option& option) {
 
         option.cameraSpeed = cJSON_GetObjectItem(json, "cameraSpeed")->valueint;
         option.numReadThread = cJSON_GetObjectItem(json, "numReadThread")->valueint;
+        option.maxNodeInMem = cJSON_GetObjectItem(json, "maxNodeInMem")->valueint;  
     }
 
     cJSON_Delete(json);
@@ -216,6 +217,7 @@ void Utils::printOption(const Option& option) {
     cout << "quality: " << option.quality << endl;
     cout << "cameraSpeed: " << option.cameraSpeed << endl;
     cout << "numReadThread: " << option.numReadThread << endl;
+    cout << "maxNodeInMem: " << option.maxNodeInMem << endl;
 }
 
 // PC Loader

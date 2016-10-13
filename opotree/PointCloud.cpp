@@ -105,6 +105,8 @@ PointCloud::PointCloud(string cfgfile) {
 	        sNodeLoaderThread.push_back(t);;
 	    }
     }
+
+    lrucache = new LRUCache(option.maxNodeInMem);
 }
 
 PointCloud::~PointCloud() {
@@ -150,6 +152,7 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 		}
 
 		displayList.push_back(node);
+		lrucache->insert(node->getName(), node);
 		
 		// add children to priority_queue
 		for(int i=0; i < 8; i++) {
@@ -174,7 +177,8 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 		}
 
     }
-/*
+
+    /*
     if(displayList.size() != preDisplayListSize) {
     	preDisplayListSize = displayList.size();
     	cout << "# vis nodes: " << displayList.size() << " # points: " << numVisiblePoints << endl;
@@ -185,8 +189,10 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 			node->printInfo();
 		}
 		cout << endl;
+		lrucache->dumpDebug();
     }
-*/
+    */
+
     return 0;
 }
 

@@ -27,7 +27,7 @@ private:
 	string name;
 	int index;
 	float bbox[6];
-	float tightbbox[6];
+	//float tightbbox[6];
 	float spherecentre[3];
 	float sphereradius;
 	int numpoints;
@@ -93,6 +93,8 @@ public:
 	void printInfo();
 	int initVBO();
 	void draw(Shader* sh);
+
+	void freeData();
 };
 
 #endif
