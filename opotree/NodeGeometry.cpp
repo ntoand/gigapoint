@@ -286,12 +286,15 @@ int NodeGeometry::initVBO() {
     return 0;
 }
 
-void NodeGeometry::draw(Shader* shader) {
+void NodeGeometry::draw(Material* material) {
 	if(!loaded)
 		return;
 
 	if(!initvbo)
 		initVBO();
+
+	Shader* shader = material->getShader();
+	material->bind();
 
     unsigned int attribute_vertex_pos = shader->attribute("VertexPosition");
     glEnableVertexAttribArray(attribute_vertex_pos);  // Vertex position
@@ -316,6 +319,13 @@ void NodeGeometry::draw(Shader* shader) {
         0,                 // no extra data between each position
         0                  // offset of first element
     );
+
+    shader->transmitUniform("uScreenHeight", (float)material->getScreenHeight());
+    shader->transmitUniform("uSpacing", (float)info->spacing);
+    shader->transmitUniform("uPointSize", (float)material->getPointSize());
+    shader->transmitUniform("uMinPointSize", 1.0f);
+    shader->transmitUniform("uMaxPointSize", 10.0f);
+    //shader->transmitUniform("uFOV", 0.785); // 45 degree
 
 	glDrawArrays(GL_POINTS, 0, vertices.size()/3);
 }

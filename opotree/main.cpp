@@ -57,7 +57,7 @@ void OPotreeRenderPass::initialize()
 	pointcloud = new PointCloud("opotree.json");
 	
 	//graphics
-	//glEnable(GL_POINT_SPRITE);
+	glEnable(GL_POINT_SPRITE);
 	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 }
 
