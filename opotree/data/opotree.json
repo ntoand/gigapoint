@@ -1,11 +1,11 @@
 {
-	"dataDir": "century_hres",
+	"dataDir": "century",
 	"visiblePointTarget": 5000000,
 	"minNodePixelSize": 100,
 	"moveToCentre": 1,
 	"screenHeight": 600,
 	"meterial": "rgb",
-	"pointSize": 1,
+	"pointSize": 4,
 	"sizeType": "fixed",
 	"quality": "square",
 	"cameraSpeed": 100,

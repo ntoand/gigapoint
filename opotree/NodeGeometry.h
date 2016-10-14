@@ -2,7 +2,7 @@
 #define _NODE_GEOMETRY_H_
 
 #include "Utils.h"
-#include "Shader.h"
+#include "Material.h"
 
 #include <string>
 #include <vector>
@@ -92,7 +92,7 @@ public:
 	int loadData();
 	void printInfo();
 	int initVBO();
-	void draw(Shader* sh);
+	void draw(Material* material);
 
 	void freeData();
 };

@@ -72,11 +72,22 @@ PointCloud::PointCloud(string cfgfile) {
 	attributes.clear(); uniforms.clear();
 	attributes.push_back("VertexPosition");
 	attributes.push_back("VertexColor");
-	uniforms.push_back("MVP");
-	Shader* shader = new Shader("simple");
-	shader->load("shaders/simple", attributes, uniforms);
+
+	uniforms.push_back("uScreenHeight");
+	uniforms.push_back("uSpacing");
+	uniforms.push_back("uPointSize");
+	uniforms.push_back("uMinPointSize");
+	uniforms.push_back("uMaxPointSize");
+
+	Shader* shader = new Shader("point");
+	shader->load("shaders/point", attributes, uniforms);
 
 	material = new Material(shader);
+	material->setPointSize(option.pointSize);
+	material->setMaterial(option.material);
+	material->setSizeType(option.sizeType);
+	material->setQuality(option.quality);
+	material->setScreenHeight(option.screenHeight);
 
 	// root node
 	string name = "r";
@@ -198,12 +209,8 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 
 void PointCloud::draw(const float MVP[16]) {
 
-	Shader* shader = material->getShader();
-	shader->bind();
-    shader->transmitUniform("MVP", MVP);
-
 	for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
 		NodeGeometry* node = *it;
-		node->draw(shader);
+		node->draw(material);
 	}
 }
