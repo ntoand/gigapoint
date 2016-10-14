@@ -166,7 +166,7 @@ int Utils::loadOption(const string filename, Option& option) {
         option.screenHeight = cJSON_GetObjectItem(json, "screenHeight")->valueint;
         option.moveToCentre = cJSON_GetObjectItem(json, "moveToCentre")->valueint > 0;
 
-        string tmp = cJSON_GetObjectItem(json, "meterial")->valuestring;
+        string tmp = cJSON_GetObjectItem(json, "material")->valuestring;
         if (tmp.compare("rgb") == 0)
             option.material = MATERIAL_RGB;
         else if (tmp.compare("elevation") == 0)

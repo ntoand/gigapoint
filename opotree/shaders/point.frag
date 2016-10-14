@@ -1,7 +1,7 @@
 #version 120
 
-//#define SQUARE_POINT_SHAPE
-#define CIRCLE_POINT_SHAPE
+#define SQUARE_POINT_SHAPE
+//#define CIRCLE_POINT_SHAPE
 
 varying vec3 vViewPosition;
 varying vec3 vWorldPosition;
