@@ -4,7 +4,7 @@
 	"minNodePixelSize": 100,
 	"moveToCentre": 1,
 	"screenHeight": 600,
-	"meterial": "rgb",
+	"material": "rgb",
 	"pointSize": 4,
 	"sizeType": "fixed",
 	"quality": "square",

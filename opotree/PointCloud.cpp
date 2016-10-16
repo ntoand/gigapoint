@@ -6,48 +6,34 @@
 using namespace std;
 using namespace omicron;
 
-Lock sNodeQueueLock;
-bool sShutdownLoaderThread = false;
+mutex nodeMutex;
+list<thread*> PointCloud::sNodeLoaderThread;
 int PointCloud::sNumLoaderThreads = 1;
-list<Thread*> PointCloud::sNodeLoaderThread;
+
+bool sShutdownLoaderThread = false;
 list<NodeGeometry*> sNodeQueue;
 
-class NodeLoaderThread: public Thread
-{
-public:
-    NodeLoaderThread()
-    {}
-
-    virtual void threadProc()
-    {
-        cout << "NodeLoaderThread: start" << endl;
-
-        while(!sShutdownLoaderThread)
-        {
-          	if(sNodeQueue.size() > 0)
-          	{
-          		sNodeQueueLock.lock();
-          		if(sNodeQueue.size() > 0)
-                {
-                	NodeGeometry* node = sNodeQueue.front();
-                    sNodeQueue.pop_front();
-                    sNodeQueueLock.unlock();
-                    //cout << "queue size: " << sNodeQueue.size() << endl;
-                    node->loadData();
-                    node->setInQueue(false);
-                }
-                else
-                {
-                	sNodeQueueLock.unlock();
-                }
-
-          	}
-            osleep(1);
-        }
-        cout << "NodeLoaderThread: shutdown" << endl;
-    }
-};
-
+void nodeLoadThread(void * arg) {
+	cout << "nodeLoadThread: start" << endl;
+	while(!sShutdownLoaderThread) {
+		if(sNodeQueue.size() > 0) {
+			nodeMutex.lock();
+			if(sNodeQueue.size() > 0) {
+				NodeGeometry* node = sNodeQueue.front();
+                sNodeQueue.pop_front();
+				nodeMutex.unlock();
+				node->loadData();
+                node->setInQueue(false);
+                //cout << "size: " << sNodeQueue.size() << endl;
+			}
+			else {
+				nodeMutex.unlock();
+			}
+		}
+		osleep(1);
+	}
+	cout << "NodeLoaderThread: shutdown" << endl;
+}
 
 PointCloud::PointCloud(string cfgfile) {
 
@@ -107,13 +93,10 @@ PointCloud::PointCloud(string cfgfile) {
 	sNumLoaderThreads = option.numReadThread;
 
 	// reading threads
-	if(sNodeLoaderThread.size() == 0)
-    {
-    	for(int i = 0; i < sNumLoaderThreads; i++)
-	    {
-	        Thread* t = new NodeLoaderThread();
-	     	t->start();
-	        sNodeLoaderThread.push_back(t);;
+	if(sNodeLoaderThread.size() == 0) {
+    	for(int i = 0; i < sNumLoaderThreads; i++) {
+	    	thread * t = new thread(nodeLoadThread, 0);
+    		sNodeLoaderThread.push_back(t);
 	    }
     }
 
@@ -125,12 +108,22 @@ PointCloud::~PointCloud() {
 	if(pcinfo)
 		delete pcinfo;
 
+	for(list<thread*>::iterator it = sNodeLoaderThread.begin(); it != sNodeLoaderThread.end(); it++) {
+		thread* t = *it;
+		t->join();
+	}
+
 	sShutdownLoaderThread = true;
 }
 
 int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 	float V[6][4];
     Utils::getFrustum(V, MVP);
+
+    if(sNodeQueue.size() > 200) {
+    	osleep(1);
+    	return 0;
+    }
 
     priority_queue<NodeWeight> priority_queue;
 
@@ -155,11 +148,11 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 		node->loadHierachy();
 
 		// add to load queue
-		if(!node->inQueue() && !node->isLoaded()) {
+		if(!node->inQueue() && node->canAddToQueue()) {
+			nodeMutex.lock();
 			node->setInQueue(true);
-			sNodeQueueLock.lock();
 			sNodeQueue.push_back(node);
-			sNodeQueueLock.unlock();
+			nodeMutex.unlock();
 		}
 
 		displayList.push_back(node);

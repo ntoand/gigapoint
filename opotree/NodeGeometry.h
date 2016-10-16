@@ -35,6 +35,7 @@ private:
 
 	bool hierachyloaded;
 	bool inqueue;
+	bool loading;
 	bool loaded;
 	bool initvbo;
 	bool visible;
@@ -69,6 +70,7 @@ public:
 	float getSphereRadius() { return sphereradius; }
 	void setInQueue(bool b) { inqueue = b; }
 	float inQueue() { return inqueue; }
+	bool canAddToQueue() { return (!loading && !loaded); }
 
 	void setInfo(PCInfo* in) { info = in; }
 	PCInfo* getInfo() { return info; }

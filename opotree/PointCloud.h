@@ -4,11 +4,12 @@
 #include <vector>
 #include <list>
 
-#include <omicron/Thread.h>
-
 #include "NodeGeometry.h"
 #include "Material.h"
 #include "LRU.h"
+#include "tinythread.h"
+
+using namespace tthread;
 
 struct NodeWeight {
 	NodeGeometry* node;
@@ -36,7 +37,7 @@ private:
 	int numVisibleNodes;
 	unsigned int numVisiblePoints;
 
-	static list<omicron::Thread*> sNodeLoaderThread;
+	static list<thread*> sNodeLoaderThread;
 	static int sNumLoaderThreads;
 
 	LRUCache* lrucache;

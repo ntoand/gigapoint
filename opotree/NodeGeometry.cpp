@@ -14,7 +14,7 @@ using namespace omega;
 NodeGeometry::NodeGeometry(string _name): numpoints(0), level(-1), parent(NULL), index(-1),
 										  loaded(false), initvbo(false), haschildren(false),
 										  hierachyloaded(false), inqueue(false),
-										  vertexbuffer(-1), colorbuffer(-1) {
+										  vertexbuffer(-1), colorbuffer(-1), loading(false) {
 	name = _name;
 	//tightbbox[0] = tightbbox[1] = tightbbox[2] = FLT_MAX;
 	//tightbbox[3] = tightbbox[4] = tightbbox[5] = FLT_MIN;
@@ -184,6 +184,8 @@ int NodeGeometry::loadData() {
 	
 	assert(info);
 
+	loading = true;
+
 	string filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".bin";
 	//cout << "Load file: " << filename << endl;
 	datafile = filename;
@@ -235,6 +237,7 @@ int NodeGeometry::loadData() {
 
 	reader.close();
 
+	loading = false;
 	loaded = true;
 
 	return 0;
