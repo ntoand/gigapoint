@@ -1,11 +1,11 @@
 {
 	"dataDir": "/data/fast/toand/potree/century_hres",
-	"visiblePointTarget": 10000000,
+	"visiblePointTarget": 20000000,
 	"minNodePixelSize": 100,
 	"moveToCentre": 1,
 	"screenHeight": 3072,
 	"material": "rgb",
-	"pointSize": 6,
+	"pointSize": 5,
 	"sizeType": "fixed",
 	"quality": "square",
 	"cameraSpeed": 10,
