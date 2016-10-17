@@ -1,7 +1,7 @@
 #version 120
 
-#define SQUARE_POINT_SHAPE
-//#define CIRCLE_POINT_SHAPE
+//#define SQUARE_POINT_SHAPE
+#define CIRCLE_POINT_SHAPE
 
 varying vec3 vViewPosition;
 varying vec3 vWorldPosition;
@@ -20,8 +20,6 @@ void main() {
    	float r = dot(cxy, cxy);
    	if (r > 1.0) 
    		discard;
-
-
 
     gl_FragColor = vec4(vColor, 1.0);  	
 }

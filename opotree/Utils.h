@@ -41,16 +41,19 @@ using std::vector;
 typedef struct Option_t {
 	string dataDir;
 	unsigned int visiblePointTarget;
-	int minNodePixelSize;
-	int screenHeight;
+	float minNodePixelSize;
+	float screenHeight;
 	bool moveToCentre;
 	int material;
-	int pointSize;
+	float pointSize;
 	int sizeType;
 	int quality;
-	float cameraSpeed;
 	int numReadThread;
 	int maxNodeInMem;
+	float cameraSpeed;
+	bool cameraUpdatePosOri;
+	float cameraPosition[3];
+	float cameraOrientation[4];
 } Option;
 
 typedef struct PCInfo_t {

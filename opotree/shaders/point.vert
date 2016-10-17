@@ -35,22 +35,15 @@ void main()
     //size
     float pointSize = 1.0;
     float projFactor = 2.41; //1.0 / tan(uFOV / 2.0);
-    projFactor /= vViewPosition.z;
+    projFactor /= length(mvPosition);
     projFactor *= uScreenHeight / 2.0;
 	float r = uSpacing * 1.5;
 	vRadius = r;
 
-	#if defined FIXED_POINT_SIZE
-		pointSize = uPointSize;
-	#elif defined ATTENUATED_POINT_SIZE
-		pointSize = uPointSize * projFactor;
-	#elif defined ADAPTIVE_POINT_SIZE
-		//float worldSpaceSize = size * r / getPointSizeAttenuation();
-		//pointSize = worldSpaceSize * projFactor;
-	#endif
+	pointSize = uPointSize * projFactor;
 
 	pointSize = max(uMinPointSize, pointSize);
-	pointSize = min(uMaxPointSize, pointSize);
+	//pointSize = min(uMaxPointSize, pointSize);
 
 	vRadius = pointSize / projFactor;
 	gl_PointSize = pointSize;

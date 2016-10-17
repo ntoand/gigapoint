@@ -163,7 +163,7 @@ int Utils::loadOption(const string filename, Option& option) {
         option.dataDir.append("/");
         option.visiblePointTarget = cJSON_GetObjectItem(json, "visiblePointTarget")->valuedouble;
         option.minNodePixelSize = cJSON_GetObjectItem(json, "minNodePixelSize")->valuedouble;
-        option.screenHeight = cJSON_GetObjectItem(json, "screenHeight")->valueint;
+        option.screenHeight = cJSON_GetObjectItem(json, "screenHeight")->valuedouble;
         option.moveToCentre = cJSON_GetObjectItem(json, "moveToCentre")->valueint > 0;
 
         string tmp = cJSON_GetObjectItem(json, "material")->valuestring;
@@ -176,7 +176,7 @@ int Utils::loadOption(const string filename, Option& option) {
         else
             option.material = MATERIAL_RGB;
 
-        option.pointSize = cJSON_GetObjectItem(json, "pointSize")->valueint;
+        option.pointSize = cJSON_GetObjectItem(json, "pointSize")->valuedouble;
 
         tmp = cJSON_GetObjectItem(json, "sizeType")->valuestring;
         if (tmp.compare("fixed") == 0)
@@ -194,9 +194,23 @@ int Utils::loadOption(const string filename, Option& option) {
         else
             option.quality = QUALITY_SQUARE;
 
-        option.cameraSpeed = cJSON_GetObjectItem(json, "cameraSpeed")->valueint;
         option.numReadThread = cJSON_GetObjectItem(json, "numReadThread")->valueint;
         option.maxNodeInMem = cJSON_GetObjectItem(json, "maxNodeInMem")->valueint;  
+        option.cameraSpeed = cJSON_GetObjectItem(json, "cameraSpeed")->valueint;
+
+        option.cameraUpdatePosOri = cJSON_GetObjectItem(json, "cameraUpdatePosOri")->valueint > 0;
+        if(option.cameraUpdatePosOri) {
+            cJSON* campos = cJSON_GetObjectItem(json, "cameraPosition");
+            option.cameraPosition[0] = cJSON_GetArrayItem(campos, 0)->valuedouble;
+            option.cameraPosition[1] = cJSON_GetArrayItem(campos, 1)->valuedouble;
+            option.cameraPosition[2] = cJSON_GetArrayItem(campos, 2)->valuedouble;
+
+            cJSON* camori = cJSON_GetObjectItem(json, "cameraOrientation");
+            option.cameraOrientation[0] = cJSON_GetArrayItem(camori, 0)->valuedouble;
+            option.cameraOrientation[1] = cJSON_GetArrayItem(camori, 1)->valuedouble;
+            option.cameraOrientation[2] = cJSON_GetArrayItem(camori, 2)->valuedouble;
+            option.cameraOrientation[3] = cJSON_GetArrayItem(camori, 3)->valuedouble;
+        }
     }
 
     cJSON_Delete(json);
@@ -218,6 +232,17 @@ void Utils::printOption(const Option& option) {
     cout << "cameraSpeed: " << option.cameraSpeed << endl;
     cout << "numReadThread: " << option.numReadThread << endl;
     cout << "maxNodeInMem: " << option.maxNodeInMem << endl;
+    cout << "cameraUpdatePosOri" << option.cameraUpdatePosOri << endl;
+    if(option.cameraUpdatePosOri) {
+        cout << "cameraPosition: ";
+        for(int i=0; i < 3; i++)
+            cout << option.cameraPosition[i] << " ";
+        cout << endl;
+        cout << "cameraOrientation: ";
+        for(int i=0; i < 4; i++)
+            cout << option.cameraOrientation[i] << " ";
+        cout << endl;
+    }
 }
 
 // PC Loader

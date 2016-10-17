@@ -27,6 +27,8 @@ struct NodeWeight {
 
 class PointCloud {
 private:
+	bool master;
+	
 	PCInfo* pcinfo;
 	Material* material;
 	NodeGeometry* root;
@@ -43,7 +45,7 @@ private:
 	LRUCache* lrucache;
 
 public:
-	PointCloud(string cfgfile);
+	PointCloud(string cfgfile, bool master = false);
 	~PointCloud();
 
 	int updateVisibility(const float MVP[16], const float campos[3]);

@@ -35,14 +35,15 @@ void nodeLoadThread(void * arg) {
 	cout << "NodeLoaderThread: shutdown" << endl;
 }
 
-PointCloud::PointCloud(string cfgfile) {
+PointCloud::PointCloud(string cfgfile, bool mas): master(mas) {
 
 	// Option
 	if(Utils::loadOption(cfgfile, option) != 0){
 		cout << "Error: cannot load option " << endl;
 		return;
 	}
-	Utils::printOption(option);
+	if(master)
+		Utils::printOption(option);
 
 	// PC Info
 	pcinfo = new PCInfo();
@@ -50,7 +51,8 @@ PointCloud::PointCloud(string cfgfile) {
 		cout << "Error: cannot load pc info" << endl;
 		return;
 	}
-	Utils::printPCInfo(pcinfo);
+	if(master)
+		Utils::printPCInfo(pcinfo);
 
 	// Shader + material
 	list<string> attributes;
@@ -62,6 +64,7 @@ PointCloud::PointCloud(string cfgfile) {
 	uniforms.push_back("uScreenHeight");
 	uniforms.push_back("uSpacing");
 	uniforms.push_back("uPointSize");
+	uniforms.push_back("uPointScale");
 	uniforms.push_back("uMinPointSize");
 	uniforms.push_back("uMaxPointSize");
 
