@@ -19,14 +19,12 @@ void nodeLoadThread(void * arg) {
 		if(sNodeQueue.size() > 0) {
 			nodeMutex.lock();
 			if(sNodeQueue.size() > 0) {
-				//NodeGeometry* node = sNodeQueue.front();
-                //sNodeQueue.pop_front();
-                NodeGeometry* node = sNodeQueue.back();
-                sNodeQueue.pop_back();
+				NodeGeometry* node = sNodeQueue.front();
+                sNodeQueue.pop_front();
                 nodeMutex.unlock();
 				node->loadData();
 				node->setInQueue(false);
-                cout << "size: " << sNodeQueue.size() << endl;
+                //cout << "size: " << sNodeQueue.size() << endl;
 			}
 			else {
 				nodeMutex.unlock();
@@ -124,12 +122,12 @@ PointCloud::~PointCloud() {
 int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 	float V[6][4];
     Utils::getFrustum(V, MVP);
-
+	/*
     if(sNodeQueue.size() > 200) {
     	osleep(1);
     	return 0;
     }
-
+	*/
     priority_queue<NodeWeight> priority_queue;
 
     priority_queue.push(NodeWeight(root, 1));
