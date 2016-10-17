@@ -1,5 +1,5 @@
 {
-	"dataDir": "century",
+	"dataDir": "century_hres",
 	"visiblePointTarget": 5000000,
 	"minNodePixelSize": 100,
 	"moveToCentre": 1,
@@ -11,7 +11,7 @@
 	"numReadThread": 2,
 	"maxNodeInMem": 10000,
 	"cameraSpeed": 100,
-	"cameraUpdatePosOri": 1,
+	"cameraUpdatePosOri": 0,
 	"cameraPosition": [-66.8498, -121.083, -107.495],
 	"cameraOrientation": [0.878953, 0.467479, 0.0833162, -0.0443124]
 }

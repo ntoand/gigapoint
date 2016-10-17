@@ -19,12 +19,14 @@ void nodeLoadThread(void * arg) {
 		if(sNodeQueue.size() > 0) {
 			nodeMutex.lock();
 			if(sNodeQueue.size() > 0) {
-				NodeGeometry* node = sNodeQueue.front();
-                sNodeQueue.pop_front();
-				nodeMutex.unlock();
+				//NodeGeometry* node = sNodeQueue.front();
+                //sNodeQueue.pop_front();
+                NodeGeometry* node = sNodeQueue.back();
+                sNodeQueue.pop_back();
+                nodeMutex.unlock();
 				node->loadData();
-                node->setInQueue(false);
-                //cout << "size: " << sNodeQueue.size() << endl;
+				node->setInQueue(false);
+                cout << "size: " << sNodeQueue.size() << endl;
 			}
 			else {
 				nodeMutex.unlock();

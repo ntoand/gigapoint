@@ -290,7 +290,7 @@ int NodeGeometry::initVBO() {
 }
 
 void NodeGeometry::draw(Material* material) {
-	if(!loaded)
+	if(loading || !loaded)
 		return;
 
 	if(!initvbo)
