@@ -5,13 +5,13 @@
 	"moveToCentre": 1,
 	"screenHeight": 3072,
 	"material": "rgb",
-	"pointSize": 0.5,
+	"pointSize": 0.15,
 	"sizeType": "fixed",
 	"quality": "square",
 	"numReadThread": 4,
-	"maxNodeInMem": 100000,
+	"maxNodeInMem": 500000,
 	"cameraSpeed": 10,
-	"cameraUpdatePosOri": 0,
-	"cameraPosition": [-66.8498, -121.083, -107.495],
-	"cameraOrientation": [0.878953, 0.467479, 0.0833162, -0.0443124]
+	"cameraUpdatePosOri": 1,
+	"cameraPosition": [8.1173, -388.287, -424.887],
+	"cameraOrientation": [0.713179, 0.686123, -0.102032, -0.100993]
 }
