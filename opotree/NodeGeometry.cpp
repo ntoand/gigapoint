@@ -238,7 +238,8 @@ int NodeGeometry::loadData() {
 	reader.close();
 
 	loading = false;
-	loaded = true;
+	if(vertices.size() > 0)
+		loaded = true;
 
 	return 0;
 }
