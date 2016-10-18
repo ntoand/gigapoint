@@ -1,12 +1,13 @@
 #include "PointCloud.h"
 #include "Utils.h"
+#include "fast_mutex.h"
 
 #include <iostream>
 
 using namespace std;
 using namespace omicron;
 
-mutex nodeMutex;
+fast_mutex nodeMutex;
 list<thread*> PointCloud::sNodeLoaderThread;
 int PointCloud::sNumLoaderThreads = 1;
 
@@ -135,6 +136,8 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
     numVisibleNodes = 0;
     numVisiblePoints = 0;
 
+    unsigned int start_time = Utils::getTime();
+
     while(priority_queue.size() > 0){
     	NodeGeometry* node = priority_queue.top().node;
     	priority_queue.pop();
@@ -160,6 +163,9 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 
 		displayList.push_back(node);
 		lrucache->insert(node->getName(), node);
+
+		if(Utils::getTime() - start_time > 50)
+			return 0;
 		
 		// add children to priority_queue
 		for(int i=0; i < 8; i++) {
@@ -203,7 +209,7 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
     return 0;
 }
 
-void PointCloud::draw(const float MVP[16]) {
+void PointCloud::draw() {
 
 	for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
 		NodeGeometry* node = *it;

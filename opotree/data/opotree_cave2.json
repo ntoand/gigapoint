@@ -8,7 +8,7 @@
 	"pointSize": 0.15,
 	"sizeType": "fixed",
 	"quality": "square",
-	"numReadThread": 1,
+	"numReadThread": 4,
 	"maxNodeInMem": 400000,
 	"cameraSpeed": 10,
 	"cameraUpdatePosOri": 1,

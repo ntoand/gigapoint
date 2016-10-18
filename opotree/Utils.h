@@ -73,6 +73,8 @@ typedef struct PCInfo_t {
 class Utils {
 
 public:
+	static unsigned int getTime();
+
 	static int testPlane(const float V[4], const float b[6]);
 	static int testFrustum(float V[6][4], const float b[6]);
 	static void getFrustum(float V[6][4], const float X[16]);

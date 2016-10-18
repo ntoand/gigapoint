@@ -6,8 +6,16 @@
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
+#include <sys/time.h>
 
 using namespace std;
+
+unsigned int Utils::getTime() {
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
+    return (tp.tv_sec * 1000 + tp.tv_usec / 1000);
+}
+
 
 int Utils::testPlane( const float V[4], const float b[6])
 {

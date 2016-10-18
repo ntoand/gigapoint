@@ -49,7 +49,7 @@ public:
 	~PointCloud();
 
 	int updateVisibility(const float MVP[16], const float campos[3]);
-	void draw(const float MVP[16]);
+	void draw();
 };
 
 #endif

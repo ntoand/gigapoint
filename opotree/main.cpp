@@ -106,7 +106,7 @@ void OPotreeRenderPass::render(Renderer* client, const DrawContext& context)
 
 		float* MVP = (context.projection*context.modelview).cast<float>().data();
 		pointcloud->updateVisibility(MVP, campos);
-		pointcloud->draw(MVP);
+		pointcloud->draw();
 
 		framecount++;
 		if(framecount > 500) {
