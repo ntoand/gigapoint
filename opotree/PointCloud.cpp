@@ -95,15 +95,14 @@ PointCloud::PointCloud(string cfgfile, bool mas): master(mas) {
 	preDisplayListSize = 0;
 
 	sNumLoaderThreads = option.numReadThread;
-
 	// reading threads
 	if(sNodeLoaderThread.size() == 0) {
     	for(int i = 0; i < sNumLoaderThreads; i++) {
 	    	thread * t = new thread(nodeLoadThread, 0);
     		sNodeLoaderThread.push_back(t);
 	    }
+	
     }
-
     lrucache = new LRUCache(option.maxNodeInMem);
 
     preloadUpToLevel(option.preloadToLevel);
@@ -113,13 +112,11 @@ PointCloud::~PointCloud() {
 	// desktroy tree
 	if(pcinfo)
 		delete pcinfo;
-
+	sShutdownLoaderThread = true;
 	for(list<thread*>::iterator it = sNodeLoaderThread.begin(); it != sNodeLoaderThread.end(); it++) {
 		thread* t = *it;
 		t->join();
 	}
-
-	sShutdownLoaderThread = true;
 }
 
 int PointCloud::preloadUpToLevel(const int level) {
@@ -143,14 +140,7 @@ int PointCloud::preloadUpToLevel(const int level) {
     		continue;
 
 		node->loadHierachy();
-
-		// add to load queue
-		if(!node->inQueue() && node->canAddToQueue()) {
-			nodeMutex.lock();
-			node->setInQueue(true);
-			sNodeQueue.push_back(node);
-			nodeMutex.unlock();
-		}
+		node->loadData();
 		lrucache->insert(node->getName(), node);
 
 		if(node->getLevel() >= level)
@@ -206,7 +196,7 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 		displayList.push_back(node);
 		lrucache->insert(node->getName(), node);
 
-		if(Utils::getTime() - start_time > 100)
+		if(Utils::getTime() - start_time > 150)
 			return 0;
 		
 		// add children to priority_queue
