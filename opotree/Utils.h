@@ -49,6 +49,7 @@ typedef struct Option_t {
 	int sizeType;
 	int quality;
 	int numReadThread;
+	int preloadToLevel;
 	int maxNodeInMem;
 	float cameraSpeed;
 	bool cameraUpdatePosOri;

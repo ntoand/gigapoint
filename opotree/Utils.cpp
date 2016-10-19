@@ -203,6 +203,7 @@ int Utils::loadOption(const string filename, Option& option) {
             option.quality = QUALITY_SQUARE;
 
         option.numReadThread = cJSON_GetObjectItem(json, "numReadThread")->valueint;
+        option.preloadToLevel = cJSON_GetObjectItem(json, "preloadToLevel")->valueint;
         option.maxNodeInMem = cJSON_GetObjectItem(json, "maxNodeInMem")->valueint;  
         option.cameraSpeed = cJSON_GetObjectItem(json, "cameraSpeed")->valueint;
 
@@ -239,6 +240,7 @@ void Utils::printOption(const Option& option) {
     cout << "quality: " << option.quality << endl;
     cout << "cameraSpeed: " << option.cameraSpeed << endl;
     cout << "numReadThread: " << option.numReadThread << endl;
+    cout << "preloadToLevel: " << option.preloadToLevel << endl;
     cout << "maxNodeInMem: " << option.maxNodeInMem << endl;
     cout << "cameraUpdatePosOri" << option.cameraUpdatePosOri << endl;
     if(option.cameraUpdatePosOri) {

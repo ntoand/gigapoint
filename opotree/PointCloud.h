@@ -48,6 +48,7 @@ public:
 	PointCloud(string cfgfile, bool master = false);
 	~PointCloud();
 
+	int preloadUpToLevel(const int level=0);
 	int updateVisibility(const float MVP[16], const float campos[3]);
 	void draw();
 };

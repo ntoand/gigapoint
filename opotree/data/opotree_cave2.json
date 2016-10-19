@@ -1,5 +1,5 @@
 {
-	"dataDir": "/data/fast/toand/potree/century_hres",
+	"dataDir": "/scratch/potree/century_hres",
 	"visiblePointTarget": 20000000,
 	"minNodePixelSize": 100,
 	"moveToCentre": 1,
@@ -9,7 +9,8 @@
 	"sizeType": "fixed",
 	"quality": "square",
 	"numReadThread": 4,
-	"maxNodeInMem": 400000,
+	"preloadToLevel": 7,
+	"maxNodeInMem": 50000,
 	"cameraSpeed": 10,
 	"cameraUpdatePosOri": 1,
 	"cameraPosition": [8.1173, -388.287, -424.887],

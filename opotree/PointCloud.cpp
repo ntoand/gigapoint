@@ -105,6 +105,8 @@ PointCloud::PointCloud(string cfgfile, bool mas): master(mas) {
     }
 
     lrucache = new LRUCache(option.maxNodeInMem);
+
+    preloadUpToLevel(option.preloadToLevel);
 }
 
 PointCloud::~PointCloud() {
@@ -120,15 +122,55 @@ PointCloud::~PointCloud() {
 	sShutdownLoaderThread = true;
 }
 
+int PointCloud::preloadUpToLevel(const int level) {
+	priority_queue<NodeWeight> priority_queue;
+	priority_queue.push(NodeWeight(root, 1));
+
+	unsigned numloaded = 0;
+
+	cout << "Preload data to tree level " << level << " ..." << endl;
+
+	while(priority_queue.size() > 0) {
+
+		NodeGeometry* node = priority_queue.top().node;
+    	priority_queue.pop();
+		
+		bool canload = false;
+		if(numloaded + node->getNumPoints() < option.visiblePointTarget)
+    		canload = true;
+
+    	if(!canload)
+    		continue;
+
+		node->loadHierachy();
+
+		// add to load queue
+		if(!node->inQueue() && node->canAddToQueue()) {
+			nodeMutex.lock();
+			node->setInQueue(true);
+			sNodeQueue.push_back(node);
+			nodeMutex.unlock();
+		}
+		lrucache->insert(node->getName(), node);
+
+		if(node->getLevel() >= level)
+			continue;
+
+		for(int i=0; i < 8; i++) {
+			if(node->getChild(i) == NULL)
+				continue;
+			priority_queue.push(NodeWeight(node->getChild(i), 1.0/node->getChild(i)->getLevel()));
+		}
+
+	}
+
+	return 0;
+}
+
 int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 	float V[6][4];
     Utils::getFrustum(V, MVP);
-	/*
-    if(sNodeQueue.size() > 200) {
-    	osleep(1);
-    	return 0;
-    }
-	*/
+	
     priority_queue<NodeWeight> priority_queue;
 
     priority_queue.push(NodeWeight(root, 1));
@@ -164,7 +206,7 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 		displayList.push_back(node);
 		lrucache->insert(node->getName(), node);
 
-		if(Utils::getTime() - start_time > 50)
+		if(Utils::getTime() - start_time > 100)
 			return 0;
 		
 		// add children to priority_queue
@@ -190,21 +232,6 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 		}
 
     }
-
-    /*
-    if(displayList.size() != preDisplayListSize) {
-    	preDisplayListSize = displayList.size();
-    	cout << "# vis nodes: " << displayList.size() << " # points: " << numVisiblePoints << endl;
-    	cout << "nodes: " << endl;
-    	for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
-			NodeGeometry* node = *it;
-			//cout << node->getName() << " ";
-			node->printInfo();
-		}
-		cout << endl;
-		lrucache->dumpDebug();
-    }
-    */
 
     return 0;
 }
