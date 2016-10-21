@@ -2,10 +2,20 @@
 
 varying vec3 vcolor;
 
+//uniform vec3 lightDir = vec3(0.577, 0.577, 0.577);
+
 void main() {
-	vec2 cxy = gl_PointCoord * 2.0 - vec2(1.0);
-        float r = dot(cxy, cxy);
-        if (r > 1.4)
-                discard;
-  	gl_FragColor = vec4(vcolor, 1.0);
+  
+  	vec3 lightDir = vec3(0.577, 0.577, 0.577);
+
+  	vec3 N;
+    N.xy = gl_PointCoord* 2.0 - vec2(1.0);    
+    float mag = dot(N.xy, N.xy);
+    if (mag > 1.0) discard;   // kill pixels outside circle
+    N.z = sqrt(1.0-mag);
+
+    // calculate lighting
+    float diffuse = max(0.0, dot(lightDir, N));
+
+    gl_FragColor = vec4(vcolor, 1) * diffuse;
 }

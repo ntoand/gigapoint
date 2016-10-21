@@ -11,15 +11,16 @@ varying vec3 vColor;
 
 void main() {
 	
-//#if defined SQUARE_POINT_SHAPE
-//	gl_FragColor = vec4(vColor, 1.0);
-//	return;
-//#endif
+	vec3 lightDir = vec3(0.577, 0.577, 0.577);
 
-	vec2 cxy = gl_PointCoord * 2.0 - vec2(1.0);    
-   	float r = dot(cxy, cxy);
-   	if (r > 1.0)
-		discard;
- 		
-    gl_FragColor = vec4(vColor, 1.0);  	
+  	vec3 N;
+    N.xy = gl_PointCoord* 2.0 - vec2(1.0);    
+    float mag = dot(N.xy, N.xy);
+    if (mag > 1.0) discard;   // kill pixels outside circle
+    N.z = sqrt(1.0-mag);
+
+    // calculate lighting
+    float diffuse = max(0.0, dot(lightDir, N));
+
+    gl_FragColor = vec4(vColor, 1); // * diffuse;  	
 }

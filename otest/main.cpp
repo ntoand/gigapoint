@@ -5,7 +5,7 @@
 #include <list>
 #include <string>
 
-#include "Cube.h"
+#include "Points.h"
 
 using namespace omega;
 using namespace std;
@@ -18,7 +18,8 @@ public:
 	virtual void render(Renderer* client, const DrawContext& context);
 
 private:
-	Cube* cube;
+	Points* points;
+	int framecount;
 };
 
 class OPotreeApplication: public EngineModule
@@ -35,11 +36,12 @@ public:
 };
 
 void OPotreeApplication::initialize() {
-	/*
 	Camera* cam = getEngine()->getDefaultCamera();
-	cam->getController()->setSpeed(option.cameraSpeed);
 	cam->getController()->setFreeFlyEnabled(true);
-	*/
+	cam->setNearFarZ(0.1, 1000.0);
+
+	cam->setPosition(Vector3f(0.14951, -0.435601, 3.82368));
+	cam->setOrientation(Quaternion(0.981666, -0.179113, -0.0641332, -0.0117016));	
 }
 
 int main(int argc, char** argv)
@@ -54,11 +56,13 @@ void OPotreeRenderPass::initialize()
 	RenderPass::initialize();
 
 	// Initialize
-	cube = new Cube();
+	points = new Points();
 	
 	//graphics
-	//glEnable(GL_POINT_SPRITE);
+	glEnable(GL_POINT_SPRITE);
 	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+
+	framecount = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -77,7 +81,20 @@ void OPotreeRenderPass::render(Renderer* client, const DrawContext& context)
 	
 		// Test and draw
 		// get camera location in world coordinate
-		cube->draw();
+		points->draw();
+
+		
+		framecount++;
+		if(framecount > 500) {
+			if(SystemManager::instance()->isMaster()) {
+				Vector3f cp = context.camera->getPosition();
+				Quaternion q = context.camera->getOrientation();
+				cout << "Camara pos: " << cp[0] << " " << cp[1] << " " << cp[2] << " ";
+				cout << "orientation: " << q.w() << " " << q.x() << " " << q.y() << " " << q.z() << endl;
+			}
+			framecount = 0;
+		}   		
+
 		
 		if(oglError) return;
 		client->getRenderer()->endDraw();
