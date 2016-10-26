@@ -7,7 +7,8 @@
 #include "NodeGeometry.h"
 #include "Material.h"
 #include "LRU.h"
-#include "tinythread.h"
+#include "Thread.h"
+#include "wqueue.h"
 
 using namespace tthread;
 
@@ -25,6 +26,25 @@ struct NodeWeight {
     }
 };
 
+class NodeLoaderThread: public Thread {
+
+private:
+	wqueue<NodeGeometry*>& m_queue;
+
+public:
+	NodeLoaderThread(wqueue<NodeGeometry*>& queue) : m_queue(queue) {}
+
+	void* run() {
+        for (;;) {
+            NodeGeometry* node = (NodeGeometry*)m_queue.remove();
+            node->loadData();
+            //osleep(1);
+        }
+        return NULL;
+    }
+};
+
+
 class PointCloud {
 private:
 	bool master;
@@ -39,9 +59,12 @@ private:
 	int numVisibleNodes;
 	unsigned int numVisiblePoints;
 
-	static list<thread*> sNodeLoaderThread;
-	static int sNumLoaderThreads;
+	// loader threads
+	wqueue<NodeGeometry*>  nodeQueue;
+	list<NodeLoaderThread*> nodeLoaderThreads;
+	int numLoaderThread;
 
+	// cache 
 	LRUCache* lrucache;
 
 public:

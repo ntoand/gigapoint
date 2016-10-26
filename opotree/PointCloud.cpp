@@ -1,40 +1,10 @@
 #include "PointCloud.h"
 #include "Utils.h"
-#include "fast_mutex.h"
 
 #include <iostream>
 
 using namespace std;
 using namespace omicron;
-
-fast_mutex nodeMutex;
-list<thread*> PointCloud::sNodeLoaderThread;
-int PointCloud::sNumLoaderThreads = 1;
-
-bool sShutdownLoaderThread = false;
-list<NodeGeometry*> sNodeQueue;
-
-void nodeLoadThread(void * arg) {
-	cout << "nodeLoadThread: start" << endl;
-	while(!sShutdownLoaderThread) {
-		if(sNodeQueue.size() > 0) {
-			nodeMutex.lock();
-			if(sNodeQueue.size() > 0) {
-				NodeGeometry* node = sNodeQueue.front();
-                sNodeQueue.pop_front();
-                nodeMutex.unlock();
-				node->loadData();
-				node->setInQueue(false);
-                //cout << "size: " << sNodeQueue.size() << endl;
-			}
-			else {
-				nodeMutex.unlock();
-			}
-		}
-		osleep(1);
-	}
-	cout << "NodeLoaderThread: shutdown" << endl;
-}
 
 PointCloud::PointCloud(string cfgfile, bool mas): master(mas) {
 
@@ -94,12 +64,13 @@ PointCloud::PointCloud(string cfgfile, bool mas): master(mas) {
 
 	preDisplayListSize = 0;
 
-	sNumLoaderThreads = option.numReadThread;
+	numLoaderThread = option.numReadThread;
 	// reading threads
-	if(sNodeLoaderThread.size() == 0) {
-    	for(int i = 0; i < sNumLoaderThreads; i++) {
-	    	thread * t = new thread(nodeLoadThread, 0);
-    		sNodeLoaderThread.push_back(t);
+	if(nodeLoaderThreads.size() == 0) {
+    	for(int i = 0; i < numLoaderThread; i++) {
+    		NodeLoaderThread* t = new NodeLoaderThread(nodeQueue);
+    		t->start();
+    		nodeLoaderThreads.push_back(t);
 	    }
 	
     }
@@ -112,11 +83,6 @@ PointCloud::~PointCloud() {
 	// desktroy tree
 	if(pcinfo)
 		delete pcinfo;
-	sShutdownLoaderThread = true;
-	for(list<thread*>::iterator it = sNodeLoaderThread.begin(); it != sNodeLoaderThread.end(); it++) {
-		thread* t = *it;
-		t->join();
-	}
 }
 
 int PointCloud::preloadUpToLevel(const int level) {
@@ -187,12 +153,10 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 
 		// add to load queue
 		if(!node->inQueue() && node->canAddToQueue()) {
-			nodeMutex.lock();
 			node->setInQueue(true);
-			sNodeQueue.push_back(node);
-			nodeMutex.unlock();
+			nodeQueue.add(node);
 		}
-
+		
 		displayList.push_back(node);
 		lrucache->insert(node->getName(), node);
 

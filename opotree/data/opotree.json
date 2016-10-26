@@ -9,7 +9,7 @@
 	"sizeType": "fixed",
 	"quality": "square",
 	"numReadThread": 2,
-	"preloadToLevel": 5,
+	"preloadToLevel": 3,
 	"maxNodeInMem": 10000,
 	"cameraSpeed": 100,
 	"cameraUpdatePosOri": 0,

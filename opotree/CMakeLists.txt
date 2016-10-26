@@ -11,7 +11,7 @@ IF(${NO_GRAPHICS})
 ELSE()
 	find_package(Omegalib)
 	include_directories(${OMEGA_INCLUDE_DIRS})
-	add_executable(opotree main.cpp Utils.cpp Shader.cpp cJSON.cpp NodeGeometry.cpp Material.cpp PointCloud.cpp tinythread.cpp)
+	add_executable(opotree main.cpp Utils.cpp Shader.cpp cJSON.cpp NodeGeometry.cpp Material.cpp PointCloud.cpp Thread.cpp)
 	target_link_libraries(opotree ${OMEGA_LIB})
 
 ENDIF()
