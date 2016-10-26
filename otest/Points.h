@@ -17,7 +17,6 @@ private:
 	Shader* shader;
 
 	std::vector<float> vertices;
-	std::vector<float> colors;
 public:
 	Points();
 	~Points();
