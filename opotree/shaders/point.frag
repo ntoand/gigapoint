@@ -10,13 +10,13 @@ varying vec3 vColor;
 //varying float vRadius;
 
 void main() {
-	
+
 	vec3 lightDir = vec3(0.577, 0.577, 0.577);
 
   	vec3 N;
     N.xy = gl_PointCoord* 2.0 - vec2(1.0);    
     float mag = dot(N.xy, N.xy);
-    if (mag > 1.0) discard;   // kill pixels outside circle
+    //if (mag > 1.0) discard;   // kill pixels outside circle
     N.z = sqrt(1.0-mag);
 
     // calculate lighting
