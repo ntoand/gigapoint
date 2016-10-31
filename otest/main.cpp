@@ -74,9 +74,11 @@ void OPotreeRenderPass::render(Renderer* client, const DrawContext& context)
 		if(oglError) return;
 
 		// Enable depth testing and lighting.
-		glEnable(GL_DEPTH_TEST);
-		if(oglError) return;
+		//glEnable(GL_DEPTH_TEST);
+		//if(oglError) return;
 		glEnable(GL_LIGHTING);
+		if(oglError) return;
+		glEnable(GL_BLEND);
 		if(oglError) return;
 	
 		// Test and draw

@@ -14,16 +14,19 @@ Shader::~Shader()
     attributes.clear();
     uniforms.clear();
     delete [] vertex;
+    delete [] geom;
     delete [] fragment;
 }
 
 Shader& Shader::load(string shaderPrefix, list<string> attributes, list<string> uniforms)
 {;
     vertex = Utils::getFileContent(shaderPrefix+".vert");
+    geom = Utils::getFileContent(shaderPrefix+".geom");
     fragment = Utils::getFileContent(shaderPrefix+".frag");
     printf("Compile shader: %s\n", shaderPrefix.c_str());
 #ifdef PRINT_DEBUG
     printf("vertex shader:\n%s\n", vertex);
+    printf("geom shader:\n%s\n", geom);
     printf("fragment shader:\n%s\n", fragment);
 #endif
     setup();
@@ -34,7 +37,7 @@ Shader& Shader::load(string shaderPrefix, list<string> attributes, list<string> 
 
 Shader& Shader::setup()
 {
-    if (vertex == NULL || fragment == NULL)
+    if (vertex == NULL || geom == NULL || fragment == NULL)
     {
         printf("Error: Unable to load shader\n");
         exit(-1);
@@ -60,6 +63,21 @@ Shader& Shader::setup()
         exit(-1);
     }
     glAttachShader(pProgram, vshader);
+
+    unsigned int gshader = glCreateShader(GL_GEOMETRY_SHADER);
+    glShaderSource(gshader, 1, &geom, NULL);
+    glCompileShader(gshader);
+    glGetShaderiv(gshader, GL_COMPILE_STATUS, &status);
+    if(status != GL_TRUE)
+    {
+        glGetShaderiv(gshader, GL_INFO_LOG_LENGTH, &logSize);
+        log = new char[logSize - 1];
+        glGetShaderInfoLog(gshader, logSize, &logSize, log);
+        printf("Error: Unable to compile geometry shader\n %s", log);
+        delete log;
+        exit(-1);
+    }
+    glAttachShader(pProgram, gshader);
 
     unsigned int fshader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fshader, 1, &fragment, NULL);

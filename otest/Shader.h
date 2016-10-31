@@ -38,6 +38,7 @@ private:
     string name;
     unsigned int uid;
     const char* vertex;
+    const char* geom;
     const char* fragment;
 
     map<string, unsigned int> attributes;
