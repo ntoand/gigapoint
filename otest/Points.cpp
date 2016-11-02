@@ -23,8 +23,9 @@ Points::Points() {
 	attributes.clear(); uniforms.clear();
 	//attributes.push_back("VertexPosition");
 	//attributes.push_back("VertexColor");
-	shader = new Shader("sphere");
-	shader->load("shaders/sphere", attributes, uniforms);
+	shader = new Shader("points");
+	shader->load("shaders/simple", attributes, uniforms);
+	//shader->load("shaders/sphere", attributes, uniforms);
 }
 
 Points::~Points() {
@@ -35,7 +36,9 @@ void Points::draw() {
 
     shader->bind();
 
-    glDepthFunc(GL_LEQUAL);
+    glEnable(GL_BLEND);
+    glAlphaFunc(GL_GREATER, 0.1);
+	glEnable(GL_ALPHA_TEST);
 
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     glVertexPointer(3, GL_FLOAT, 3*sizeof(float), (GLvoid*)0);

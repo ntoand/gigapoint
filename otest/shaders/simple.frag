@@ -8,7 +8,8 @@ void main() {
     N.xy = gl_PointCoord* 2.0 - vec2(1.0);    
     float mag = dot(N.xy, N.xy);
     if (mag > 1.0) {
-    	gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+    	//gl_FragColor = gl_Color;
+      gl_FragColor.a = 0.0;
     	return;
      	//discard;   // kill pixels outside circle
     }
@@ -18,4 +19,5 @@ void main() {
     float diffuse = max(0.0, dot(lightDir, N));
 
     gl_FragColor = gl_Color; // * diffuse;
+    gl_FragColor.a = 1.0;
 }
