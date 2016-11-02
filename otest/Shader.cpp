@@ -21,7 +21,9 @@ Shader::~Shader()
 Shader& Shader::load(string shaderPrefix, list<string> attributes, list<string> uniforms)
 {;
     vertex = Utils::getFileContent(shaderPrefix+".vert");
-    //geom = Utils::getFileContent(shaderPrefix+".geom");
+#ifdef USE_GEOM
+    geom = Utils::getFileContent(shaderPrefix+".geom");
+#endif
     fragment = Utils::getFileContent(shaderPrefix+".frag");
     printf("Compile shader: %s\n", shaderPrefix.c_str());
 #ifdef PRINT_DEBUG
@@ -37,8 +39,11 @@ Shader& Shader::load(string shaderPrefix, list<string> attributes, list<string> 
 
 Shader& Shader::setup()
 {
-    //if (vertex == NULL || geom == NULL || fragment == NULL)
+#ifdef USE_GEOM
+    if (vertex == NULL || geom == NULL || fragment == NULL)
+#else
     if (vertex == NULL || fragment == NULL)
+#endif
     {
         printf("Error: Unable to load shader\n");
         exit(-1);
@@ -65,7 +70,7 @@ Shader& Shader::setup()
     }
     glAttachShader(pProgram, vshader);
 
-    /*
+ #ifdef USE_GEOM
     unsigned int gshader = glCreateShader(GL_GEOMETRY_SHADER);
     glShaderSource(gshader, 1, &geom, NULL);
     glCompileShader(gshader);
@@ -80,7 +85,7 @@ Shader& Shader::setup()
         exit(-1);
     }
     glAttachShader(pProgram, gshader);
-    */
+ #endif
 
     unsigned int fshader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fshader, 1, &fragment, NULL);

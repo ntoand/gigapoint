@@ -2,18 +2,22 @@
 #extension GL_EXT_geometry_shader4: enable
 #extension GL_ARB_gpu_shader5 : enable
 
+layout(points) in;
+layout(triangle_strip, max_vertices = 4) out;
+
 //uniform float pointScale;
 
 flat out vec3 vertex_light_position;
 flat out vec4 eye_position;
 flat out float sphere_radius;
 
-uniform float globalAlpha;
+//uniform float globalAlpha;
 
 void
 main(void)
 {
-    float pointScale = 20.0;
+    float pointScale = 0.01;
+    float globalAlpha = 1.0;
 
 	sphere_radius =  pointScale * 2.0;
 	float halfsize = sphere_radius * 0.5;

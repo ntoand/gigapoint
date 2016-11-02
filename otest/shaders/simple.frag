@@ -18,6 +18,6 @@ void main() {
     // calculate lighting
     float diffuse = max(0.0, dot(lightDir, N));
 
-    gl_FragColor = gl_Color; // * diffuse;
+    gl_FragColor = gl_Color * diffuse;
     gl_FragColor.a = 1.0;
 }

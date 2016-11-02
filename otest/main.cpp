@@ -84,7 +84,7 @@ void OPotreeRenderPass::render(Renderer* client, const DrawContext& context)
 		// Test and draw
 		// get camera location in world coordinate
 		points->draw();
-
+		if(oglError) return;
 		
 		framecount++;
 		if(framecount > 500) {

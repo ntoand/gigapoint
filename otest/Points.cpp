@@ -24,8 +24,11 @@ Points::Points() {
 	//attributes.push_back("VertexPosition");
 	//attributes.push_back("VertexColor");
 	shader = new Shader("points");
+#ifdef USE_GEOM
+	shader->load("shaders/sphere", attributes, uniforms);
+#else
 	shader->load("shaders/simple", attributes, uniforms);
-	//shader->load("shaders/sphere", attributes, uniforms);
+#endif
 }
 
 Points::~Points() {
@@ -39,14 +42,14 @@ void Points::draw() {
     glEnable(GL_BLEND);
     glAlphaFunc(GL_GREATER, 0.1);
 	glEnable(GL_ALPHA_TEST);
-
+if(oglError) return;
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     glVertexPointer(3, GL_FLOAT, 3*sizeof(float), (GLvoid*)0);
     glColorPointer(3, GL_FLOAT, 3*sizeof(float), (GLvoid*)(3*sizeof(float)));
-
+if(oglError) return;
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
-	
+if(oglError) return;
 	glDrawArrays(GL_POINTS, 0, vertices.size()/3);
 
 	glDisableClientState(GL_VERTEX_ARRAY);

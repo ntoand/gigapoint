@@ -191,7 +191,8 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 }
 
 void PointCloud::draw() {
-
+	glAlphaFunc(GL_GREATER, 0.1);
+        glEnable(GL_ALPHA_TEST);
 	for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
 		NodeGeometry* node = *it;
 		node->draw(material);

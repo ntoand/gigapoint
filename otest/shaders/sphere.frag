@@ -7,7 +7,7 @@ flat in vec4 eye_position;
 
 void main (void)
 {
-
+/*
     float x = gl_TexCoord[0].x;
     float y = gl_TexCoord[0].y;
     float zz = 1.0 - x*x - y*y;
@@ -28,6 +28,7 @@ void main (void)
 				
 	gl_FragDepth = (pos.z / pos.w + 1.0) / 2.0;
     //gl_FragColor.rgb = gl_Color.rgb * diffuse_value;
+*/
     gl_FragColor.rgb = gl_Color.rgb;
     gl_FragColor.a = gl_Color.a;
 }

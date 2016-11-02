@@ -17,6 +17,10 @@ void main() {
     N.xy = gl_PointCoord* 2.0 - vec2(1.0);    
     float mag = dot(N.xy, N.xy);
     //if (mag > 1.0) discard;   // kill pixels outside circle
+    if(mag > 1.0) {
+	gl_FragColor.a = 0.0;
+	return;
+    }
     N.z = sqrt(1.0-mag);
 
     // calculate lighting
