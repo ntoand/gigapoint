@@ -1,5 +1,7 @@
 #include "Points.h"
 
+using namespace omega;
+
 float randomValue() {
     return ((double) rand() / (RAND_MAX));
 }
@@ -16,30 +18,19 @@ Points::Points() {
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size()*4, &vertices[0], GL_STATIC_DRAW);
-
-	// Shader + material
-	list<string> attributes;
-	list<string> uniforms;
-	attributes.clear(); uniforms.clear();
-	//attributes.push_back("VertexPosition");
-	//attributes.push_back("VertexColor");
-	shader = new Shader("points");
-#ifdef USE_GEOM
-	shader->load("shaders/sphere", attributes, uniforms);
-#else
-	shader->load("shaders/simple", attributes, uniforms);
-#endif
 }
 
 Points::~Points() {
 	delete shader;
 }
 
-void Points::draw() {
+void Points::draw(Shader* shader) {
+
+	if(shader == NULL)
+		return;
 
     shader->bind();
 
-    glEnable(GL_BLEND);
     glAlphaFunc(GL_GREATER, 0.1);
 	glEnable(GL_ALPHA_TEST);
 if(oglError) return;
@@ -54,4 +45,15 @@ if(oglError) return;
 
 	glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
+    glUseProgram(0);
+}
+
+void Points::findCollisionPoints(const omega::Ray& r, vector<float>& cp) {
+	int numpoints = vertices.size() / 6;
+	for(int i=0; i < numpoints; i+=6) {
+		Vector3f pos = Vector3f(vertices[i], vertices[i+1], vertices[i+2]);
+		std::pair<bool, omega::real> result = r.intersects(Sphere(pos, 0.2));
+		if(result.first)
+			cp.push_back((float)result.second);
+	}
 }

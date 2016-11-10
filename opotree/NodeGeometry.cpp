@@ -329,9 +329,10 @@ void NodeGeometry::draw(Material* material) {
     shader->transmitUniform("uPointSize", (float)material->getPointSize());
     shader->transmitUniform("uMinPointSize", 2.0f);
     shader->transmitUniform("uMaxPointSize", 40.0f);
-    //shader->transmitUniform("uFOV", 0.785); // 45 degree
 
 	glDrawArrays(GL_POINTS, 0, vertices.size()/3);
+
+	glUseProgram(0);
 }
 
 void NodeGeometry::freeData() {

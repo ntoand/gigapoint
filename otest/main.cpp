@@ -5,7 +5,7 @@
 #include <list>
 #include <string>
 
-#include "Points.h"
+#include "Viewer.h"
 
 using namespace omega;
 using namespace std;
@@ -13,17 +13,20 @@ using namespace std;
 class OPotreeRenderPass: public RenderPass
 {
 public:
-	OPotreeRenderPass(Renderer* client): RenderPass(client, "OPotreeRenderPass") {}
+	OPotreeRenderPass(Renderer* client, Viewer* viewer): RenderPass(client, "OPotreeRenderPass"), viewer(viewer) {}
 	virtual void initialize();
 	virtual void render(Renderer* client, const DrawContext& context);
 
 private:
-	Points* points;
+	Viewer* viewer;
 	int framecount;
 };
 
 class OPotreeApplication: public EngineModule
 {
+public:
+	Viewer* viewer;
+
 public:
 	OPotreeApplication(): EngineModule("OPotreeApplication") {}
 
@@ -31,8 +34,11 @@ public:
 
 	virtual void initializeRenderer(Renderer* r) 
 	{ 
-		r->addRenderPass(new OPotreeRenderPass(r));
+		viewer = new Viewer();
+		r->addRenderPass(new OPotreeRenderPass(r, viewer));
 	}
+
+	virtual void handleEvent(const Event& evt);
 };
 
 void OPotreeApplication::initialize() {
@@ -54,10 +60,9 @@ int main(int argc, char** argv)
 void OPotreeRenderPass::initialize()
 {
 	RenderPass::initialize();
-
-	// Initialize
-	points = new Points();
 	
+	viewer->init();
+
 	//graphics
 	glEnable(GL_POINT_SPRITE);
 	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
@@ -80,14 +85,23 @@ void OPotreeRenderPass::render(Renderer* client, const DrawContext& context)
 		if(oglError) return;
 		glEnable(GL_BLEND);
 		if(oglError) return;
-	
+
+		glEnable(GL_LIGHT0);
+		if(oglError) return;
+		glEnable(GL_COLOR_MATERIAL);
+		if(oglError) return;
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, Color(1.0, 1.0, 1.0).data());
+		if(oglError) return;
+		glLightfv(GL_LIGHT0, GL_POSITION, Vector3s(0.0f, 0.0f, 1.0f).data());
+		if(oglError) return;
+
 		// Test and draw
 		// get camera location in world coordinate
-		points->draw();
-		if(oglError) return;
+		viewer->draw();
+		if(oglError) return;	
 		
 		framecount++;
-		if(framecount > 500) {
+		if(framecount > 2000) {
 			if(SystemManager::instance()->isMaster()) {
 				Vector3f cp = context.camera->getPosition();
 				Quaternion q = context.camera->getOrientation();
@@ -101,5 +115,25 @@ void OPotreeRenderPass::render(Renderer* client, const DrawContext& context)
 		if(oglError) return;
 		client->getRenderer()->endDraw();
 		if(oglError) return;
+	}
+}
+
+void OPotreeApplication::handleEvent(const Event& evt) {
+	if(evt.getServiceType() == Service::Pointer ) {
+		int x = evt.getPosition().x();
+		int y = evt.getPosition().y();
+		int flags = evt.getFlags();
+
+		if(evt.getType() == Event::Down && flags & 2) {
+			DisplaySystem* ds = SystemManager::instance()->getDisplaySystem();
+		    Ray r;
+		    bool res = ds->getViewRayFromEvent(evt, r);
+		    Vector3f pos = r.getOrigin();
+		    Vector3f ori = r.getDirection();
+		    cout << "Get ray " << x << " " << y << " pos: " << pos[0] << " " << pos[1] << " " << pos[2] << " ori: "
+		    		<< ori[0] << " " << ori[1] << " " << ori[2] << endl;
+		    viewer->setCheckCollision(true, r);
+		}
+		
 	}
 }

@@ -20,7 +20,8 @@ private:
 public:
 	Points();
 	~Points();
-	void draw();
+	void draw(Shader* shader);
+	void findCollisionPoints(const omega::Ray& r, vector<float>& cp);
 };
 
 #endif

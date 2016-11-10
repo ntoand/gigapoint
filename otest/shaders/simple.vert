@@ -11,5 +11,5 @@ void main()
     //size
     vec3 posEye = (gl_ModelViewMatrix * gl_Vertex).xyz;
     float dist = length(posEye);
-    gl_PointSize = 100.0 / dist;
+    gl_PointSize = 50.0 / dist;
 }

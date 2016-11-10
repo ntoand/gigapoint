@@ -6,5 +6,5 @@ include_directories(${OMEGA_INCLUDE_DIRS})
 
 #add_definitions(-DUSE_GEOM)
 
-add_executable(otest Points.cpp Shader.cpp Utils.cpp main.cpp)
+add_executable(otest Points.cpp Shader.cpp Utils.cpp Viewer.cpp main.cpp)
 target_link_libraries(otest ${OMEGA_LIB})
