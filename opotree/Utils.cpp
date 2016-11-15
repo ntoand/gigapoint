@@ -220,6 +220,11 @@ int Utils::loadOption(const string filename, Option& option) {
             option.cameraOrientation[2] = cJSON_GetArrayItem(camori, 2)->valuedouble;
             option.cameraOrientation[3] = cJSON_GetArrayItem(camori, 3)->valuedouble;
         }
+
+        cJSON* scale = cJSON_GetObjectItem(json, "scaleXYZ");
+        option.scaleXYZ[0] = cJSON_GetArrayItem(scale, 0)->valuedouble;
+        option.scaleXYZ[1] = cJSON_GetArrayItem(scale, 1)->valuedouble;
+        option.scaleXYZ[2] = cJSON_GetArrayItem(scale, 2)->valuedouble;
     }
 
     cJSON_Delete(json);
@@ -253,6 +258,10 @@ void Utils::printOption(const Option& option) {
             cout << option.cameraOrientation[i] << " ";
         cout << endl;
     }
+    cout << "scaleXYZ:";
+    for(int i=0; i < 3; i ++)
+        cout << option.scaleXYZ[i] << " ";
+    cout << endl;
 }
 
 // PC Loader
@@ -310,11 +319,19 @@ int Utils::loadPCInfo(const string data_dir, PCInfo* info) {
             string data_type = cJSON_GetArrayItem(pointatt, i)->valuestring;
             if(data_type == "POSITION_CARTESIAN") {
                 info->pointAttributes.push_back(POSITION_CARTESIAN);
-                info->pointByteSize += 3 * sizeof(float);
+                info->pointByteSize += 12; //3 * sizeof(float);
             }
             else if(data_type == "COLOR_PACKED") {
                 info->pointAttributes.push_back(COLOR_PACKED);
-                info->pointByteSize += 4 * sizeof(char);
+                info->pointByteSize += 4; //4 * sizeof(char);
+            }
+            else if (data_type == "INTENSITY") {
+                info->pointAttributes.push_back(INTENSITY);
+                info->pointByteSize += 2; //1 * sizeof(unsigned short);
+            }
+            else if(data_type == "CLASSIFICATION") {
+                info->pointAttributes.push_back(CLASSIFICATION);
+                info->pointByteSize += 1; //1 * sizeof(char);
             }
             else {
                 cout << "Invalid data type" << endl;

@@ -14,5 +14,6 @@
 	"cameraSpeed": 10,
 	"cameraUpdatePosOri": 1,
 	"cameraPosition": [8.1173, -388.287, -424.887],
-	"cameraOrientation": [0.713179, 0.686123, -0.102032, -0.100993]
+	"cameraOrientation": [0.713179, 0.686123, -0.102032, -0.100993],
+	"scaleXYZ": [1,1,1]
 }

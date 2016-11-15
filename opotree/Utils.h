@@ -27,6 +27,8 @@ using std::vector;
 
 #define POSITION_CARTESIAN 0
 #define COLOR_PACKED 1
+#define INTENSITY 2
+#define CLASSIFICATION 3
 
 #define MATERIAL_RGB 0
 #define MATERIAL_ELEVATION 1
@@ -55,6 +57,7 @@ typedef struct Option_t {
 	bool cameraUpdatePosOri;
 	float cameraPosition[3];
 	float cameraOrientation[4];
+	float scaleXYZ[3];
 } Option;
 
 typedef struct PCInfo_t {

@@ -13,6 +13,7 @@ private:
 	int sizeType; // SIZE_FIXED, SIZE_ADAPTIVE
     float pointSize;
     float screenHeight;
+    float scaleXYZ[3];
 
 public:
 	Material(Shader* shader);
@@ -30,6 +31,8 @@ public:
     void setPointSize( float s ) { pointSize = s; }
     float getScreenHeight() { return screenHeight; }
     void setScreenHeight( float h ) { screenHeight = h; }
+    void setScaleXYZ( float s[3] );
+    float getScale(int i = 0) { return scaleXYZ[i]; }
 };
 
 #endif

@@ -217,6 +217,16 @@ int NodeGeometry::loadData() {
 				addPoint(x, y, z);
 				//cout << "pos: " << x << " " << y << " " << z << endl;
 
+			}else if(attribute == INTENSITY) {
+				//unsigned short* usBuffer = reinterpret_cast<unsigned short*>(buffer+offset);
+				//point.intensity = usBuffer[0];
+				offset += 2;
+
+			}else if(attribute == CLASSIFICATION ) {
+				//unsigned char* ucBuffer = reinterpret_cast<unsigned char*>(buffer+offset);
+				//point.classification = ucBuffer[0];
+				offset += 1;
+
 			}else if(attribute == COLOR_PACKED){
 				unsigned char* ucBuffer = reinterpret_cast<unsigned char*>(buffer+offset);
 				//float r = ucBuffer[0]/255.0;

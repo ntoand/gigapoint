@@ -1,0 +1,19 @@
+{
+	"dataDir": "century_hres",
+	"visiblePointTarget": 10000000,
+	"minNodePixelSize": 100,
+	"moveToCentre": 1,
+	"screenHeight": 600,
+	"material": "rgb",
+	"pointSize": 0.2,
+	"sizeType": "adaptive",
+	"quality": "circle",
+	"numReadThread": 2,
+	"preloadToLevel": 3,
+	"maxNodeInMem": 50000,
+	"cameraSpeed": 100,
+	"cameraUpdatePosOri": 0,
+	"cameraPosition": [-66.8498, -121.083, -107.495],
+	"cameraOrientation": [0.878953, 0.467479, 0.0833162, -0.0443124],
+	"scaleXYZ": [1,1,1]
+}
