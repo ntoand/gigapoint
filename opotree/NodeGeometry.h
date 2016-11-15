@@ -44,7 +44,7 @@ private:
 
 	//data
 	vector<float> vertices;
-	vector<float> colors;
+	vector<unsigned char> colors;
 	unsigned int vertexbuffer;
 	unsigned int colorbuffer;
 	Shader* shader;

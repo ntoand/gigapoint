@@ -197,7 +197,7 @@ int Utils::loadOption(const string filename, Option& option) {
         tmp = cJSON_GetObjectItem(json, "quality")->valuestring;
         if (tmp.compare("square") == 0)
             option.quality = QUALITY_SQUARE;
-        else if (tmp.compare("adaptive") == 0)
+        else if (tmp.compare("circle") == 0)
             option.quality = QUALITY_CIRCLE;
         else
             option.quality = QUALITY_SQUARE;

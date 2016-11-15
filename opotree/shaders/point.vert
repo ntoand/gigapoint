@@ -1,5 +1,3 @@
-#version 120
-
 attribute vec3 VertexPosition;
 attribute vec3 VertexColor;
 
@@ -20,7 +18,11 @@ void main()
     gl_Position = gl_ModelViewProjectionMatrix * vec4(VertexPosition,1.0);
 
     //color
-    vColor = VertexColor;
+#if defined COLOR_TYPE_RGB
+    vColor = VertexColor / 255.0;
+#else
+	vColor = VertexColor / 255.0;
+#endif
 
     //size
     float pointSize = 1.0;

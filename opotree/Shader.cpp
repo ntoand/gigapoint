@@ -1,39 +1,66 @@
 #include "Shader.h"
 #include "Utils.h"
 
-Shader::Shader(string name)
-{
+#include <iostream>
+
+using namespace std;
+
+Shader::Shader(string name) {
     this->name = name;
     this->uid = -1;
     this->vertex = NULL;
     this->fragment = NULL;
 }
 
-Shader::~Shader()
-{
+Shader::~Shader() {
     attributes.clear();
     uniforms.clear();
     delete [] vertex;
     delete [] fragment;
 }
 
-Shader& Shader::load(string shaderPrefix, list<string> attributes, list<string> uniforms)
-{;
-    vertex = Utils::getFileContent(shaderPrefix+".vert");
-    fragment = Utils::getFileContent(shaderPrefix+".frag");
-    printf("Compile shader: %s\n", shaderPrefix.c_str());
+Shader& Shader::load(string shaderPrefix, list<string> attributes, list<string> uniforms, const Option& option) {
+
+    unload();
+
+    string ver = "#version 120\n";
+    if(option.sizeType == SIZE_FIXED)
+        ver.append("#define FIXED_POINT_SIZE\n");
+    ver.append(Utils::getFileContent(shaderPrefix+".vert"));
+    vertex = ver.c_str();
+    cout << "vertex shader: " << endl << vertex << endl;
+
+    string fra = "#version 120\n";
+    if(option.quality == QUALITY_SQUARE)
+        fra.append("#define SQUARE_POINT_SHAPE\n");
+    fra.append(fragment = Utils::getFileContent(shaderPrefix+".frag"));
+    fragment = fra.c_str();
+    cout << "fragment shader: " << fragment << endl;
+
+    cout << "compile shader: " << shaderPrefix << endl;
+
 #ifdef PRINT_DEBUG
     printf("vertex shader:\n%s\n", vertex);
     printf("fragment shader:\n%s\n", fragment);
 #endif
+
     setup();
     setupLocations(attributes, uniforms);
 
     return *this;
 }
 
-Shader& Shader::setup()
-{
+Shader& Shader::unload() {
+    glUseProgram(0);
+    if(uid != -1)
+        glDeleteProgram(uid);           
+    uid = -1;
+    attributes.clear();
+    uniforms.clear();
+    return *this;
+}
+
+Shader& Shader::setup() {
     if (vertex == NULL || fragment == NULL)
     {
         printf("Error: Unable to load shader");
@@ -91,8 +118,7 @@ Shader& Shader::setup()
     return *this;
 }
 
-Shader& Shader::setupLocations(list<string> _attributes, list<string> _uniforms)
-{
+Shader& Shader::setupLocations(list<string> _attributes, list<string> _uniforms) { 
     bind();
 
     for (list<string>::iterator it=_attributes.begin(); it != _attributes.end(); ++it)
@@ -110,63 +136,56 @@ Shader& Shader::setupLocations(list<string> _attributes, list<string> _uniforms)
     return *this;
 }
 
-Shader& Shader::bind()
-{
+Shader& Shader::bind() {
     glUseProgram(uid);
-
     return *this;
 }
 
-string& Shader::getName()
-{
+Shader& Shader::unbind() {
+    glUseProgram(0);
+    return *this;
+}
+
+string& Shader::getName() {
     return name;
 }
 
-unsigned int Shader::attribute(string name)
-{
+unsigned int Shader::attribute(string name) {
     return attributes.at(name);
 }
 
-unsigned int Shader::uniform(string name)
-{
+unsigned int Shader::uniform(string name) {
     return uniforms.at(name);
 }
 
-bool Shader::hasAttribute(string name)
-{
+bool Shader::hasAttribute(string name) {
     if (attributes.find(name) == attributes.end())
         return false;
     return true;
 }
 
-bool Shader::hasUniform(string name)
-{
+bool Shader::hasUniform(string name) {
     if (uniforms.find(name) == uniforms.end())
         return false;
     return true;
 }
 
-void Shader::transmitUniform(string name, int i)
-{
+void Shader::transmitUniform(string name, int i) {
     glUniform1i(uniforms.at(name), i);
 }
 
-void Shader::transmitUniform(string name, float f)
-{
+void Shader::transmitUniform(string name, float f) {
     glUniform1f(uniforms.at(name), f);
 }
 
-void Shader::transmitUniform(string name, float f1, float f2)
-{
+void Shader::transmitUniform(string name, float f1, float f2) {
     glUniform2f(uniforms.at(name), f1, f2);
 }
 
-void Shader::transmitUniform(string name, float f1, float f2, float f3)
-{
+void Shader::transmitUniform(string name, float f1, float f2, float f3) {
     glUniform3f(uniforms.at(name), f1, f2, f3);
 }
 
-void Shader::transmitUniform(string name, const float mat[16])
-{
+void Shader::transmitUniform(string name, const float mat[16]) {
     glUniformMatrix4fv(uniforms.at(name), 1, GL_FALSE, mat);
 }

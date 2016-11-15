@@ -1,6 +1,8 @@
 #ifndef SHADER_H
 #define SHADER_H
 
+#include "Utils.h"
+
 #include <omega.h>
 #include <omegaGl.h>
 
@@ -15,8 +17,10 @@ public:
     Shader(string name);
     ~Shader();
 
-    Shader& load(string shader, list<string> attributes, list<string> uniforms);
+    Shader& load(string shader, list<string> attributes, list<string> uniforms, const Option& option);
+    Shader& unload();
     Shader& bind();
+    Shader& unbind();
     Shader& setup();
     Shader& setupLocations(list<string> _attributes, list<string> _uniforms);
 
@@ -39,7 +43,7 @@ private:
     unsigned int uid;
     const char* vertex;
     const char* fragment;
-
+    
     map<string, unsigned int> attributes;
     map<string, unsigned int> uniforms;
 };

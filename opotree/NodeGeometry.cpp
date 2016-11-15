@@ -219,11 +219,12 @@ int NodeGeometry::loadData() {
 
 			}else if(attribute == COLOR_PACKED){
 				unsigned char* ucBuffer = reinterpret_cast<unsigned char*>(buffer+offset);
-				float r = ucBuffer[0]/255.0;
-				float g = ucBuffer[1]/255.0;
-				float b = ucBuffer[2]/255.0;
+				//float r = ucBuffer[0]/255.0;
+				//float g = ucBuffer[1]/255.0;
+				//float b = ucBuffer[2]/255.0;
 				offset += 4 * sizeof(char);
-				addColor(r, g, b);
+				//addColor(r, g, b);
+				addColor(ucBuffer[0], ucBuffer[1], ucBuffer[2]);
 				//cout << "colors: " << r << " " << g << " " << b << endl;
 
 			}else {
@@ -279,11 +280,11 @@ int NodeGeometry::initVBO() {
 
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size()*4, &vertices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(float), &vertices[0], GL_STATIC_DRAW);
 
 	glGenBuffers(1, &colorbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-	glBufferData(GL_ARRAY_BUFFER, colors.size()*4, &colors[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, colors.size()*sizeof(unsigned char), &colors[0], GL_STATIC_DRAW);
 
     initvbo = true;
 
@@ -318,7 +319,7 @@ void NodeGeometry::draw(Material* material) {
     glVertexAttribPointer(
         attribute_color_pos, // attribute
         3,                 // number of elements per vertex, here (r, g, b)
-        GL_FLOAT,          // the type of each element
+        GL_UNSIGNED_BYTE,  // the type of each element
         GL_FALSE,          // take our values as-is
         0,                 // no extra data between each position
         0                  // offset of first element
@@ -332,7 +333,7 @@ void NodeGeometry::draw(Material* material) {
 
 	glDrawArrays(GL_POINTS, 0, vertices.size()/3);
 
-	glUseProgram(0);
+	shader->unbind();
 }
 
 void NodeGeometry::freeData() {

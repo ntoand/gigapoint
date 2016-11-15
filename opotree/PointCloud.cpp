@@ -40,7 +40,7 @@ PointCloud::PointCloud(string cfgfile, bool mas): master(mas) {
 	uniforms.push_back("uMaxPointSize");
 
 	Shader* shader = new Shader("point");
-	shader->load("shaders/point", attributes, uniforms);
+	shader->load("shaders/point", attributes, uniforms, option);
 
 	material = new Material(shader);
 	material->setPointSize(option.pointSize);
