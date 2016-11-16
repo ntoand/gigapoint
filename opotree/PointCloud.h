@@ -5,7 +5,7 @@
 #include <list>
 
 #include "NodeGeometry.h"
-#include "Material.h"
+#include "Shader.h"
 #include "LRU.h"
 #include "Thread.h"
 #include "wqueue.h"
@@ -50,12 +50,15 @@ private:
 	bool master;
 	
 	PCInfo* pcinfo;
-	Material* material;
+	Shader* shader;
 	NodeGeometry* root;
 	list<NodeGeometry*> displayList;
 	int preDisplayListSize;
+	bool needReloadShader;
+	list<string> attributes;
+	list<string> uniforms;
 
-	Option option;
+	Option* option;
 	int numVisibleNodes;
 	unsigned int numVisiblePoints;
 
@@ -68,8 +71,10 @@ private:
 	LRUCache* lrucache;
 
 public:
-	PointCloud(string cfgfile, bool master = false);
+	PointCloud(Option* option, bool master = false);
 	~PointCloud();
+	int initPointCloud();
+	void setReloadShader(bool r) { needReloadShader = r; }
 
 	int preloadUpToLevel(const int level=0);
 	int updateVisibility(const float MVP[16], const float campos[3]);

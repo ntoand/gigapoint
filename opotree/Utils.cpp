@@ -146,14 +146,14 @@ float Utils::distance(const float v1[3], const float v2[3]) {
 }
 
 // Option
-int Utils::loadOption(const string filename, Option& option) {
+Option* Utils::loadOption(const string filename) {
     cout << "Load option from file: " << filename << endl;
 
     FILE *f;long len;char *data;
     f=fopen(filename.c_str(),"rb");
     if(f == NULL){
         std::cout << "Cannot find " << filename << std::endl;
-        return -1;
+        return NULL;
     }
     fseek(f,0,SEEK_END);len=ftell(f);fseek(f,0,SEEK_SET);
     data= new char[len+1];fread(data,1,len,f);fclose(f);
@@ -162,113 +162,123 @@ int Utils::loadOption(const string filename, Option& option) {
 
     json=cJSON_Parse(data);
 
+    Option* option = NULL;
+
     if (!json) {
         cout << "Error before:" << endl << cJSON_GetErrorPtr() << endl;
-        return -1;
     }
     else {
-        option.dataDir = cJSON_GetObjectItem(json, "dataDir")->valuestring;
-        option.dataDir.append("/");
-        option.visiblePointTarget = cJSON_GetObjectItem(json, "visiblePointTarget")->valuedouble;
-        option.minNodePixelSize = cJSON_GetObjectItem(json, "minNodePixelSize")->valuedouble;
-        option.screenHeight = cJSON_GetObjectItem(json, "screenHeight")->valuedouble;
-        option.moveToCentre = cJSON_GetObjectItem(json, "moveToCentre")->valueint > 0;
+        option = new Option();
+
+        option->dataDir = cJSON_GetObjectItem(json, "dataDir")->valuestring;
+        option->dataDir.append("/");
+        option->visiblePointTarget = cJSON_GetObjectItem(json, "visiblePointTarget")->valuedouble;
+        option->minNodePixelSize = cJSON_GetObjectItem(json, "minNodePixelSize")->valuedouble;
+        option->screenHeight = cJSON_GetObjectItem(json, "screenHeight")->valuedouble;
+        option->moveToCentre = cJSON_GetObjectItem(json, "moveToCentre")->valueint > 0;
 
         string tmp = cJSON_GetObjectItem(json, "material")->valuestring;
         if (tmp.compare("rgb") == 0)
-            option.material = MATERIAL_RGB;
+            option->material = MATERIAL_RGB;
         else if (tmp.compare("elevation") == 0)
-            option.material = MATERIAL_ELEVATION;
+            option->material = MATERIAL_ELEVATION;
         else if (tmp.compare("treedepth"))
-            option.material = MATERIAL_TREEDEPTH;
+            option->material = MATERIAL_TREEDEPTH;
         else
-            option.material = MATERIAL_RGB;
+            option->material = MATERIAL_RGB;
 
-        option.pointSize = cJSON_GetObjectItem(json, "pointSize")->valuedouble;
+        option->pointSize = cJSON_GetObjectItem(json, "pointSize")->valuedouble;
 
         tmp = cJSON_GetObjectItem(json, "sizeType")->valuestring;
         if (tmp.compare("fixed") == 0)
-            option.sizeType = SIZE_FIXED;
+            option->sizeType = SIZE_FIXED;
         else if (tmp.compare("adaptive") == 0)
-            option.sizeType = SIZE_ADAPTIVE;
+            option->sizeType = SIZE_ADAPTIVE;
         else
-            option.sizeType = SIZE_FIXED;
+            option->sizeType = SIZE_FIXED;
 
         tmp = cJSON_GetObjectItem(json, "quality")->valuestring;
         if (tmp.compare("square") == 0)
-            option.quality = QUALITY_SQUARE;
+            option->quality = QUALITY_SQUARE;
         else if (tmp.compare("circle") == 0)
-            option.quality = QUALITY_CIRCLE;
+            option->quality = QUALITY_CIRCLE;
         else
-            option.quality = QUALITY_SQUARE;
+            option->quality = QUALITY_SQUARE;
 
-        option.numReadThread = cJSON_GetObjectItem(json, "numReadThread")->valueint;
-        option.preloadToLevel = cJSON_GetObjectItem(json, "preloadToLevel")->valueint;
-        option.maxNodeInMem = cJSON_GetObjectItem(json, "maxNodeInMem")->valueint;  
-        option.cameraSpeed = cJSON_GetObjectItem(json, "cameraSpeed")->valueint;
+        option->numReadThread = cJSON_GetObjectItem(json, "numReadThread")->valueint;
+        option->preloadToLevel = cJSON_GetObjectItem(json, "preloadToLevel")->valueint;
+        option->maxNodeInMem = cJSON_GetObjectItem(json, "maxNodeInMem")->valueint;  
+        option->cameraSpeed = cJSON_GetObjectItem(json, "cameraSpeed")->valueint;
 
-        option.cameraUpdatePosOri = cJSON_GetObjectItem(json, "cameraUpdatePosOri")->valueint > 0;
-        if(option.cameraUpdatePosOri) {
+        option->cameraUpdatePosOri = cJSON_GetObjectItem(json, "cameraUpdatePosOri")->valueint > 0;
+        if(option->cameraUpdatePosOri) {
             cJSON* campos = cJSON_GetObjectItem(json, "cameraPosition");
-            option.cameraPosition[0] = cJSON_GetArrayItem(campos, 0)->valuedouble;
-            option.cameraPosition[1] = cJSON_GetArrayItem(campos, 1)->valuedouble;
-            option.cameraPosition[2] = cJSON_GetArrayItem(campos, 2)->valuedouble;
+            option->cameraPosition[0] = cJSON_GetArrayItem(campos, 0)->valuedouble;
+            option->cameraPosition[1] = cJSON_GetArrayItem(campos, 1)->valuedouble;
+            option->cameraPosition[2] = cJSON_GetArrayItem(campos, 2)->valuedouble;
 
             cJSON* camori = cJSON_GetObjectItem(json, "cameraOrientation");
-            option.cameraOrientation[0] = cJSON_GetArrayItem(camori, 0)->valuedouble;
-            option.cameraOrientation[1] = cJSON_GetArrayItem(camori, 1)->valuedouble;
-            option.cameraOrientation[2] = cJSON_GetArrayItem(camori, 2)->valuedouble;
-            option.cameraOrientation[3] = cJSON_GetArrayItem(camori, 3)->valuedouble;
+            option->cameraOrientation[0] = cJSON_GetArrayItem(camori, 0)->valuedouble;
+            option->cameraOrientation[1] = cJSON_GetArrayItem(camori, 1)->valuedouble;
+            option->cameraOrientation[2] = cJSON_GetArrayItem(camori, 2)->valuedouble;
+            option->cameraOrientation[3] = cJSON_GetArrayItem(camori, 3)->valuedouble;
         }
 
         cJSON* scale = cJSON_GetObjectItem(json, "scaleXYZ");
-        option.scaleXYZ[0] = cJSON_GetArrayItem(scale, 0)->valuedouble;
-        option.scaleXYZ[1] = cJSON_GetArrayItem(scale, 1)->valuedouble;
-        option.scaleXYZ[2] = cJSON_GetArrayItem(scale, 2)->valuedouble;
+        option->scaleXYZ[0] = cJSON_GetArrayItem(scale, 0)->valuedouble;
+        option->scaleXYZ[1] = cJSON_GetArrayItem(scale, 1)->valuedouble;
+        option->scaleXYZ[2] = cJSON_GetArrayItem(scale, 2)->valuedouble;
+
+        cJSON* menuopt = cJSON_GetObjectItem(json, "menuOption");
+        option->menuOption[0] = cJSON_GetArrayItem(menuopt, 0)->valuedouble;
+        option->menuOption[1] = cJSON_GetArrayItem(menuopt, 1)->valuedouble;
+        option->menuOption[2] = cJSON_GetArrayItem(menuopt, 2)->valuedouble;
     }
 
     cJSON_Delete(json);
     delete [] data;
-    return 0;
+    return option;
 }
 
-void Utils::printOption(const Option& option) {
+void Utils::printOption(const Option* option) {
     cout << "==== OPTION ====" << endl;
-    cout << "data dir: " << option.dataDir << endl;
-    cout << "visiblePointTarget: " << option.visiblePointTarget << endl;
-    cout << "minNodePixelSize: " << option.minNodePixelSize << endl;
-    cout << "screenHeight: " << option.screenHeight << endl;
-    cout << "moveToCentre: " << option.moveToCentre << endl;
-    cout << "material: " << option.material << endl;
-    cout << "pointSize: " << option.pointSize << endl;
-    cout << "sizeType: " << option.sizeType << endl;
-    cout << "quality: " << option.quality << endl;
-    cout << "cameraSpeed: " << option.cameraSpeed << endl;
-    cout << "numReadThread: " << option.numReadThread << endl;
-    cout << "preloadToLevel: " << option.preloadToLevel << endl;
-    cout << "maxNodeInMem: " << option.maxNodeInMem << endl;
-    cout << "cameraUpdatePosOri" << option.cameraUpdatePosOri << endl;
-    if(option.cameraUpdatePosOri) {
+    cout << "data dir: " << option->dataDir << endl;
+    cout << "visiblePointTarget: " << option->visiblePointTarget << endl;
+    cout << "minNodePixelSize: " << option->minNodePixelSize << endl;
+    cout << "screenHeight: " << option->screenHeight << endl;
+    cout << "moveToCentre: " << option->moveToCentre << endl;
+    cout << "material: " << option->material << endl;
+    cout << "pointSize: " << option->pointSize << endl;
+    cout << "sizeType: " << option->sizeType << endl;
+    cout << "quality: " << option->quality << endl;
+    cout << "cameraSpeed: " << option->cameraSpeed << endl;
+    cout << "numReadThread: " << option->numReadThread << endl;
+    cout << "preloadToLevel: " << option->preloadToLevel << endl;
+    cout << "maxNodeInMem: " << option->maxNodeInMem << endl;
+    cout << "cameraUpdatePosOri" << option->cameraUpdatePosOri << endl;
+    if(option->cameraUpdatePosOri) {
         cout << "cameraPosition: ";
         for(int i=0; i < 3; i++)
-            cout << option.cameraPosition[i] << " ";
+            cout << option->cameraPosition[i] << " ";
         cout << endl;
         cout << "cameraOrientation: ";
         for(int i=0; i < 4; i++)
-            cout << option.cameraOrientation[i] << " ";
+            cout << option->cameraOrientation[i] << " ";
         cout << endl;
     }
     cout << "scaleXYZ:";
     for(int i=0; i < 3; i ++)
-        cout << option.scaleXYZ[i] << " ";
+        cout << option->scaleXYZ[i] << " ";
+    cout << endl;
+    cout << "menuOption:";
+    for(int i=0; i < 3; i ++)
+        cout << option->menuOption[i] << " ";
     cout << endl;
 }
 
 // PC Loader
-int Utils::loadPCInfo(const string data_dir, PCInfo* info) {
+PCInfo* Utils::loadPCInfo(const string data_dir) {
 
-    assert(info);
-    
     string filename = data_dir + "cloud.js";
     cout << "Load PC info from file: " << filename << endl;
 
@@ -276,7 +286,7 @@ int Utils::loadPCInfo(const string data_dir, PCInfo* info) {
     f=fopen(filename.c_str(),"rb");
     if(f == NULL){
         std::cout << "Cannot find " << filename << std::endl;
-        return -1;
+        return NULL;
     }
     fseek(f,0,SEEK_END);len=ftell(f);fseek(f,0,SEEK_SET);
     data= new char[len+1];fread(data,1,len,f);fclose(f);
@@ -285,9 +295,10 @@ int Utils::loadPCInfo(const string data_dir, PCInfo* info) {
 
     json=cJSON_Parse(data);
 
+    PCInfo* info = new PCInfo();
+
     if (!json) {
         cout << "Error before:" << endl << cJSON_GetErrorPtr() << endl;
-        return -1;
     }
     else {
 
@@ -335,7 +346,7 @@ int Utils::loadPCInfo(const string data_dir, PCInfo* info) {
             }
             else {
                 cout << "Invalid data type" << endl;
-                return -1;
+                return NULL;
             }
         }
         cout << endl;
@@ -357,7 +368,7 @@ int Utils::loadPCInfo(const string data_dir, PCInfo* info) {
     cJSON_Delete(json);
     delete [] data;
 
-    return 0;
+    return info;
 }
 
 void Utils::printPCInfo(const PCInfo* info) {

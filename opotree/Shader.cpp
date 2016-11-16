@@ -19,23 +19,23 @@ Shader::~Shader() {
     delete [] fragment;
 }
 
-Shader& Shader::load(string shaderPrefix, list<string> attributes, list<string> uniforms, const Option& option) {
+Shader& Shader::load(string shaderPrefix, list<string> attributes, list<string> uniforms, const Option* option) {
 
     unload();
 
     string ver = "#version 120\n";
-    if(option.sizeType == SIZE_FIXED)
+    if(option->sizeType == SIZE_FIXED)
         ver.append("#define FIXED_POINT_SIZE\n");
     ver.append(Utils::getFileContent(shaderPrefix+".vert"));
     vertex = ver.c_str();
-    cout << "vertex shader: " << endl << vertex << endl;
+    //cout << "vertex shader: " << endl << vertex << endl;
 
     string fra = "#version 120\n";
-    if(option.quality == QUALITY_SQUARE)
+    if(option->quality == QUALITY_SQUARE)
         fra.append("#define SQUARE_POINT_SHAPE\n");
     fra.append(fragment = Utils::getFileContent(shaderPrefix+".frag"));
     fragment = fra.c_str();
-    cout << "fragment shader: " << fragment << endl;
+    //cout << "fragment shader: " << fragment << endl;
 
     cout << "compile shader: " << shaderPrefix << endl;
 

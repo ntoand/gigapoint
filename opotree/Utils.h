@@ -58,6 +58,7 @@ typedef struct Option_t {
 	float cameraPosition[3];
 	float cameraOrientation[4];
 	float scaleXYZ[3];
+	float menuOption[3];
 } Option;
 
 typedef struct PCInfo_t {
@@ -86,9 +87,9 @@ public:
 	static float distance(const float v1[3], const float v2[3]);
 
 	// PC loader
-	static int loadOption(const string cfgfile, Option& option);
-	static void printOption(const Option& option);
-	static int loadPCInfo(const string data_dir, PCInfo* info);
+	static Option* loadOption(const string cfgfile);
+	static void printOption(const Option* option);
+	static PCInfo* loadPCInfo(const string data_dir);
 	static void printPCInfo(const PCInfo* info);
 	static void addVectors(const float v1[3], const float v2[3], float v[3]);
 	static void addVectors(const float v1[3], const float v2[3], const float v3[3], float v[3]);

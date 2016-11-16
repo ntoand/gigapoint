@@ -301,15 +301,14 @@ int NodeGeometry::initVBO() {
     return 0;
 }
 
-void NodeGeometry::draw(Material* material) {
+void NodeGeometry::draw(Shader* shader, const Option* option) {
 	if(loading || !loaded)
 		return;
 
 	if(!initvbo)
 		initVBO();
 
-	Shader* shader = material->getShader();
-	material->bind();
+	shader->bind();
 
     unsigned int attribute_vertex_pos = shader->attribute("VertexPosition");
     glEnableVertexAttribArray(attribute_vertex_pos);  // Vertex position
@@ -335,9 +334,9 @@ void NodeGeometry::draw(Material* material) {
         0                  // offset of first element
     );
 
-    shader->transmitUniform("uScreenHeight", (float)material->getScreenHeight());
+    shader->transmitUniform("uScreenHeight", (float)option->screenHeight);
     shader->transmitUniform("uSpacing", (float)info->spacing);
-    shader->transmitUniform("uPointSize", (float)material->getPointSize());
+    shader->transmitUniform("uPointSize", (float)option->pointSize);
     shader->transmitUniform("uMinPointSize", 2.0f);
     shader->transmitUniform("uMaxPointSize", 40.0f);
 

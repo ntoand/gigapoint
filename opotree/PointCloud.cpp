@@ -6,28 +6,36 @@
 using namespace std;
 using namespace omicron;
 
-PointCloud::PointCloud(string cfgfile, bool mas): master(mas) {
+PointCloud::PointCloud(Option* opt, bool mas): option(opt), master(mas), needReloadShader(false) {
+
+}
+
+PointCloud::~PointCloud() {
+	// desktroy tree
+	if(pcinfo)
+		delete pcinfo;
+}
+
+int PointCloud::initPointCloud() {
 
 	// Option
-	if(Utils::loadOption(cfgfile, option) != 0){
+	if(!option){
 		cout << "Error: cannot load option " << endl;
-		return;
+		return -1;
 	}
 	if(master)
 		Utils::printOption(option);
 
 	// PC Info
-	pcinfo = new PCInfo();
-	if(Utils::loadPCInfo(option.dataDir, pcinfo) != 0) {
+	pcinfo = Utils::loadPCInfo(option->dataDir);
+	if(!pcinfo) {
 		cout << "Error: cannot load pc info" << endl;
-		return;
+		return -1;
 	}
 	if(master)
 		Utils::printPCInfo(pcinfo);
 
 	// Shader + material
-	list<string> attributes;
-	list<string> uniforms;
 	attributes.clear(); uniforms.clear();
 	attributes.push_back("VertexPosition");
 	attributes.push_back("VertexColor");
@@ -39,15 +47,8 @@ PointCloud::PointCloud(string cfgfile, bool mas): master(mas) {
 	uniforms.push_back("uMinPointSize");
 	uniforms.push_back("uMaxPointSize");
 
-	Shader* shader = new Shader("point");
+	shader = new Shader("point");
 	shader->load("shaders/point", attributes, uniforms, option);
-
-	material = new Material(shader);
-	material->setPointSize(option.pointSize);
-	material->setMaterial(option.material);
-	material->setSizeType(option.sizeType);
-	material->setQuality(option.quality);
-	material->setScreenHeight(option.screenHeight);
 
 	// root node
 	string name = "r";
@@ -55,16 +56,16 @@ PointCloud::PointCloud(string cfgfile, bool mas): master(mas) {
 	root->setInfo(pcinfo);
 	if(root->loadHierachy()) {
 		cout << "fail to load root hierachy" << endl;
-		return;
+		return -1;
 	}
 	if(root->loadData()) {
 		cout << "fail to load root data " << endl;
-		return;
+		return -1;
 	}
 
 	preDisplayListSize = 0;
 
-	numLoaderThread = option.numReadThread;
+	numLoaderThread = option->numReadThread;
 	// reading threads
 	if(nodeLoaderThreads.size() == 0) {
     	for(int i = 0; i < numLoaderThread; i++) {
@@ -74,15 +75,11 @@ PointCloud::PointCloud(string cfgfile, bool mas): master(mas) {
 	    }
 	
     }
-    lrucache = new LRUCache(option.maxNodeInMem);
+    lrucache = new LRUCache(option->maxNodeInMem);
 
-    preloadUpToLevel(option.preloadToLevel);
-}
+    preloadUpToLevel(option->preloadToLevel);
 
-PointCloud::~PointCloud() {
-	// desktroy tree
-	if(pcinfo)
-		delete pcinfo;
+	return 1;
 }
 
 int PointCloud::preloadUpToLevel(const int level) {
@@ -99,7 +96,7 @@ int PointCloud::preloadUpToLevel(const int level) {
     	priority_queue.pop();
 		
 		bool canload = false;
-		if(numloaded + node->getNumPoints() < option.visiblePointTarget)
+		if(numloaded + node->getNumPoints() < option->visiblePointTarget)
     		canload = true;
 
     	if(!canload)
@@ -140,7 +137,7 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
     	NodeGeometry* node = priority_queue.top().node;
     	priority_queue.pop();
     	bool visible = false;
-    	if(Utils::testFrustum(V, node->getBBox()) >= 0 && numVisiblePoints + node->getNumPoints() < option.visiblePointTarget)
+    	if(Utils::testFrustum(V, node->getBBox()) >= 0 && numVisiblePoints + node->getNumPoints() < option->visiblePointTarget)
     		visible = true;
 	    
 	    if(!visible)
@@ -177,8 +174,8 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 			if(distance - radius < 0)
 				weight = FLT_MAX;
 
-			float screenpixelradius = option.screenHeight * pr;
-			if(screenpixelradius < option.minNodePixelSize)
+			float screenpixelradius = option->screenHeight * pr;
+			if(screenpixelradius < option->minNodePixelSize)
 				continue;
 
 			priority_queue.push(NodeWeight(node->getChild(i), weight));
@@ -191,10 +188,15 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 }
 
 void PointCloud::draw() {
+	if(needReloadShader) {
+		shader->load("shaders/point", attributes, uniforms, option);
+		needReloadShader = false;
+	}
+
 	glAlphaFunc(GL_GREATER, 0.1);
-        glEnable(GL_ALPHA_TEST);
+    glEnable(GL_ALPHA_TEST);
 	for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
 		NodeGeometry* node = *it;
-		node->draw(material);
+		node->draw(shader, option);
 	}
 }

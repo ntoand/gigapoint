@@ -1,64 +1,55 @@
 #include <omega.h>
 #include <omegaGl.h>
+#include <omegaToolkit.h>
 
 #include <iostream>
 #include <list>
 #include <string>
 
 #include "PointCloud.h"
+#include "Menu.h"
 
 using namespace omega;
+using namespace omegaToolkit;
+using namespace omegaToolkit::ui;
 using namespace std;
 
 class OPotreeRenderPass: public RenderPass
 {
 public:
-	OPotreeRenderPass(Renderer* client): RenderPass(client, "OPotreeRenderPass") {}
+	OPotreeRenderPass(Renderer* client, Option* opt, PointCloud* pc): 
+						RenderPass(client, "OPotreeRenderPass"), option(opt), pointcloud(pc) {}
 	virtual void initialize();
 	virtual void render(Renderer* client, const DrawContext& context);
 
 private:
 	PointCloud* pointcloud;
+	Option* option;
 	int framecount;
 };
 
 class OPotreeApplication: public EngineModule
 {
+private:
+	PointCloud* pointcloud;
+	Option* option;
+	PCMenu* menu;
+	Ref<Label> menuLabel;
+	// The ui manager
+  	Ref<UiModule> myUiModule;
+  	// The root ui container
+  	Ref<Container> myUi;  
+
 public:
 	OPotreeApplication(): EngineModule("OPotreeApplication") {}
 
 	virtual void initializeRenderer(Renderer* r)  { 
-		r->addRenderPass(new OPotreeRenderPass(r));
+		r->addRenderPass(new OPotreeRenderPass(r, option, pointcloud));
 	}
 
-	virtual void initialize() {
-		Option option;
-		Utils::loadOption("opotree.json", option);
-		Camera* cam = getEngine()->getDefaultCamera();
-		cam->getController()->setSpeed(option.cameraSpeed);
-		cam->getController()->setFreeFlyEnabled(true);
-		cam->setNearFarZ(1.0, 10000.0);
+	virtual void initialize();
 
-		if(option.cameraUpdatePosOri) {
-			cam->setPosition(Vector3f(option.cameraPosition[0], option.cameraPosition[1], option.cameraPosition[2]));
-			cam->setOrientation(Quaternion(option.cameraOrientation[0], option.cameraOrientation[1], 
-											option.cameraOrientation[2], option.cameraOrientation[3]));
-		}	
-	}
-
-	virtual void handleEvent(const Event& evt) {
-        if(evt.getServiceType() == Service::Keyboard) {
-            if(evt.isKeyDown('i')) {
-            	if(!SystemManager::instance()->isMaster())
-            		return;
-            	Camera* cam = getEngine()->getDefaultCamera();
-            	Vector3f cp = cam->getPosition();
-				Quaternion q = cam->getOrientation();
-				cout << "pos: " << cp[0] << " " << cp[1] << " " << cp[2] << " ";
-				cout << "orientation: " << q.w() << " " << q.x() << " " << q.y() << " " << q.z() << endl;
-            }
-        }
-    }
+	virtual void handleEvent(const Event& evt);
 	
 };
 
@@ -70,12 +61,13 @@ int main(int argc, char** argv)
 }
 
 
+//========== OPotreeRenderPass ==========
 void OPotreeRenderPass::initialize()
 {
 	RenderPass::initialize();
 
 	// Initialize
-	pointcloud = new PointCloud("opotree.json", SystemManager::instance()->isMaster());
+	pointcloud->initPointCloud();
 	
 	//graphics
 	glEnable(GL_POINT_SPRITE);
@@ -122,4 +114,80 @@ void OPotreeRenderPass::render(Renderer* client, const DrawContext& context)
 		client->getRenderer()->endDraw();
 		if(oglError) return;
 	}
+}
+
+
+//========== OPotreeApplication ==========
+void OPotreeApplication::initialize() {
+
+	option = Utils::loadOption("opotree.json");
+
+	//UI
+	//Create a label for text info
+	DisplaySystem* ds = SystemManager::instance()->getDisplaySystem();
+	//Create and initialize the UI management module.
+	myUiModule = UiModule::createAndInitialize();
+	myUi = myUiModule->getUi();
+	int sz = 100;
+	menuLabel = Label::create(myUi);
+	menuLabel->setText("<<menu>>");
+	menuLabel->setColor(Color::Red);
+	menuLabel->setFont(ostr("fonts/arial.ttf %1%", %option->menuOption[2]));
+	menuLabel->setHorizontalAlign(Label::AlignLeft);
+	menuLabel->setPosition(Vector2f(option->menuOption[0],option->menuOption[1]));
+
+	//PointCloud
+	pointcloud = new PointCloud(option, SystemManager::instance()->isMaster());
+	menu = new PCMenu(option);
+	cout << "menu: " << menu->getString() << endl;
+	
+	//Camera
+	Camera* cam = getEngine()->getDefaultCamera();
+	cam->getController()->setSpeed(option->cameraSpeed);
+	cam->getController()->setFreeFlyEnabled(true);
+	cam->setNearFarZ(1.0, 10000.0);
+
+	if(option->cameraUpdatePosOri) {
+		cam->setPosition(Vector3f(option->cameraPosition[0], option->cameraPosition[1], option->cameraPosition[2]));
+		cam->setOrientation(Quaternion(option->cameraOrientation[0], option->cameraOrientation[1], 
+										option->cameraOrientation[2], option->cameraOrientation[3]));
+	}	
+}
+
+void OPotreeApplication::handleEvent(const Event& evt) {
+    if(evt.getServiceType() == Service::Keyboard) {
+        if(evt.isKeyDown('c')) {
+        	if(!SystemManager::instance()->isMaster())
+        		return;
+        	Camera* cam = getEngine()->getDefaultCamera();
+        	Vector3f cp = cam->getPosition();
+			Quaternion q = cam->getOrientation();
+			cout << "pos: " << cp[0] << " " << cp[1] << " " << cp[2] << " ";
+			cout << "orientation: " << q.w() << " " << q.x() << " " << q.y() << " " << q.z() << endl;
+        }
+        else if (evt.isKeyDown('j')) {
+        	menu->prev();
+        	cout << "left " << menu->getString() << endl;
+        	menuLabel->setText(menu->getString());
+        	pointcloud->setReloadShader(menu->updateOption(option));
+        }
+        else if (evt.isKeyDown('l')) {
+        	menu->next();
+        	cout << "right " << menu->getString() << endl;
+        	menuLabel->setText(menu->getString());
+        	pointcloud->setReloadShader(menu->updateOption(option));
+        }
+        else if (evt.isKeyDown('k')) {
+        	menu->down();
+        	cout << "down " << menu->getString() << endl;
+        	menuLabel->setText(menu->getString());
+        	pointcloud->setReloadShader(menu->updateOption(option));
+        }
+        else if (evt.isKeyDown('i')) {
+        	menu->up();
+        	cout << "up " << menu->getString() << endl;
+        	menuLabel->setText(menu->getString());
+        	pointcloud->setReloadShader(menu->updateOption(option));
+        }
+    }
 }

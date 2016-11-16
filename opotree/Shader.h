@@ -17,7 +17,7 @@ public:
     Shader(string name);
     ~Shader();
 
-    Shader& load(string shader, list<string> attributes, list<string> uniforms, const Option& option);
+    Shader& load(string shader, list<string> attributes, list<string> uniforms, const Option* option);
     Shader& unload();
     Shader& bind();
     Shader& unbind();
