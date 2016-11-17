@@ -1,5 +1,7 @@
 varying vec3 vColor;
 
+uniform sampler2D uColorTexture;
+
 void main() {
 
 #if defined SQUARE_POINT_SHAPE

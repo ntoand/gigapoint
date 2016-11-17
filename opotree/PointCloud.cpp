@@ -35,20 +35,8 @@ int PointCloud::initPointCloud() {
 	if(master)
 		Utils::printPCInfo(pcinfo);
 
-	// Shader + material
-	attributes.clear(); uniforms.clear();
-	attributes.push_back("VertexPosition");
-	attributes.push_back("VertexColor");
-
-	uniforms.push_back("uScreenHeight");
-	uniforms.push_back("uSpacing");
-	uniforms.push_back("uPointSize");
-	uniforms.push_back("uPointScale");
-	uniforms.push_back("uMinPointSize");
-	uniforms.push_back("uMaxPointSize");
-
-	shader = new Shader("point");
-	shader->load("shaders/point", attributes, uniforms, option);
+	// Material
+	material = new Material(option);
 
 	// root node
 	string name = "r";
@@ -189,7 +177,7 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 
 void PointCloud::draw() {
 	if(needReloadShader) {
-		shader->load("shaders/point", attributes, uniforms, option);
+		material->reloadShader(); 
 		needReloadShader = false;
 	}
 
@@ -197,6 +185,6 @@ void PointCloud::draw() {
     glEnable(GL_ALPHA_TEST);
 	for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
 		NodeGeometry* node = *it;
-		node->draw(shader, option);
+		node->draw(material);
 	}
 }

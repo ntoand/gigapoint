@@ -2,7 +2,7 @@
 	"dataDir": "century",
 	"visiblePointTarget": 5000000,
 	"minNodePixelSize": 100,
-	"moveToCentre": 1,
+	"moveToCentre": 0,
 	"screenHeight": 600,
 	"material": "rgb",
 	"pointSize": 0.2,

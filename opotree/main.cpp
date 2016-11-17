@@ -49,6 +49,7 @@ public:
 
 	virtual void initialize();
 
+	void menuAction(int type);
 	virtual void handleEvent(const Event& evt);
 	
 };
@@ -130,7 +131,7 @@ void OPotreeApplication::initialize() {
 	myUi = myUiModule->getUi();
 	int sz = 100;
 	menuLabel = Label::create(myUi);
-	menuLabel->setText("<<menu>>");
+	menuLabel->setText("");
 	menuLabel->setColor(Color::Red);
 	menuLabel->setFont(ostr("fonts/arial.ttf %1%", %option->menuOption[2]));
 	menuLabel->setHorizontalAlign(Label::AlignLeft);
@@ -140,6 +141,7 @@ void OPotreeApplication::initialize() {
 	pointcloud = new PointCloud(option, SystemManager::instance()->isMaster());
 	menu = new PCMenu(option);
 	cout << "menu: " << menu->getString() << endl;
+	menuLabel->setText(menu->getString());
 	
 	//Camera
 	Camera* cam = getEngine()->getDefaultCamera();
@@ -154,6 +156,37 @@ void OPotreeApplication::initialize() {
 	}	
 }
 
+void OPotreeApplication::menuAction(int type) {
+	switch(type) {
+		case 0: 
+			menu->prev();
+        	cout << "left " << menu->getString() << endl;
+        	menuLabel->setText(menu->getString());
+        	pointcloud->setReloadShader(menu->updateOption(option));
+			break;
+		case 1:
+			menu->next();
+        	cout << "right " << menu->getString() << endl;
+        	menuLabel->setText(menu->getString());
+        	pointcloud->setReloadShader(menu->updateOption(option));
+			break;
+		case 2:
+			menu->down();
+        	cout << "down " << menu->getString() << endl;
+        	menuLabel->setText(menu->getString());
+        	pointcloud->setReloadShader(menu->updateOption(option));
+			break;
+		case 3:
+			menu->up();
+        	cout << "up " << menu->getString() << endl;
+        	menuLabel->setText(menu->getString());
+        	pointcloud->setReloadShader(menu->updateOption(option));
+			break;
+		default:
+			break;
+	}
+}
+
 void OPotreeApplication::handleEvent(const Event& evt) {
     if(evt.getServiceType() == Service::Keyboard) {
         if(evt.isKeyDown('c')) {
@@ -166,28 +199,30 @@ void OPotreeApplication::handleEvent(const Event& evt) {
 			cout << "orientation: " << q.w() << " " << q.x() << " " << q.y() << " " << q.z() << endl;
         }
         else if (evt.isKeyDown('j')) {
-        	menu->prev();
-        	cout << "left " << menu->getString() << endl;
-        	menuLabel->setText(menu->getString());
-        	pointcloud->setReloadShader(menu->updateOption(option));
+        	menuAction(0);
         }
         else if (evt.isKeyDown('l')) {
-        	menu->next();
-        	cout << "right " << menu->getString() << endl;
-        	menuLabel->setText(menu->getString());
-        	pointcloud->setReloadShader(menu->updateOption(option));
+        	menuAction(1);
         }
         else if (evt.isKeyDown('k')) {
-        	menu->down();
-        	cout << "down " << menu->getString() << endl;
-        	menuLabel->setText(menu->getString());
-        	pointcloud->setReloadShader(menu->updateOption(option));
+        	menuAction(2);
         }
         else if (evt.isKeyDown('i')) {
-        	menu->up();
-        	cout << "up " << menu->getString() << endl;
-        	menuLabel->setText(menu->getString());
-        	pointcloud->setReloadShader(menu->updateOption(option));
+        	menuAction(3);
+        }
+    }
+    else if(evt.getServiceType() == Service::Wand) {
+    	if (evt.isButtonDown(Event::ButtonLeft )) {
+      		menuAction(0);
+    	}
+    	else if (evt.isButtonDown(Event::ButtonRight )) {
+      		menuAction(1);
+    	}
+    	else if (evt.isButtonDown(Event::ButtonDown)) {
+    		menuAction(2);
+    	}
+        else if (evt.isButtonDown(Event::ButtonUp)) {
+      		menuAction(3);
         }
     }
 }

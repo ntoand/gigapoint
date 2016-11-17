@@ -6,24 +6,26 @@ uniform float uSpacing;
 uniform float uPointSize;
 uniform float uMinPointSize;
 uniform float uMaxPointSize;
+uniform sampler1D uColorTexture;
+uniform vec2 uHeightMinMax;
 
 varying vec3 vColor;
 
 void main()
 {
-	vec4 worldPosition = vec4( VertexPosition, 1.0 );
 	vec4 mvPosition = gl_ModelViewMatrix * vec4( VertexPosition, 1.0 );
 
 	//position
     gl_Position = gl_ModelViewProjectionMatrix * vec4(VertexPosition,1.0);
 
     //color
-#if defined COLOR_TYPE_RGB
     vColor = VertexColor / 255.0;
-#else
-	vColor = VertexColor / 255.0;
-#endif
 
+#if defined MATERIAL_ELEVATION
+	float w = (VertexPosition.z - uHeightMinMax[0]) / (uHeightMinMax[1]-uHeightMinMax[0]);
+	vColor = texture1D(uColorTexture, w).rgb;
+#endif
+	
     //size
     float pointSize = 1.0;
 

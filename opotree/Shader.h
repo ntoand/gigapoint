@@ -3,7 +3,6 @@
 
 #include "Utils.h"
 
-#include <omega.h>
 #include <omegaGl.h>
 
 #include <list>

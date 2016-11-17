@@ -301,13 +301,16 @@ int NodeGeometry::initVBO() {
     return 0;
 }
 
-void NodeGeometry::draw(Shader* shader, const Option* option) {
+void NodeGeometry::draw(Material* material) {
 	if(loading || !loaded)
 		return;
 
 	if(!initvbo)
 		initVBO();
 
+	Shader* shader = material->getShader();
+	Option* option = material->getOption();
+	ColorTexture* texture = material->getColorTexture();
 	shader->bind();
 
     unsigned int attribute_vertex_pos = shader->attribute("VertexPosition");
@@ -339,9 +342,11 @@ void NodeGeometry::draw(Shader* shader, const Option* option) {
     shader->transmitUniform("uPointSize", (float)option->pointSize);
     shader->transmitUniform("uMinPointSize", 2.0f);
     shader->transmitUniform("uMaxPointSize", 40.0f);
-
-	glDrawArrays(GL_POINTS, 0, vertices.size()/3);
-
+    shader->transmitUniform("uColorTexture", (int)0);
+    shader->transmitUniform("uHeightMinMax", (float)info->tightBoundingBox[2], (float)info->tightBoundingBox[5]);
+    texture->bind();
+    glDrawArrays(GL_POINTS, 0, vertices.size()/3);
+    texture->unbind();
 	shader->unbind();
 }
 

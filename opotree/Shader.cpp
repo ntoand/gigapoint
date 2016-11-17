@@ -26,6 +26,12 @@ Shader& Shader::load(string shaderPrefix, list<string> attributes, list<string> 
     string ver = "#version 120\n";
     if(option->sizeType == SIZE_FIXED)
         ver.append("#define FIXED_POINT_SIZE\n");
+    
+    if(option->material == MATERIAL_RGB)
+        ver.append("#define MATERIAL_RGB\n");
+    else if (option->material == MATERIAL_ELEVATION)
+        ver.append("#define MATERIAL_ELEVATION\n");
+
     ver.append(Utils::getFileContent(shaderPrefix+".vert"));
     vertex = ver.c_str();
     //cout << "vertex shader: " << endl << vertex << endl;

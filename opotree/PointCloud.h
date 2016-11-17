@@ -5,7 +5,7 @@
 #include <list>
 
 #include "NodeGeometry.h"
-#include "Shader.h"
+#include "Material.h"
 #include "LRU.h"
 #include "Thread.h"
 #include "wqueue.h"
@@ -50,13 +50,11 @@ private:
 	bool master;
 	
 	PCInfo* pcinfo;
-	Shader* shader;
+	Material* material;
 	NodeGeometry* root;
 	list<NodeGeometry*> displayList;
 	int preDisplayListSize;
 	bool needReloadShader;
-	list<string> attributes;
-	list<string> uniforms;
 
 	Option* option;
 	int numVisibleNodes;
