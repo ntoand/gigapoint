@@ -6,7 +6,7 @@ uniform float uSpacing;
 uniform float uPointSize;
 uniform float uMinPointSize;
 uniform float uMaxPointSize;
-uniform sampler1D uColorTexture;
+uniform sampler2D uColorTexture;
 uniform vec2 uHeightMinMax;
 
 varying vec3 vColor;
@@ -23,7 +23,7 @@ void main()
 
 #if defined MATERIAL_ELEVATION
 	float w = (VertexPosition.z - uHeightMinMax[0]) / (uHeightMinMax[1]-uHeightMinMax[0]);
-	vColor = texture1D(uColorTexture, w).rgb;
+	vColor = texture2D(uColorTexture, vec2(w,0.5)).rgb;
 #endif
 	
     //size

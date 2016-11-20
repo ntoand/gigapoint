@@ -9,7 +9,7 @@ template <typename T> class wqueue
 {
 
 private:
-    list<T>   m_queue;
+    std::list<T>   m_queue;
     pthread_mutex_t m_mutex;
     pthread_cond_t  m_condv;
 

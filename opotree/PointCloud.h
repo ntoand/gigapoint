@@ -52,7 +52,7 @@ private:
 	PCInfo* pcinfo;
 	Material* material;
 	NodeGeometry* root;
-	list<NodeGeometry*> displayList;
+	std::list<NodeGeometry*> displayList;
 	int preDisplayListSize;
 	bool needReloadShader;
 
@@ -62,7 +62,7 @@ private:
 
 	// loader threads
 	wqueue<NodeGeometry*>  nodeQueue;
-	list<NodeLoaderThread*> nodeLoaderThreads;
+	std::list<NodeLoaderThread*> nodeLoaderThreads;
 	int numLoaderThread;
 
 	// cache 

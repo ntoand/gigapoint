@@ -342,9 +342,9 @@ void NodeGeometry::draw(Material* material) {
     shader->transmitUniform("uPointSize", (float)option->pointSize);
     shader->transmitUniform("uMinPointSize", 2.0f);
     shader->transmitUniform("uMaxPointSize", 40.0f);
+    texture->bind();
     shader->transmitUniform("uColorTexture", (int)0);
     shader->transmitUniform("uHeightMinMax", (float)info->tightBoundingBox[2], (float)info->tightBoundingBox[5]);
-    texture->bind();
     glDrawArrays(GL_POINTS, 0, vertices.size()/3);
     texture->unbind();
 	shader->unbind();

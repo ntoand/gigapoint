@@ -34,18 +34,19 @@ ColorTexture::ColorTexture(const char* filename, unsigned int _format, unsigned 
     //init texture
     gluid = 0;
     glunit = GL_TEXTURE0;
-    minFilter = GL_LINEAR;
-    magFilter = GL_LINEAR;
+    minFilter = GL_NEAREST;
+    magFilter = GL_NEAREST;
     format = _format;
     globalFormat = _globalFormat;
     glActiveTexture(glunit);
     glGenTextures(1, &gluid);
-    glBindTexture(GL_TEXTURE_1D, gluid);
-    glTexImage1D(GL_TEXTURE_1D, 0, format, width, 0, globalFormat, GL_UNSIGNED_BYTE, content); //GL_UNSIGNED_INT_8_8_8_8_REV
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER); //GL_CLAMP_TO_BORDER GL_REPEAT
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, minFilter);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, magFilter); 
+    glBindTexture(GL_TEXTURE_2D, gluid);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, 1, 0, globalFormat, GL_UNSIGNED_BYTE, content); //GL_UNSIGNED_INT_8_8_8_8_REV
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER); //GL_CLAMP_TO_BORDER GL_REPEAT
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter); 
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 ColorTexture::~ColorTexture() {
@@ -54,11 +55,12 @@ ColorTexture::~ColorTexture() {
 
 void ColorTexture::bind() {
     glActiveTexture(glunit);
-    glBindTexture(GL_TEXTURE_1D, gluid);
+    glBindTexture(GL_TEXTURE_2D, gluid);
 }
 
 void ColorTexture::unbind() {
     //glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 int ColorTexture::getWidth() {

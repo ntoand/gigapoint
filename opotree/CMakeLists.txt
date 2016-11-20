@@ -12,7 +12,7 @@ ELSE()
 	find_package(Omegalib)
 	include_directories(${OMEGA_INCLUDE_DIRS})
 	add_executable(opotree main.cpp Utils.cpp Shader.cpp cJSON.cpp NodeGeometry.cpp PointCloud.cpp Thread.cpp Menu.cpp ColorTexture.cpp Material.cpp)
-	target_link_libraries(opotree ${OMEGA_LIB} ${OMEGA_TOOLKIT_LIB} python)
+	target_link_libraries(opotree ${OMEGA_LIB} ${OMEGA_TOOLKIT_LIB} python2.7)
 
 ENDIF()
 

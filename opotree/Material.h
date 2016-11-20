@@ -11,8 +11,8 @@ private:
     Option* option;
     ColorTexture* texture;
 
-    list<string> attributes;
-	list<string> uniforms;
+    std::list<std::string> attributes;
+	std::list<std::string> uniforms;
 
 public:
 	Material(Option* option);
