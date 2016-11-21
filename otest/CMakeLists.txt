@@ -7,4 +7,4 @@ include_directories(${OMEGA_INCLUDE_DIRS})
 #add_definitions(-DUSE_GEOM)
 
 add_executable(otest Points.cpp Shader.cpp Utils.cpp Viewer.cpp ColorTexture.cpp main.cpp)
-target_link_libraries(otest ${OMEGA_LIB})
+target_link_libraries(otest ${OMEGA_LIB} ${OMEGA_TOOLKIT_LIB} python2.7)

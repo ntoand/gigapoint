@@ -1,5 +1,6 @@
 #include <omega.h>
 #include <omegaGl.h>
+#include <omegaToolkit.h>
 
 #include <iostream>
 #include <list>
@@ -8,6 +9,8 @@
 #include "Viewer.h"
 
 using namespace omega;
+using namespace omegaToolkit;
+using namespace omegaToolkit::ui;
 using namespace std;
 
 class OPotreeRenderPass: public RenderPass
@@ -26,6 +29,12 @@ class OPotreeApplication: public EngineModule
 {
 public:
 	Viewer* viewer;
+
+	Ref<Label> menuLabel;
+        // The ui manager
+        Ref<UiModule> myUiModule;
+        // The root ui container
+        Ref<Container> myUi;
 
 public:
 	OPotreeApplication(): EngineModule("OPotreeApplication") {}
@@ -48,6 +57,20 @@ void OPotreeApplication::initialize() {
 
 	cam->setPosition(Vector3f(0.14951, -0.435601, 3.82368));
 	cam->setOrientation(Quaternion(0.981666, -0.179113, -0.0641332, -0.0117016));	
+
+	//UI
+        //Create a label for text info
+        DisplaySystem* ds = SystemManager::instance()->getDisplaySystem();
+        //Create and initialize the UI management module.
+        myUiModule = UiModule::createAndInitialize();
+        myUi = myUiModule->getUi();
+        int sz = 100;
+        menuLabel = Label::create(myUi);
+        menuLabel->setText("ABC");
+        menuLabel->setColor(Color::Red);
+        menuLabel->setFont(ostr("fonts/arial.ttf %1%", %30));
+        menuLabel->setHorizontalAlign(Label::AlignLeft);
+        menuLabel->setPosition(Vector2f(30,30));
 }
 
 int main(int argc, char** argv)
@@ -119,6 +142,12 @@ void OPotreeRenderPass::render(Renderer* client, const DrawContext& context)
 }
 
 void OPotreeApplication::handleEvent(const Event& evt) {
+	if(evt.getServiceType() == Service::Keyboard) {
+		if(evt.isKeyDown('c')) {
+			menuLabel->setText("Hello world menu");
+		}
+	}
+
 	if(evt.getServiceType() == Service::Pointer ) {
 		int x = evt.getPosition().x();
 		int y = evt.getPosition().y();

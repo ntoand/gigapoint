@@ -15,11 +15,11 @@ public:
     Shader(string name);
     ~Shader();
 
-    Shader& load(string shader, list<string> attributes, list<string> uniforms);
+    Shader& load(string shader, std::list<string> attributes, std::list<string> uniforms);
     Shader& bind();
     Shader& unbind();
     Shader& setup();
-    Shader& setupLocations(list<string> _attributes, list<string> _uniforms);
+    Shader& setupLocations(std::list<string> _attributes, std::list<string> _uniforms);
 
     string& getName();
 
