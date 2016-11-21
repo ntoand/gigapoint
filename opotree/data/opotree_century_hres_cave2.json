@@ -12,6 +12,7 @@
 	"numReadThread": 4,
 	"preloadToLevel": 6,
 	"maxNodeInMem": 200000,
+	"maxLoadSize": 300,
 	"cameraSpeed": 10,
 	"cameraUpdatePosOri": 1,
 	"cameraPosition": [8.1173, -388.287, -424.887],

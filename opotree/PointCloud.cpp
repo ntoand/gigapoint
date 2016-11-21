@@ -57,7 +57,7 @@ int PointCloud::initPointCloud() {
 	// reading threads
 	if(nodeLoaderThreads.size() == 0) {
     	for(int i = 0; i < numLoaderThread; i++) {
-    		NodeLoaderThread* t = new NodeLoaderThread(nodeQueue);
+    		NodeLoaderThread* t = new NodeLoaderThread(nodeQueue, option->maxLoadSize);
     		t->start();
     		nodeLoaderThreads.push_back(t);
 	    }

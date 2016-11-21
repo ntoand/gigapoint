@@ -30,15 +30,17 @@ class NodeLoaderThread: public Thread {
 
 private:
 	wqueue<NodeGeometry*>& m_queue;
+	int maxLoadSize;
 
 public:
-	NodeLoaderThread(wqueue<NodeGeometry*>& queue) : m_queue(queue) {}
+	NodeLoaderThread(wqueue<NodeGeometry*>& queue, int m) : m_queue(queue), maxLoadSize(m) {}
 
 	void* run() {
         for (;;) {
             NodeGeometry* node = (NodeGeometry*)m_queue.remove();
-            node->loadData();
-            //osleep(1);
+	    node->setInQueue(false);
+	    if(m_queue.size() < maxLoadSize)
+            	node->loadData();
         }
         return NULL;
     }
