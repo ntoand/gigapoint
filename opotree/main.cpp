@@ -50,6 +50,7 @@ public:
 	virtual void initialize();
 
 	void menuAction(int type);
+	void resetCamera();
 	virtual void handleEvent(const Event& evt);
 	
 };
@@ -187,6 +188,16 @@ void OPotreeApplication::menuAction(int type) {
 	}
 }
 
+void OPotreeApplication::resetCamera() {
+	Camera* cam = getEngine()->getDefaultCamera();
+
+        if(option->cameraUpdatePosOri) {
+                cam->setPosition(Vector3f(option->cameraPosition[0], option->cameraPosition[1], option->cameraPosition[2]));
+                cam->setOrientation(Quaternion(option->cameraOrientation[0], option->cameraOrientation[1],
+                                                                                option->cameraOrientation[2], option->cameraOrientation[3]));
+        }
+}
+
 void OPotreeApplication::handleEvent(const Event& evt) {
     if(evt.getServiceType() == Service::Keyboard) {
         if(evt.isKeyDown('c')) {
@@ -210,6 +221,10 @@ void OPotreeApplication::handleEvent(const Event& evt) {
         else if (evt.isKeyDown('i')) {
         	menuAction(3);
         }
+	else if (evt.isKeyDown('r')) {
+		resetCamera();
+	}
+
     }
     else if(evt.getServiceType() == Service::Wand) {
     	if (evt.isButtonDown(Event::ButtonLeft )) {
@@ -224,5 +239,8 @@ void OPotreeApplication::handleEvent(const Event& evt) {
         else if (evt.isButtonDown(Event::ButtonUp)) {
       		menuAction(3);
         }
+	else if (evt.isButtonDown(Event::Button3)) { // cross
+		resetCamera();
+	}
     }
 }

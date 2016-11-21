@@ -318,7 +318,8 @@ void NodeGeometry::draw(Material* material) {
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     glVertexPointer(3, GL_FLOAT, 3*sizeof(float), (GLvoid*)0);
-    glColorPointer(3, GL_UNSIGNED_BYTE, 3*sizeof(unsigned char), (GLvoid*)(3*sizeof(unsigned char)));
+	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+    glColorPointer(3, GL_UNSIGNED_BYTE, 3*sizeof(unsigned char), (GLvoid*)0);
 	if(oglError) return;
 
     glEnableClientState(GL_VERTEX_ARRAY);
@@ -326,6 +327,11 @@ void NodeGeometry::draw(Material* material) {
 	if(oglError) return;
 	
 	shader->transmitUniform("uColorTexture", (int)0);
+	shader->transmitUniform("uHeightMinMax", (float)info->tightBoundingBox[2], (float)info->tightBoundingBox[5]);
+	shader->transmitUniform("uScreenHeight", (float)option->screenHeight);
+    shader->transmitUniform("uPointSize", (float)option->pointSize);
+    shader->transmitUniform("uMinPointSize", 2.0f);
+    shader->transmitUniform("uMaxPointSize", 40.0f);
 
 	glDrawArrays(GL_POINTS, 0, vertices.size()/3);
 

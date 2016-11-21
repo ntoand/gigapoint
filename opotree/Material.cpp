@@ -10,17 +10,17 @@ Material::Material(Option* opt): option(opt) {
 	//attributes.push_back("VertexPosition");
 	//attributes.push_back("VertexColor");
 
-	//uniforms.push_back("uScreenHeight");
-	//uniforms.push_back("uSpacing");
-	//uniforms.push_back("uPointSize");
-	//uniforms.push_back("uPointScale");
-	//uniforms.push_back("uMinPointSize");
-	//uniforms.push_back("uMaxPointSize");
+	uniforms.push_back("uScreenHeight");
+	uniforms.push_back("uSpacing");
+	uniforms.push_back("uPointSize");
+	uniforms.push_back("uPointScale");
+	uniforms.push_back("uMinPointSize");
+	uniforms.push_back("uMaxPointSize");
 	uniforms.push_back("uColorTexture");
-	//uniforms.push_back("uHeightMinMax");
+	uniforms.push_back("uHeightMinMax");
 
 	shader = new Shader("point");
-	shaderstr = "shaders/test";
+	shaderstr = "shaders/point";
 	shader->load(shaderstr, attributes, uniforms, option);
 }
 

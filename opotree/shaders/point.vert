@@ -1,45 +1,37 @@
-attribute vec3 VertexPosition;
-attribute vec3 VertexColor;
-
+uniform sampler2D uColorTexture;
+uniform vec2 uHeightMinMax;
 uniform float uScreenHeight;
-uniform float uSpacing;
 uniform float uPointSize;
 uniform float uMinPointSize;
 uniform float uMaxPointSize;
-uniform sampler2D uColorTexture;
-uniform vec2 uHeightMinMax;
-
-varying vec3 vColor;
 
 void main()
 {
-	vec4 mvPosition = gl_ModelViewMatrix * vec4( VertexPosition, 1.0 );
-
 	//position
-    gl_Position = gl_ModelViewProjectionMatrix * vec4(VertexPosition,1.0);
+    gl_Position = ftransform();
+    vec3 mvPosition = (gl_ModelViewMatrix * gl_Vertex).xyz;
 
     //color
-    vColor = VertexColor / 255.0;
-
+    gl_FrontColor = gl_Color;
 #if defined MATERIAL_ELEVATION
-	float w = (VertexPosition.z - uHeightMinMax[0]) / (uHeightMinMax[1]-uHeightMinMax[0]);
-	vColor = texture2D(uColorTexture, vec2(w,0.5)).rgb;
+    float w = (gl_Vertex.z - uHeightMinMax[0]) / (uHeightMinMax[1]-uHeightMinMax[0]);
+    gl_FrontColor = texture2D(uColorTexture, vec2(w,0.5));
 #endif
-	
+
     //size
     float pointSize = 1.0;
 
 #if defined FIXED_POINT_SIZE
-	pointSize = uPointSize*10;
+    pointSize = uPointSize*10;
 
 #else
     float projFactor = 2.41; //1.0 / tan(uFOV / 2.0);
     projFactor /= length(mvPosition);
     projFactor *= uScreenHeight / 2.0;
-	pointSize = uPointSize * projFactor;
-	
-#endif 
-	pointSize = max(uMinPointSize, pointSize);
-	pointSize = min(uMaxPointSize, pointSize);
-	gl_PointSize = pointSize;
+    pointSize = uPointSize * projFactor;
+
+#endif
+    pointSize = max(uMinPointSize, pointSize);
+    pointSize = min(uMaxPointSize, pointSize);
+    gl_PointSize = pointSize;    
 }

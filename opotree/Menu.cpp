@@ -64,7 +64,10 @@ void PCMenu::updateMenu(const Option* option) {
 }
 
 string PCMenu::getString() {
-	return menu[item].getString();
+	string str = "< ";
+	str.append(menu[item].getString());
+	str.append(" >");
+	return str;
 }
 
 void PCMenu::next() {

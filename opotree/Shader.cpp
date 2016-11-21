@@ -34,14 +34,14 @@ Shader& Shader::load(string shaderPrefix, list<string> attributes, list<string> 
 
     ver.append(Utils::getFileContent(shaderPrefix+".vert"));
     vertex = ver.c_str();
-    cout << "vertex shader: " << endl << vertex << endl;
+    //cout << "vertex shader: " << endl << vertex << endl;
 
     string fra = "#version 120\n";
     if(option->quality == QUALITY_SQUARE)
         fra.append("#define SQUARE_POINT_SHAPE\n");
     fra.append(fragment = Utils::getFileContent(shaderPrefix+".frag"));
     fragment = fra.c_str();
-    cout << "fragment shader: " << fragment << endl;
+    //cout << "fragment shader: " << fragment << endl;
 
     cout << "compile shader: " << shaderPrefix << endl;
 
