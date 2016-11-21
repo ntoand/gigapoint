@@ -106,8 +106,8 @@ void OPotreeRenderPass::render(Renderer* client, const DrawContext& context)
 		if(framecount > 500) {
 			if(SystemManager::instance()->isMaster()) {
 				Quaternion q = context.camera->getOrientation();
-				cout << "Camara pos: " << cp[0] << " " << cp[1] << " " << cp[2] << " ";
-				cout << "orientation: " << q.w() << " " << q.x() << " " << q.y() << " " << q.z() << endl;
+				cout << "Camara pos: " << cp[0] << "," << cp[1] << "," << cp[2] << " ";
+				cout << "orientation: " << q.w() << "," << q.x() << "," << q.y() << "," << q.z() << endl;
 			}
 			framecount = 0;
 		}   		
@@ -206,8 +206,8 @@ void OPotreeApplication::handleEvent(const Event& evt) {
         	Camera* cam = getEngine()->getDefaultCamera();
         	Vector3f cp = cam->getPosition();
 			Quaternion q = cam->getOrientation();
-			cout << "pos: " << cp[0] << " " << cp[1] << " " << cp[2] << " ";
-			cout << "orientation: " << q.w() << " " << q.x() << " " << q.y() << " " << q.z() << endl;
+			cout << "pos: " << cp[0] << "," << cp[1] << "," << cp[2] << " ";
+			cout << "orientation: " << q.w() << "," << q.x() << "," << q.y() << "," << q.z() << endl;
         }
         else if (evt.isKeyDown('j')) {
         	menuAction(0);

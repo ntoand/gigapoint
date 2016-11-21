@@ -36,11 +36,11 @@ void PCMenu::initMenu(const Option* option) {
 	menu.push_back(item3);
 
 	MenuItem item4;
-	item4.name = "pointsize";
+	item4.name = "pointscale";
 	item4.minvalue = 0.05;
 	item4.maxvalue = 1;
 	item4.stepinc = 0.01;
-	item4.value = option->pointSize;
+	item4.value = option->pointScale;
 	menu.push_back(item4);
 
 	item = 0;
@@ -50,7 +50,7 @@ bool PCMenu::updateOption(Option* option) {
 	option->material  = menu[0].value;
 	option->quality = menu[1].value;
 	option->sizeType = menu[2].value;
-	option->pointSize = menu[3].value;
+	option->pointScale = menu[3].value;
 	if(needReloadShader) {
 		needReloadShader = false;
 		return true;

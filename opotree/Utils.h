@@ -47,7 +47,8 @@ typedef struct Option_t {
 	float screenHeight;
 	bool moveToCentre;
 	int material;
-	float pointSize;
+	float pointScale;
+	float pointSizeRange[2];
 	int sizeType;
 	int quality;
 	int numReadThread;

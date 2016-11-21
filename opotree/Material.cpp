@@ -12,10 +12,8 @@ Material::Material(Option* opt): option(opt) {
 
 	uniforms.push_back("uScreenHeight");
 	uniforms.push_back("uSpacing");
-	uniforms.push_back("uPointSize");
 	uniforms.push_back("uPointScale");
-	uniforms.push_back("uMinPointSize");
-	uniforms.push_back("uMaxPointSize");
+	uniforms.push_back("uPointSizeRange");
 	uniforms.push_back("uColorTexture");
 	uniforms.push_back("uHeightMinMax");
 
