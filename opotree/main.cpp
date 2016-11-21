@@ -51,6 +51,7 @@ public:
 
 	void menuAction(int type);
 	void resetCamera();
+	void printInfo();
 	virtual void handleEvent(const Event& evt);
 	
 };
@@ -101,7 +102,8 @@ void OPotreeRenderPass::render(Renderer* client, const DrawContext& context)
 		float* MVP = (context.projection*context.modelview).cast<float>().data();
 		pointcloud->updateVisibility(MVP, campos);
 		pointcloud->draw();
-
+		
+		/*
 		framecount++;
 		if(framecount > 500) {
 			if(SystemManager::instance()->isMaster()) {
@@ -110,7 +112,8 @@ void OPotreeRenderPass::render(Renderer* client, const DrawContext& context)
 				cout << "orientation: " << q.w() << "," << q.x() << "," << q.y() << "," << q.z() << endl;
 			}
 			framecount = 0;
-		}   		
+		} 
+		*/  		
 
 		if(oglError) return;
 		client->getRenderer()->endDraw();
@@ -198,18 +201,20 @@ void OPotreeApplication::resetCamera() {
         }
 }
 
+void OPotreeApplication::printInfo() {
+	pointcloud->setPrintInfo(true);
+	if(!SystemManager::instance()->isMaster())
+		return;
+       	Camera* cam = getEngine()->getDefaultCamera();
+        Vector3f cp = cam->getPosition();
+        Quaternion q = cam->getOrientation();
+        cout << "pos: " << cp[0] << "," << cp[1] << "," << cp[2] << " ";
+        cout << "orientation: " << q.w() << "," << q.x() << "," << q.y() << "," << q.z() << endl;
+}
+
 void OPotreeApplication::handleEvent(const Event& evt) {
     if(evt.getServiceType() == Service::Keyboard) {
-        if(evt.isKeyDown('c')) {
-        	if(!SystemManager::instance()->isMaster())
-        		return;
-        	Camera* cam = getEngine()->getDefaultCamera();
-        	Vector3f cp = cam->getPosition();
-			Quaternion q = cam->getOrientation();
-			cout << "pos: " << cp[0] << "," << cp[1] << "," << cp[2] << " ";
-			cout << "orientation: " << q.w() << "," << q.x() << "," << q.y() << "," << q.z() << endl;
-        }
-        else if (evt.isKeyDown('j')) {
+        if (evt.isKeyDown('j')) {
         	menuAction(0);
         }
         else if (evt.isKeyDown('l')) {
@@ -225,7 +230,7 @@ void OPotreeApplication::handleEvent(const Event& evt) {
 			resetCamera();
 		}
 		else if (evt.isKeyDown('d')) {
-			pointcloud->setPrintInfo(true);
+			printInfo();
 		}
 
     }
@@ -246,7 +251,7 @@ void OPotreeApplication::handleEvent(const Event& evt) {
 			resetCamera();
 		}
 		else if (evt.isButtonDown(Event::Button2)) { // circle
-			pointcloud->setPrintInfo(true);
+			printInfo();
 		}
     }
 }

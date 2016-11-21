@@ -1,6 +1,6 @@
 {
 	"dataDir": "/data/fast/toand/potree/mt_jennifer_dense_point_cloud",
-	"visiblePointTarget": 20000000,
+	"visiblePointTarget": 22000000,
 	"minNodePixelSize": 100,
 	"moveToCentre": 1,
 	"screenHeight": 3072,
@@ -11,7 +11,7 @@
 	"quality": "circle",
 	"numReadThread": 4,
 	"preloadToLevel": 6,
-	"maxNodeInMem": 500000,
+	"maxNodeInMem": 100000,
 	"maxLoadSize": 200,
 	"cameraSpeed": 10,
 	"cameraUpdatePosOri": 1,

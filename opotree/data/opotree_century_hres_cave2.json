@@ -11,7 +11,7 @@
 	"quality": "circle",
 	"numReadThread": 4,
 	"preloadToLevel": 6,
-	"maxNodeInMem": 200000,
+	"maxNodeInMem": 100000,
 	"maxLoadSize": 300,
 	"cameraSpeed": 10,
 	"cameraUpdatePosOri": 1,
