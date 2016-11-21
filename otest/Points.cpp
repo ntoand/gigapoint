@@ -21,31 +21,38 @@ Points::Points() {
 }
 
 Points::~Points() {
-	delete shader;
 }
 
-void Points::draw(Shader* shader) {
+void Points::draw(Shader* shader, ColorTexture* texture) {
 
 	if(shader == NULL)
 		return;
 
     shader->bind();
+    texture->bind();
 
     glAlphaFunc(GL_GREATER, 0.1);
 	glEnable(GL_ALPHA_TEST);
-if(oglError) return;
+	if(oglError) return;
+
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     glVertexPointer(3, GL_FLOAT, 3*sizeof(float), (GLvoid*)0);
     glColorPointer(3, GL_FLOAT, 3*sizeof(float), (GLvoid*)(3*sizeof(float)));
-if(oglError) return;
+	if(oglError) return;
+
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
-if(oglError) return;
+	if(oglError) return;
+	
+	shader->transmitUniform("uColorTexture", (int)0);
+
 	glDrawArrays(GL_POINTS, 0, vertices.size()/3);
 
 	glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
-    glUseProgram(0);
+    
+    shader->unbind();
+    texture->unbind();
 }
 
 void Points::findCollisionPoints(const omega::Ray& r, vector<float>& cp) {

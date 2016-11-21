@@ -10,6 +10,7 @@ Viewer::Viewer(): checkCollision(false) {
 
 Viewer::~Viewer() {
 	delete shader;
+	delete texture;
 }
 
 void Viewer::init() {
@@ -19,6 +20,7 @@ void Viewer::init() {
 	attributes.clear(); uniforms.clear();
 	//attributes.push_back("VertexPosition");
 	//attributes.push_back("VertexColor");
+	uniforms.push_back("uColorTexture");
 	shader = new Shader("points");
 
 #ifdef USE_GEOM
@@ -27,11 +29,13 @@ void Viewer::init() {
 	shader->load("shaders/simple", attributes, uniforms);
 #endif
 
+	texture = new ColorTexture("colortable.dat");
+
 	points = new Points();
 }
 
 void Viewer::draw() {
-	points->draw(shader);
+	points->draw(shader, texture);
 
 	//draw ray line
 	glDisable(GL_LIGHTING);

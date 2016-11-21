@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "Shader.h"
+#include "ColorTexture.h"
 
 class Points {
 
@@ -14,13 +15,11 @@ private:
 	unsigned int vertexbuffer;
 	unsigned int colorbuffer;
 
-	Shader* shader;
-
 	std::vector<float> vertices;
 public:
 	Points();
 	~Points();
-	void draw(Shader* shader);
+	void draw(Shader* shader, ColorTexture* texture);
 	void findCollisionPoints(const omega::Ray& r, vector<float>& cp);
 };
 

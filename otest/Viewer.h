@@ -8,6 +8,7 @@ class Viewer {
 private:
 	Points* points;
 	Shader* shader;
+	ColorTexture* texture;
 
 	bool checkCollision;
 	omega::Ray ray;

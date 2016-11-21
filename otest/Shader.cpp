@@ -143,6 +143,12 @@ Shader& Shader::bind()
     return *this;
 }
 
+Shader& Shader::unbind()
+{
+    glUseProgram(0);
+    return *this;
+}
+
 string& Shader::getName()
 {
     return name;
