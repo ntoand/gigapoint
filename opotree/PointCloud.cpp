@@ -6,7 +6,8 @@
 using namespace std;
 using namespace omicron;
 
-PointCloud::PointCloud(Option* opt, bool mas): option(opt), master(mas), needReloadShader(false) {
+PointCloud::PointCloud(Option* opt, bool mas): option(opt), master(mas), 
+												needReloadShader(false), printInfo(false) {
 
 }
 
@@ -179,6 +180,12 @@ void PointCloud::draw() {
 	if(needReloadShader) {
 		material->reloadShader(); 
 		needReloadShader = false;
+	}
+
+	if(printInfo) {
+		cout << "numVisibleNodes: " << numVisibleNodes << " numVisiblePoints: " << numVisiblePoints << 
+				" nodeQueue size: " << nodeQueue.size() << " lrucache size: " << lrucache->size() << endl;
+		printInfo = false;
 	}
 
 	glAlphaFunc(GL_GREATER, 0.1);

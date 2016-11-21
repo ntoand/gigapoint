@@ -208,6 +208,10 @@ public:
 				<< ") (elasticity: " << m_elasticity << ")" << std::endl;
 	}
 
+	int size() {
+		return m_cache.size();
+	}
+
 	void dumpDebug(std::ostream& os) const {
 		std::cout << "LRUCache Size : " << m_cache.size() << " (max:" << m_maxSize
 				<< ") (elasticity: " << m_elasticity << ")" << std::endl;

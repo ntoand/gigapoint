@@ -221,9 +221,12 @@ void OPotreeApplication::handleEvent(const Event& evt) {
         else if (evt.isKeyDown('i')) {
         	menuAction(3);
         }
-	else if (evt.isKeyDown('r')) {
-		resetCamera();
-	}
+		else if (evt.isKeyDown('r')) {
+			resetCamera();
+		}
+		else if (evt.isKeyDown('d')) {
+			pointcloud->setPrintInfo(true);
+		}
 
     }
     else if(evt.getServiceType() == Service::Wand) {
@@ -239,8 +242,11 @@ void OPotreeApplication::handleEvent(const Event& evt) {
         else if (evt.isButtonDown(Event::ButtonUp)) {
       		menuAction(3);
         }
-	else if (evt.isButtonDown(Event::Button3)) { // cross
-		resetCamera();
-	}
+		else if (evt.isButtonDown(Event::Button3)) { // cross
+			resetCamera();
+		}
+		else if (evt.isButtonDown(Event::Button2)) { // circle
+			pointcloud->setPrintInfo(true);
+		}
     }
 }

@@ -57,6 +57,7 @@ private:
 	std::list<NodeGeometry*> displayList;
 	int preDisplayListSize;
 	bool needReloadShader;
+	bool printInfo;
 
 	Option* option;
 	int numVisibleNodes;
@@ -74,7 +75,8 @@ public:
 	PointCloud(Option* option, bool master = false);
 	~PointCloud();
 	int initPointCloud();
-	void setReloadShader(bool r) { needReloadShader = r; }
+	void setReloadShader(bool b) { needReloadShader = b; }
+	void setPrintInfo(bool b) { printInfo = b; }
 
 	int preloadUpToLevel(const int level=0);
 	int updateVisibility(const float MVP[16], const float campos[3]);
