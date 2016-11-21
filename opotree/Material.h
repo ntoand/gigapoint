@@ -10,6 +10,7 @@ private:
 	Shader* shader;
     Option* option;
     ColorTexture* texture;
+    std::string shaderstr;
 
     std::list<std::string> attributes;
 	std::list<std::string> uniforms;

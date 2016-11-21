@@ -311,32 +311,31 @@ void NodeGeometry::draw(Material* material) {
 	Shader* shader = material->getShader();
 	Option* option = material->getOption();
 	ColorTexture* texture = material->getColorTexture();
+
 	shader->bind();
+	texture->bind();
+	if(oglError) return;
 
-    unsigned int attribute_vertex_pos = shader->attribute("VertexPosition");
-    glEnableVertexAttribArray(attribute_vertex_pos);  // Vertex position
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    glVertexAttribPointer(
-        attribute_vertex_pos, // attribute
-        3,                 // number of elements per vertex, here (x,y,z)
-        GL_FLOAT,          // the type of each element
-        GL_FALSE,          // take our values as-is
-        0,                 // no extra data between each position
-        0                  // offset of first element
-    );
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glVertexPointer(3, GL_FLOAT, 3*sizeof(float), (GLvoid*)0);
+    glColorPointer(3, GL_UNSIGNED_BYTE, 3*sizeof(unsigned char), (GLvoid*)(3*sizeof(unsigned char)));
+	if(oglError) return;
 
-    unsigned int attribute_color_pos = shader->attribute("VertexColor");
-    glEnableVertexAttribArray(attribute_color_pos);  // Vertex position
-    glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-    glVertexAttribPointer(
-        attribute_color_pos, // attribute
-        3,                 // number of elements per vertex, here (r, g, b)
-        GL_UNSIGNED_BYTE,  // the type of each element
-        GL_FALSE,          // take our values as-is
-        0,                 // no extra data between each position
-        0                  // offset of first element
-    );
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+	if(oglError) return;
+	
+	shader->transmitUniform("uColorTexture", (int)0);
 
+	glDrawArrays(GL_POINTS, 0, vertices.size()/3);
+
+	glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+    
+    shader->unbind();
+    texture->unbind();
+
+    /*
     shader->transmitUniform("uScreenHeight", (float)option->screenHeight);
     shader->transmitUniform("uSpacing", (float)info->spacing);
     shader->transmitUniform("uPointSize", (float)option->pointSize);
@@ -348,6 +347,7 @@ void NodeGeometry::draw(Material* material) {
     glDrawArrays(GL_POINTS, 0, vertices.size()/3);
     texture->unbind();
 	shader->unbind();
+	*/
 }
 
 void NodeGeometry::freeData() {
