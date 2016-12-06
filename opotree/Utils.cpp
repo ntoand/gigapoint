@@ -188,7 +188,11 @@ Option* Utils::loadOption(const string filename) {
         else
             option->material = MATERIAL_RGB;
 
-        option->pointScale = cJSON_GetObjectItem(json, "pointScale")->valuedouble;
+	cJSON* ps = cJSON_GetObjectItem(json, "pointScale");
+        option->pointScale[0] = cJSON_GetArrayItem(ps, 0)->valuedouble;
+	option->pointScale[1] = cJSON_GetArrayItem(ps, 1)->valuedouble;
+	option->pointScale[1] = cJSON_GetArrayItem(ps, 2)->valuedouble;
+
 	cJSON* range = cJSON_GetObjectItem(json, "pointSizeRange");
         option->pointSizeRange[0] = cJSON_GetArrayItem(range, 0)->valuedouble;
         option->pointSizeRange[1] = cJSON_GetArrayItem(range, 1)->valuedouble;
@@ -253,7 +257,7 @@ void Utils::printOption(const Option* option) {
     cout << "screenHeight: " << option->screenHeight << endl;
     cout << "moveToCentre: " << option->moveToCentre << endl;
     cout << "material: " << option->material << endl;
-    cout << "pointScale: " << option->pointScale << endl;
+    cout << "pointScale: " << option->pointScale[0] << " " << option->pointScale[1] << " " << option->pointScale[2] << endl;
     cout << "pointSizeRange: " << option->pointSizeRange[0] << " " << option->pointSizeRange[1] << endl;
     cout << "sizeType: " << option->sizeType << endl;
     cout << "quality: " << option->quality << endl;

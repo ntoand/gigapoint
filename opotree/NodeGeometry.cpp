@@ -329,7 +329,7 @@ void NodeGeometry::draw(Material* material) {
 	shader->transmitUniform("uColorTexture", (int)0);
 	shader->transmitUniform("uHeightMinMax", (float)info->tightBoundingBox[2], (float)info->tightBoundingBox[5]);
 	shader->transmitUniform("uScreenHeight", (float)option->screenHeight);
-    shader->transmitUniform("uPointScale", (float)option->pointScale);
+    shader->transmitUniform("uPointScale", (float)option->pointScale[0]);
     shader->transmitUniform("uPointSizeRange", (float)option->pointSizeRange[0], (float)option->pointSizeRange[1]);
 
 	glDrawArrays(GL_POINTS, 0, vertices.size()/3);

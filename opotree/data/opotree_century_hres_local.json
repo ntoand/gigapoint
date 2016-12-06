@@ -5,7 +5,7 @@
 	"moveToCentre": 1,
 	"screenHeight": 600,
 	"material": "rgb",
-	"pointScale": 0.2,
+	"pointScale": [0.2,0.01,0.5],
 	"pointSizeRange": [2, 50],
 	"sizeType": "adaptive",
 	"quality": "circle",
