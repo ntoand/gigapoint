@@ -191,7 +191,7 @@ Option* Utils::loadOption(const string filename) {
 	cJSON* ps = cJSON_GetObjectItem(json, "pointScale");
         option->pointScale[0] = cJSON_GetArrayItem(ps, 0)->valuedouble;
 	option->pointScale[1] = cJSON_GetArrayItem(ps, 1)->valuedouble;
-	option->pointScale[1] = cJSON_GetArrayItem(ps, 2)->valuedouble;
+	option->pointScale[2] = cJSON_GetArrayItem(ps, 2)->valuedouble;
 
 	cJSON* range = cJSON_GetObjectItem(json, "pointSizeRange");
         option->pointSizeRange[0] = cJSON_GetArrayItem(range, 0)->valuedouble;
