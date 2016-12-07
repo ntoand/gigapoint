@@ -146,6 +146,30 @@ float Utils::distance(const float v1[3], const float v2[3]) {
     return sqrt( (v1[0]-v2[0])*(v1[0]-v2[0]) + (v1[1]-v2[1])*(v1[1]-v2[1]) + (v1[2]-v2[2])*(v1[2]-v2[2]) );
 }
 
+
+// cJSON wrappers
+static string getJsonItemString(cJSON* js, string item, string default_value="") {
+    cJSON* i = cJSON_GetObjectItem(js, item.c_str());
+    if(i)
+        return i->valuestring;
+    return default_value;
+}
+
+static double getJsonItemDouble(cJSON* js, string item, double default_value=0) {
+    cJSON* i = cJSON_GetObjectItem(js, item.c_str());
+    if(i)
+        return i->valuedouble;
+    return default_value;
+}
+
+static int getJsonItemInt(cJSON* js, string item, int default_value=0) {
+    cJSON* i = cJSON_GetObjectItem(js, item.c_str());
+    if(i)
+        return i->valueint;
+    return default_value;
+}
+
+
 // Option
 Option* Utils::loadOption(const string filename) {
     cout << "Load option from file: " << filename << endl;
@@ -171,14 +195,14 @@ Option* Utils::loadOption(const string filename) {
     else {
         option = new Option();
 
-        option->dataDir = cJSON_GetObjectItem(json, "dataDir")->valuestring;
+        option->dataDir = getJsonItemString(json, "dataDir", "./");
         option->dataDir.append("/");
-        option->visiblePointTarget = cJSON_GetObjectItem(json, "visiblePointTarget")->valuedouble;
-        option->minNodePixelSize = cJSON_GetObjectItem(json, "minNodePixelSize")->valuedouble;
-        option->screenHeight = cJSON_GetObjectItem(json, "screenHeight")->valuedouble;
-        option->moveToCentre = cJSON_GetObjectItem(json, "moveToCentre")->valueint > 0;
+        option->visiblePointTarget = getJsonItemDouble(json, "visiblePointTarget", 1000000);
+        option->minNodePixelSize = getJsonItemDouble(json, "minNodePixelSize", 100);
+        option->screenHeight = getJsonItemDouble(json, "screenHeight", 600);
+        option->moveToCentre = getJsonItemInt(json, "moveToCentre", 1) > 0;
 
-        string tmp = cJSON_GetObjectItem(json, "material")->valuestring;
+        string tmp = getJsonItemString(json, "material", "rgb");
         if (tmp.compare("rgb") == 0)
             option->material = MATERIAL_RGB;
         else if (tmp.compare("elevation") == 0)
@@ -188,16 +212,27 @@ Option* Utils::loadOption(const string filename) {
         else
             option->material = MATERIAL_RGB;
 
-	cJSON* ps = cJSON_GetObjectItem(json, "pointScale");
-        option->pointScale[0] = cJSON_GetArrayItem(ps, 0)->valuedouble;
-	option->pointScale[1] = cJSON_GetArrayItem(ps, 1)->valuedouble;
-	option->pointScale[2] = cJSON_GetArrayItem(ps, 2)->valuedouble;
+	    cJSON* ps = cJSON_GetObjectItem(json, "pointScale");
+        if(ps) {
+            option->pointScale[0] = cJSON_GetArrayItem(ps, 0)->valuedouble;
+            option->pointScale[1] = cJSON_GetArrayItem(ps, 1)->valuedouble;
+            option->pointScale[2] = cJSON_GetArrayItem(ps, 2)->valuedouble;
+        }
+        else {
+            option->pointScale[0] = option->pointScale[1] = option->pointScale[2] = 1;
+        }
+        
+	    cJSON* range = cJSON_GetObjectItem(json, "pointSizeRange");
+        if(range) {
+            option->pointSizeRange[0] = cJSON_GetArrayItem(range, 0)->valuedouble;
+            option->pointSizeRange[1] = cJSON_GetArrayItem(range, 1)->valuedouble;
+        } 
+        else {
+            option->pointSizeRange[0] = 2;
+            option->pointSizeRange[1] = 50;
+        }
 
-	cJSON* range = cJSON_GetObjectItem(json, "pointSizeRange");
-        option->pointSizeRange[0] = cJSON_GetArrayItem(range, 0)->valuedouble;
-        option->pointSizeRange[1] = cJSON_GetArrayItem(range, 1)->valuedouble;
-
-        tmp = cJSON_GetObjectItem(json, "sizeType")->valuestring;
+        tmp = getJsonItemString(json, "sizeType", "fixed");
         if (tmp.compare("fixed") == 0)
             option->sizeType = SIZE_FIXED;
         else if (tmp.compare("adaptive") == 0)
@@ -205,7 +240,7 @@ Option* Utils::loadOption(const string filename) {
         else
             option->sizeType = SIZE_FIXED;
 
-        tmp = cJSON_GetObjectItem(json, "quality")->valuestring;
+        tmp = getJsonItemString(json, "quality", "square");
         if (tmp.compare("square") == 0)
             option->quality = QUALITY_SQUARE;
         else if (tmp.compare("circle") == 0)
@@ -213,35 +248,48 @@ Option* Utils::loadOption(const string filename) {
         else
             option->quality = QUALITY_SQUARE;
 
-        option->numReadThread = cJSON_GetObjectItem(json, "numReadThread")->valueint;
-        option->preloadToLevel = cJSON_GetObjectItem(json, "preloadToLevel")->valueint;
-        option->maxNodeInMem = cJSON_GetObjectItem(json, "maxNodeInMem")->valueint;  
-	option->maxLoadSize = cJSON_GetObjectItem(json, "maxLoadSize")->valueint;
-        option->cameraSpeed = cJSON_GetObjectItem(json, "cameraSpeed")->valueint;
+        option->numReadThread = getJsonItemInt(json, "numReadThread", 2);
+        option->preloadToLevel = getJsonItemInt(json, "preloadToLevel", 5);
+        option->maxNodeInMem = getJsonItemInt(json, "maxNodeInMem", 50000);  
+	    option->maxLoadSize = getJsonItemInt(json, "maxLoadSize", 300);
+        option->cameraSpeed = getJsonItemInt(json, "cameraSpeed", 10);
 
-        option->cameraUpdatePosOri = cJSON_GetObjectItem(json, "cameraUpdatePosOri")->valueint > 0;
+        option->cameraUpdatePosOri = getJsonItemInt(json, "cameraUpdatePosOri", 1) > 0;
         if(option->cameraUpdatePosOri) {
             cJSON* campos = cJSON_GetObjectItem(json, "cameraPosition");
-            option->cameraPosition[0] = cJSON_GetArrayItem(campos, 0)->valuedouble;
-            option->cameraPosition[1] = cJSON_GetArrayItem(campos, 1)->valuedouble;
-            option->cameraPosition[2] = cJSON_GetArrayItem(campos, 2)->valuedouble;
-
+            if(campos) {
+                option->cameraPosition[0] = cJSON_GetArrayItem(campos, 0)->valuedouble;
+                option->cameraPosition[1] = cJSON_GetArrayItem(campos, 1)->valuedouble;
+                option->cameraPosition[2] = cJSON_GetArrayItem(campos, 2)->valuedouble;
+            }
+            else {
+                option->cameraPosition[0] = option->cameraPosition[1] = option->cameraPosition[2] = 0;
+            }
+            
             cJSON* camori = cJSON_GetObjectItem(json, "cameraOrientation");
-            option->cameraOrientation[0] = cJSON_GetArrayItem(camori, 0)->valuedouble;
-            option->cameraOrientation[1] = cJSON_GetArrayItem(camori, 1)->valuedouble;
-            option->cameraOrientation[2] = cJSON_GetArrayItem(camori, 2)->valuedouble;
-            option->cameraOrientation[3] = cJSON_GetArrayItem(camori, 3)->valuedouble;
+            if(camori) {
+                option->cameraOrientation[0] = cJSON_GetArrayItem(camori, 0)->valuedouble;
+                option->cameraOrientation[1] = cJSON_GetArrayItem(camori, 1)->valuedouble;
+                option->cameraOrientation[2] = cJSON_GetArrayItem(camori, 2)->valuedouble;
+                option->cameraOrientation[3] = cJSON_GetArrayItem(camori, 3)->valuedouble;
+            }
+            else {
+                option->cameraOrientation[0] = 1;
+                option->cameraOrientation[1] = option->cameraOrientation[2] = option->cameraOrientation[3] = 0;
+            }
+            
         }
 
-        cJSON* scale = cJSON_GetObjectItem(json, "scaleXYZ");
-        option->scaleXYZ[0] = cJSON_GetArrayItem(scale, 0)->valuedouble;
-        option->scaleXYZ[1] = cJSON_GetArrayItem(scale, 1)->valuedouble;
-        option->scaleXYZ[2] = cJSON_GetArrayItem(scale, 2)->valuedouble;
-
         cJSON* menuopt = cJSON_GetObjectItem(json, "menuOption");
-        option->menuOption[0] = cJSON_GetArrayItem(menuopt, 0)->valuedouble;
-        option->menuOption[1] = cJSON_GetArrayItem(menuopt, 1)->valuedouble;
-        option->menuOption[2] = cJSON_GetArrayItem(menuopt, 2)->valuedouble;
+        if(menuopt) {
+            option->menuOption[0] = cJSON_GetArrayItem(menuopt, 0)->valuedouble;
+            option->menuOption[1] = cJSON_GetArrayItem(menuopt, 1)->valuedouble;
+            option->menuOption[2] = cJSON_GetArrayItem(menuopt, 2)->valuedouble;
+        }
+        else {
+            option->menuOption[0] = option->menuOption[1] = option->menuOption[2] = 30;
+        }
+        
     }
 
     cJSON_Delete(json);
@@ -277,10 +325,6 @@ void Utils::printOption(const Option* option) {
             cout << option->cameraOrientation[i] << " ";
         cout << endl;
     }
-    cout << "scaleXYZ:";
-    for(int i=0; i < 3; i ++)
-        cout << option->scaleXYZ[i] << " ";
-    cout << endl;
     cout << "menuOption:";
     for(int i=0; i < 3; i ++)
         cout << option->menuOption[i] << " ";

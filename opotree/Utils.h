@@ -59,7 +59,6 @@ typedef struct Option_t {
 	bool cameraUpdatePosOri;
 	float cameraPosition[3];
 	float cameraOrientation[4];
-	float scaleXYZ[3];
 	float menuOption[3];
 } Option;
 
