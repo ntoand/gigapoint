@@ -168,15 +168,15 @@ void OPotreeApplication::handleEvent(const Event& evt) {
 	}
 
 	else if (evt.getServiceType() == Service::Wand) {
-		if (evt.isButtonDown(Event::Button5)) { //L1
+		//if (evt.isButtonDown(Event::Button5)) { //L1
 			DisplaySystem* ds = SystemManager::instance()->getDisplaySystem();
 		    Ray r;
 		    bool res = ds->getViewRayFromEvent(evt, r);
 		    Vector3f pos = r.getOrigin();
 		    Vector3f ori = r.getDirection();
-		    cout << "Get ray pos: " << pos[0] << " " << pos[1] << " " << pos[2] << " ori: "
-		    		<< ori[0] << " " << ori[1] << " " << ori[2] << endl;
+		    //cout << "Get ray pos: " << pos[0] << " " << pos[1] << " " << pos[2] << " ori: "
+		    //		<< ori[0] << " " << ori[1] << " " << ori[2] << endl;
 		    viewer->setCheckCollision(true, r);
-		}
+		//}
 	}
 }

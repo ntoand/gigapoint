@@ -72,7 +72,7 @@ void Points::findCollisionPoints(const omega::Ray& r, vector<float>& cp) {
 	int numpoints = vertices.size() / 3;
 	for(int i=0; i < numpoints; i++) {
 		Vector3f pos = Vector3f(vertices[3*i], vertices[3*i+1], vertices[3*i+2]);
-		std::pair<bool, omega::real> result = r.intersects(Sphere(pos, 0.05));
+		std::pair<bool, omega::real> result = r.intersects(Sphere(pos, 0.01));
 		if(result.first)
 			cp.push_back((float)result.second);
 	}

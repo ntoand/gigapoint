@@ -72,7 +72,7 @@ void Viewer::draw() {
 	if(checkCollision) {
 		vector<float> cp;
 		points->findCollisionPoints(ray, cp);
-		cout << "Num coll points: " << cp.size()<< endl;
+		//cout << "Num coll points: " << cp.size()<< endl;
 		for(int i=0; i < cp.size(); i++) {
 			Vector3f pos = ray.getPoint(cp[i]);
 			cout << cp[i] << " " << pos[0] << " " << pos[1] << " " << pos[2] << endl;
