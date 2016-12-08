@@ -13,6 +13,8 @@ private:
 	bool checkCollision;
 	omega::Ray ray;
 
+	vector<float> collisionPoints;
+
 public:
 	Viewer();
 	~Viewer();

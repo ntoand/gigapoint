@@ -124,7 +124,7 @@ void OPotreeRenderPass::render(Renderer* client, const DrawContext& context)
 		if(oglError) return;	
 		
 		framecount++;
-		if(framecount > 2000) {
+		if(framecount > 10000) {
 			if(SystemManager::instance()->isMaster()) {
 				Vector3f cp = context.camera->getPosition();
 				Quaternion q = context.camera->getOrientation();
@@ -141,6 +141,7 @@ void OPotreeRenderPass::render(Renderer* client, const DrawContext& context)
 	}
 }
 
+
 void OPotreeApplication::handleEvent(const Event& evt) {
 	if(evt.getServiceType() == Service::Keyboard) {
 		if(evt.isKeyDown('c')) {
@@ -148,7 +149,7 @@ void OPotreeApplication::handleEvent(const Event& evt) {
 		}
 	}
 
-	if(evt.getServiceType() == Service::Pointer ) {
+	else if(evt.getServiceType() == Service::Pointer ) {
 		int x = evt.getPosition().x();
 		int y = evt.getPosition().y();
 		int flags = evt.getFlags();
@@ -164,5 +165,18 @@ void OPotreeApplication::handleEvent(const Event& evt) {
 		    viewer->setCheckCollision(true, r);
 		}
 		
+	}
+
+	else if (evt.getServiceType() == Service::Wand) {
+		if (evt.isButtonDown(Event::Button5)) { //L1
+			DisplaySystem* ds = SystemManager::instance()->getDisplaySystem();
+		    Ray r;
+		    bool res = ds->getViewRayFromEvent(evt, r);
+		    Vector3f pos = r.getOrigin();
+		    Vector3f ori = r.getDirection();
+		    cout << "Get ray pos: " << pos[0] << " " << pos[1] << " " << pos[2] << " ori: "
+		    		<< ori[0] << " " << ori[1] << " " << ori[2] << endl;
+		    viewer->setCheckCollision(true, r);
+		}
 	}
 }

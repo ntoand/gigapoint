@@ -16,8 +16,9 @@ void main() {
     N.z = sqrt(1.0-mag);
 
     // calculate lighting
-    float diffuse = max(0.0, dot(lightDir, N));
+    //float diffuse = max(0.0, dot(lightDir, N));
 
-    gl_FragColor = gl_Color * diffuse;
-    gl_FragColor.a = 1.0;
+    //gl_FragColor = gl_Color * diffuse;
+    //gl_FragColor.a = 1.0;
+    gl_FragColor = gl_Color;
 }

@@ -16,6 +16,7 @@ private:
 	unsigned int colorbuffer;
 
 	std::vector<float> vertices;
+	std::vector<unsigned char> colors;
 public:
 	Points();
 	~Points();
