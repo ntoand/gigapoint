@@ -76,6 +76,20 @@ typedef struct PCInfo_t {
 	int pointByteSize;
 } PCInfo;
 
+// interaction
+#define INTERACT_NONE		-1
+#define INTERACT_POINT 		0
+#define INTERACT_DISTANCE	1
+
+typedef struct HitPoint_ {
+	float distance;
+	float position[3];
+	HitPoint_() {
+		distance = -1;
+	}
+} HitPoint;
+
+// Utils class
 class Utils {
 
 public:

@@ -7,7 +7,8 @@ using namespace std;
 using namespace omicron;
 
 PointCloud::PointCloud(Option* opt, bool mas): option(opt), master(mas), 
-												needReloadShader(false), printInfo(false) {
+												needReloadShader(false), printInfo(false), 
+												interactMode(INTERACT_NONE) {
 
 }
 
@@ -193,5 +194,58 @@ void PointCloud::draw() {
 	for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
 		NodeGeometry* node = *it;
 		node->draw(material);
+	}
+
+	// draw interaction
+	if(interactMode == INTERACT_NONE)
+		return;
+	glDisable(GL_LIGHTING);
+	glDisable(GL_BLEND);
+	//draw ray line
+	Vector3f spos = ray.getOrigin(); //- 1*ray.getDirection();
+	Vector3f epos = ray.getOrigin() + 10*ray.getDirection();
+	glLineWidth(2.0); 
+	glColor3f(1.0, 1.0, 1.0);
+	glBegin(GL_LINES);
+	glVertex3f(spos[0], spos[1], spos[2]);
+	glVertex3f(epos[0], epos[1], epos[2]);
+	glEnd();
+
+	glEnable(GL_PROGRAM_POINT_SIZE_EXT);
+    glPointSize(20);
+    glColor3f(0.0, 1.0, 0.0);
+    glBegin(GL_POINTS);
+    for(int i=0; i < hitPoints.size(); i++) {
+    	glVertex3f(hitPoints[i]->position[0], hitPoints[i]->position[1], hitPoints[i]->position[2]);
+    }
+    glEnd();
+}
+
+// interaction
+void PointCloud::updateRay(const omega::Ray& r) {
+	ray = r;
+}
+
+void PointCloud::findHitPoint() {
+	if (interactMode == INTERACT_NONE)
+		return;
+
+	if (interactMode == INTERACT_POINT) {
+		unsigned int start_time = Utils::getTime();
+		hitPoints.clear();
+		HitPoint* point = new HitPoint();
+
+		for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
+			NodeGeometry* node = *it;
+			node->findHitPoint(ray, point);
+		}
+
+		if(point->distance != -1) {
+			hitPoints.push_back(point);
+			cout << "find time: " << Utils::getTime() - start_time << " size: " << hitPoints.size()
+				<< " dis: " << hitPoints[0]->distance
+			 	<< " pos: " << hitPoints[0]->position[0] << " " << hitPoints[0]->position[1] << " " 
+			 	<< hitPoints[0]->position[2] << endl;
+		}
 	}
 }

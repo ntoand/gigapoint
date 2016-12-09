@@ -97,6 +97,9 @@ public:
 	void draw(Material* material);
 
 	void freeData();
+
+	//interaction
+	void findHitPoint(const omega::Ray& r, HitPoint* point);
 };
 
 #endif

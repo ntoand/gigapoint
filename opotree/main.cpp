@@ -232,9 +232,37 @@ void OPotreeApplication::handleEvent(const Event& evt) {
 		else if (evt.isKeyDown('d')) {
 			printInfo();
 		}
+		else if (evt.isKeyDown('p')) {
+			if(pointcloud->getInteractMode() == INTERACT_NONE)
+				pointcloud->setInteractMode(INTERACT_POINT);
+			else
+				pointcloud->setInteractMode(INTERACT_NONE);
+		}
 
     }
+    
+    else if(evt.getServiceType() == Service::Pointer ) {
+		DisplaySystem* ds = SystemManager::instance()->getDisplaySystem();
+	    Ray r;
+	    bool res = ds->getViewRayFromEvent(evt, r);
+	    if(res)
+	    	pointcloud->updateRay(r);
+
+	    if(evt.getType() == Event::Down && evt.getFlags() & 2) {
+	    	pointcloud->findHitPoint();
+	    }
+		
+    }
+
     else if(evt.getServiceType() == Service::Wand) {
+    	if(pointcloud->getInteractMode() != INTERACT_NONE) {
+    		DisplaySystem* ds = SystemManager::instance()->getDisplaySystem();
+		    Ray r;
+		    bool res = ds->getViewRayFromEvent(evt, r);
+		    if(res)
+		    	pointcloud->updateRay(r);
+    	}
+    	
     	if (evt.isButtonDown(Event::ButtonLeft )) {
       		menuAction(0);
     	}
@@ -253,5 +281,15 @@ void OPotreeApplication::handleEvent(const Event& evt) {
 		else if (evt.isButtonDown(Event::Button2)) { // circle
 			printInfo();
 		}
+		else if (evt.isButtonDown(Event::Button1) || evt.isButtonDown(Event::Button4)) {
+			if(pointcloud->getInteractMode() == INTERACT_NONE)
+				pointcloud->setInteractMode(INTERACT_POINT);
+			else
+				pointcloud->setInteractMode(INTERACT_NONE);
+		}
+		else if (evt.isButtonDown(Event::Button5)) {  // L1
+			pointcloud->findHitPoint();
+		}
+
     }
 }

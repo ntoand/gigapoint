@@ -339,20 +339,6 @@ void NodeGeometry::draw(Material* material) {
     
     shader->unbind();
     texture->unbind();
-
-    /*
-    shader->transmitUniform("uScreenHeight", (float)option->screenHeight);
-    shader->transmitUniform("uSpacing", (float)info->spacing);
-    shader->transmitUniform("uPointSize", (float)option->pointSize);
-    shader->transmitUniform("uMinPointSize", 2.0f);
-    shader->transmitUniform("uMaxPointSize", 40.0f);
-    texture->bind();
-    shader->transmitUniform("uColorTexture", (int)0);
-    shader->transmitUniform("uHeightMinMax", (float)info->tightBoundingBox[2], (float)info->tightBoundingBox[5]);
-    glDrawArrays(GL_POINTS, 0, vertices.size()/3);
-    texture->unbind();
-	shader->unbind();
-	*/
 }
 
 void NodeGeometry::freeData() {
@@ -366,5 +352,30 @@ void NodeGeometry::freeData() {
 		vertices.clear();
 		colors.clear();
 		loaded = false;
+	}
+}
+
+// interaction
+void NodeGeometry::findHitPoint(const omega::Ray& r, HitPoint* point) {
+	// check with the whole node first
+	Vector3f pos = Vector3f(spherecentre[0], spherecentre[1], spherecentre[2]);
+	std::pair<bool, omega::real> result = r.intersects(Sphere(pos, sphereradius));
+	if(!result.first)
+		return;
+
+	// check all points
+	int numpoints = vertices.size() / 3;
+	for(int i=0; i < numpoints; i++) {
+		pos = Vector3f(vertices[3*i], vertices[3*i+1], vertices[3*i+2]);
+		result = r.intersects(Sphere(pos, 1));
+		if(result.first) {
+			float dis = (float)result.second;
+			if (point->distance == -1 || point->distance > dis) {
+				point->distance = dis;
+				point->position[0] = pos[0];
+				point->position[1] = pos[1];
+				point->position[2] = pos[2];
+			}
+		}
 	}
 }
