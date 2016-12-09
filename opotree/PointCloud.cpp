@@ -203,7 +203,7 @@ void PointCloud::draw() {
 	glDisable(GL_BLEND);
 	//draw ray line
 	Vector3f spos = ray.getOrigin(); //- 1*ray.getDirection();
-	Vector3f epos = ray.getOrigin() + 10*ray.getDirection();
+	Vector3f epos = ray.getOrigin() + 100*ray.getDirection();
 	glLineWidth(2.0); 
 	glColor3f(1.0, 1.0, 1.0);
 	glBegin(GL_LINES);

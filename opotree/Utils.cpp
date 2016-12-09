@@ -417,10 +417,12 @@ PCInfo* Utils::loadPCInfo(const string data_dir) {
         info->boundingBoxCentre[1] = (info->boundingBox[1] + info->boundingBox[4]) / 2;
         info->boundingBoxCentre[2] = (info->boundingBox[2] + info->boundingBox[5]) / 2;
 
+        /*
         for(int i=0; i < 3; i++) {
           info->tightBoundingBox[i] -= info->boundingBoxCentre[i];
           info->tightBoundingBox[i+3] -= info->boundingBoxCentre[i];
         } 
+        */
     }
 
     cJSON_Delete(json);

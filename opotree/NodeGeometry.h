@@ -27,6 +27,7 @@ private:
 	string name;
 	int index;
 	float bbox[6];
+	float tightbbox[6];
 	//float tightbbox[6];
 	float spherecentre[3];
 	float sphereradius;
@@ -86,6 +87,8 @@ public:
 
 	void setBBox(const float* bbox);
 	float* getBBox() { return bbox; }
+	void setTightBBox(const float* bbox);
+	float* getTightBBox() { return tightbbox; }
 
 	void addPoint(float x, float y, float z);
 	void addColor(float r, float g, float b);

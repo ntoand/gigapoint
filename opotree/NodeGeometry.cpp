@@ -48,10 +48,15 @@ void NodeGeometry::addColor(float r, float g, float b) {
 void NodeGeometry::setBBox(const float* bb) {
 	for(int i=0; i < 6; i++)
 		bbox[i] = bb[i];
-	spherecentre[0] = (bbox[0] + bbox[3])*0.5;
-	spherecentre[1] = (bbox[1] + bbox[4])*0.5;
-	spherecentre[2] = (bbox[2] + bbox[5])*0.5;
-	float bmin[3] = { bbox[0], bbox[1], bbox[2] };
+}
+
+void NodeGeometry::setTightBBox(const float* bb) {
+	for(int i=0; i < 6; i++)
+		tightbbox[i] = bb[i];
+	spherecentre[0] = (tightbbox[0] + tightbbox[3])*0.5;
+	spherecentre[1] = (tightbbox[1] + tightbbox[4])*0.5;
+	spherecentre[2] = (tightbbox[2] + tightbbox[5])*0.5;
+	float bmin[3] = { tightbbox[0], tightbbox[1], tightbbox[2] };
 	sphereradius = Utils::distance(spherecentre, bmin);
 }
 
@@ -78,12 +83,16 @@ int NodeGeometry::loadHierachy(bool movetocentre) {
 
 	if(level == 0) { // root
 		if(movetocentre) {
-			float b[6];
-			for(int i=0; i < 6; i++)
+			float b[6], tb[6];
+			for(int i=0; i < 6; i++) {
 				b[i] = info->boundingBox[i] - info->boundingBoxCentre[i%3];
+				tb[i] = info->tightBoundingBox[i] - info->boundingBoxCentre[i%3];
+			}
 			setBBox(b);
+			setTightBBox(tb);
 		} else {
 			setBBox(info->boundingBox);
+			setTightBBox(info->tightBoundingBox);
 		}
 	} 
 
@@ -161,9 +170,11 @@ int NodeGeometry::loadHierachy(bool movetocentre) {
 		cnode->setIndex(cindex);
 		cnode->setNumPoints(item.numpoints);
 		cnode->setHasChildren(item.children > 0);
-		float cbbox[6];
+		float cbbox[6], tightcbbox[6];
 		Utils::createChildAABB(pnode->getBBox(), cindex, cbbox);
+		Utils::createChildAABB(pnode->getTightBBox(), cindex, tightcbbox);
 		cnode->setBBox(cbbox);
+		cnode->setTightBBox(tightcbbox);
 		cnode->setInfo(pnode->getInfo());
 		//cnode->printInfo();
 	
