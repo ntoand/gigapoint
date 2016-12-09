@@ -204,7 +204,7 @@ void PointCloud::draw() {
 	//draw ray line
 	Vector3f spos = ray.getOrigin(); //- 1*ray.getDirection();
 	Vector3f epos = ray.getOrigin() + 100*ray.getDirection();
-	glLineWidth(2.0); 
+	glLineWidth(4.0); 
 	glColor3f(1.0, 1.0, 1.0);
 	glBegin(GL_LINES);
 	glVertex3f(spos[0], spos[1], spos[2]);
@@ -212,7 +212,7 @@ void PointCloud::draw() {
 	glEnd();
 
 	glEnable(GL_PROGRAM_POINT_SIZE_EXT);
-    glPointSize(20);
+    glPointSize(40);
     glColor3f(0.0, 1.0, 0.0);
     glBegin(GL_POINTS);
     for(int i=0; i < hitPoints.size(); i++) {
@@ -246,6 +246,9 @@ void PointCloud::findHitPoint() {
 				<< " dis: " << hitPoints[0]->distance
 			 	<< " pos: " << hitPoints[0]->position[0] << " " << hitPoints[0]->position[1] << " " 
 			 	<< hitPoints[0]->position[2] << endl;
+		}
+		else {
+			cout << "MISS" << endl;
 		}
 	}
 }

@@ -378,7 +378,7 @@ void NodeGeometry::findHitPoint(const omega::Ray& r, HitPoint* point) {
 	int numpoints = vertices.size() / 3;
 	for(int i=0; i < numpoints; i++) {
 		pos = Vector3f(vertices[3*i], vertices[3*i+1], vertices[3*i+2]);
-		result = r.intersects(Sphere(pos, 1));
+		result = r.intersects(Sphere(pos, 2));
 		if(result.first) {
 			float dis = (float)result.second;
 			if (point->distance == -1 || point->distance > dis) {
