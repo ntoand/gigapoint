@@ -6,6 +6,7 @@
 
 #include <string>
 #include <vector>
+#include <fstream>
 
 using namespace std;
 
@@ -42,8 +43,10 @@ private:
 	bool loaded;
 	bool initvbo;
 	bool visible;
-
+        ifstream::pos_type filesize;
+        ifstream::pos_type hrcfilesize;
 	PCInfo* info;
+        ifstream::pos_type getFilesize(const char* filename);
 
 	//data
 	vector<float> vertices;
@@ -73,7 +76,7 @@ public:
 	float getSphereRadius() { return sphereradius; }
 	void setInQueue(bool b) { inqueue = b; }
 	float inQueue() { return inqueue; }
-	bool canAddToQueue() { return (!loading && !loaded); }
+        bool canAddToQueue() { return (!loading && !isLoaded()); }
 
 	void setInfo(PCInfo* in) { info = in; }
 	PCInfo* getInfo() { return info; }
@@ -83,7 +86,7 @@ public:
 	NodeGeometry* getChild(int i) { return children[i]; }
 
 	string getName() { return name; }
-	bool isLoaded() { return loaded; }
+        bool isLoaded();
 	void setVisible(const bool v) { visible = v; }
 	bool isVisible() { return visible; }
 

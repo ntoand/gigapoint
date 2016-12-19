@@ -31,6 +31,19 @@ NodeGeometry::~NodeGeometry() {
 
 }
 
+bool NodeGeometry::isLoaded()
+{
+    if (loaded)
+    {
+            if (filesize != getFilesize(datafile.c_str()))
+            {
+                loaded = false;
+                cout << "reloading " << datafile << endl;
+            }
+    }
+    return loaded;
+}
+
 void NodeGeometry::addPoint(float x, float y, float z) {
 	vertices.push_back(x); 
 	vertices.push_back(y);
@@ -78,7 +91,10 @@ int NodeGeometry::loadHierachy() {
 	if(level % info->hierarchyStepSize != 0)
 		return 0;
 
-	if(hierachyloaded)
+        string hrc_filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".hrc";
+        //cout << "Load hierachy file: " << hrc_filename << endl;
+
+        if(hierachyloaded && (hrcfilesize == getFilesize(hrc_filename.c_str())) )
 		return 0;
 
 	assert(info);
@@ -88,8 +104,7 @@ int NodeGeometry::loadHierachy() {
 		setTightBBox(info->tightBoundingBox);
 	} 
 
-	string hrc_filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".hrc";
-	//cout << "Load hierachy file: " << hrc_filename << endl;
+
 	list<HRC_Item> stack;
 	list<HRC_Item> decoded;
 
@@ -109,11 +124,11 @@ int NodeGeometry::loadHierachy() {
 	offset += 5;
 
 	std::bitset<8> x(children);
-	//cout << "Root children: " << x << endl;
-	//cout << "Root numpoints: " << numpoints << endl;
+        cout << "Root children: " << x << endl;
+        cout << "Root numpoints: " << numpoints << endl;
 
 	stack.push_back(HRC_Item(name, children, numpoints));
-
+        cout << "Root name: " << name << endl;
 	while(stack.size() > 0){
 
 		HRC_Item snode = stack.front();
@@ -175,14 +190,21 @@ int NodeGeometry::loadHierachy() {
 	}
 
 	hierachyloaded = true;
-
+        hrcfilesize = getFilesize(hrc_filename.c_str());
 	return 0;
 }
 
 
+ifstream::pos_type NodeGeometry::getFilesize(const char* filename)
+{
+        ifstream in(filename, ifstream::ate | ifstream::binary);
+        return in.tellg();
+}
+
 int NodeGeometry::loadData() {
 
-	if(loaded)
+
+        if(loaded)
 		return 0;
 	
 	assert(info);
@@ -192,6 +214,8 @@ int NodeGeometry::loadData() {
 	string filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".bin";
 	//cout << "Load file: " << filename << endl;
 	datafile = filename;
+        cout << "start reading " << datafile <<  std::endl;
+
 	ifstream reader;
 	reader.open (filename.c_str(), ifstream::in | ifstream::binary);
 	
@@ -251,11 +275,11 @@ int NodeGeometry::loadData() {
 	}
 
 	reader.close();
-
+        cout << "done reading " << filename.c_str() << std::endl;
 	loading = false;
 	if(vertices.size() > 0)
 		loaded = true;
-
+        filesize=getFilesize(datafile.c_str());
 	return 0;
 }
 
