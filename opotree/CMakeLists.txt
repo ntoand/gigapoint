@@ -1,18 +1,29 @@
 cmake_minimum_required(VERSION 2.8.1) 
 project(opotree)
 
-set(NO_GRAPHICS OFF)
+find_package(Omegalib)
+include_directories(${OMEGA_INCLUDE_DIRS})
 
-IF(${NO_GRAPHICS})
-	add_definitions(-DNO_GRAPHICS)
-	add_executable(opotree main_test.cpp cJSON.cpp Utils.cpp)
-	target_link_libraries(opotree )
+SET( headers
+        
+        )
 
-ELSE()
-	find_package(Omegalib)
-	include_directories(${OMEGA_INCLUDE_DIRS})
-	add_executable(opotree main.cpp Utils.cpp Shader.cpp cJSON.cpp NodeGeometry.cpp PointCloud.cpp Thread.cpp Menu.cpp ColorTexture.cpp Material.cpp)
-	target_link_libraries(opotree ${OMEGA_LIB} ${OMEGA_TOOLKIT_LIB} python2.7)
+SET( srcs 
+		main.cpp
+		Utils.cpp
+		Shader.cpp
+		cJSON.cpp
+		NodeGeometry.cpp
+		PointCloud.cpp 
+		Thread.cpp 
+		Menu.cpp 
+		ColorTexture.cpp 
+		Material.cpp
+		)
 
-ENDIF()
+add_executable(opotree ${headers} ${srcs} )
+target_link_libraries(opotree ${OMEGA_LIB} ${OMEGA_TOOLKIT_LIB} python2.7)
 
+file (COPY ${CMAKE_SOURCE_DIR}/shaders DESTINATION ${CMAKE_BINARY_DIR}/ )
+file (COPY ${CMAKE_SOURCE_DIR}/fonts DESTINATION ${CMAKE_BINARY_DIR}/ )
+file (COPY ${CMAKE_SOURCE_DIR}/data/colortable.dat DESTINATION ${CMAKE_BINARY_DIR}/ )

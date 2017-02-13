@@ -263,6 +263,8 @@ int NodeGeometry::loadData() {
 	if(vertices.size() > 0)
 		loaded = true;
 
+	//printInfo();
+
 	return 0;
 }
 
