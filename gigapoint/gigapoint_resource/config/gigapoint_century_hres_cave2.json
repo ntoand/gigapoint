@@ -1,0 +1,21 @@
+{
+	"dataDir": "/data/fast/toand/potree/century_hres",
+	"visiblePointTarget": 20000000,
+	"minNodePixelSize": 100,
+	"moveToCentre": 1,
+	"screenHeight": 3072,
+	"material": "rgb",
+	"pointScale": [0.3,0.01,0.5],
+	"pointSizeRange": [2, 400],
+	"sizeType": "adaptive",
+	"quality": "circle",
+	"numReadThread": 4,
+	"preloadToLevel": 4,
+	"maxNodeInMem": 100000,
+	"maxLoadSize": 300,
+	"cameraSpeed": 10,
+	"cameraUpdatePosOri": 1,
+	"cameraPosition": [8.1173, -388.287, -424.887],
+	"cameraOrientation": [0.713179, 0.686123, -0.102032, -0.100993],
+	"menuOption": [200, 50, 150]
+}
