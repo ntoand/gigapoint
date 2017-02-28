@@ -19,7 +19,7 @@ void main()
     vColor = vec3(VertexColor.x / 255.0, VertexColor.y/255.0, VertexColor.z/255.0) ;
 #if defined MATERIAL_ELEVATION
     float w = (VertexPosition.z - uHeightMinMax[0]) / (uHeightMinMax[1]-uHeightMinMax[0]);
-    vColor = texture2D(uColorTexture, vec2(w,0.5));
+    vColor = texture2D(uColorTexture, vec2(w,0.5)).rgb;
 #endif
         
     //size

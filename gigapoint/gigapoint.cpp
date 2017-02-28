@@ -48,6 +48,45 @@ public:
 		}	
     }
 
+    void updateMaterial(const string& material)
+    {  
+        if(material.compare("rgb") == 0)
+            option->material = MATERIAL_RGB;
+        else if (material.compare("elevation") == 0)
+            option->material = MATERIAL_ELEVATION;
+        else
+            return;
+        pointcloud->setReloadShader(true);
+    }
+
+    void updateQuality(const string& quality)
+    {
+        if(quality.compare("square") == 0)
+            option->quality = QUALITY_SQUARE;
+        else if (quality.compare("circle") == 0)
+            option->quality = QUALITY_CIRCLE;
+        else
+            return;
+        pointcloud->setReloadShader(true);
+    }
+
+    void updateSizeType(const string& type)
+    {
+        if(type.compare("fixed") == 0)
+            option->sizeType = SIZE_FIXED;
+        else if (type.compare("adaptive") == 0)
+            option->sizeType = SIZE_ADAPTIVE;
+        else
+            return;
+        pointcloud->setReloadShader(true);
+    }
+
+    void updatePointScale(const float val)
+    {
+        option->pointScale[0] = val;
+        pointcloud->setReloadShader(false);
+    }
+
     gigapoint::PointCloud* pointcloud;
     gigapoint::Option* option;
 };
@@ -138,10 +177,10 @@ BOOST_PYTHON_MODULE(gigapoint)
     //
     PYAPI_REF_BASE_CLASS(GigapointRenderModule)
         PYAPI_METHOD(GigapointRenderModule, initPotree)
-        //PYAPI_METHOD(VolumeRenderModule, setSliceBoundX)
-        //PYAPI_METHOD(VolumeRenderModule, setSliceBoundY)
-        //PYAPI_METHOD(VolumeRenderModule, setSliceBoundZ)
-        //.add_property("node", make_getter(&VolumeRenderModule::node, return_value_policy<reference_existing_object>()), make_setter(&VolumeRenderModule::node, PYAPI_RETURN_VALUE))
+        PYAPI_METHOD(GigapointRenderModule, updateMaterial)
+        PYAPI_METHOD(GigapointRenderModule, updateQuality)
+        PYAPI_METHOD(GigapointRenderModule, updateSizeType)
+        PYAPI_METHOD(GigapointRenderModule, updatePointScale)
         ;
 
     def("initialize", initialize, PYAPI_RETURN_REF);

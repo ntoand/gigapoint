@@ -83,6 +83,7 @@ public:
 	void up();
 	void down();
 	bool updateOption(Option* option); // return: false = no need to reload shader
+	void setReloadShader(bool val) { needReloadShader = val; }
 };
 
 }; //namespace gigapoint

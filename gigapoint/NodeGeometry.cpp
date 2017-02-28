@@ -88,7 +88,7 @@ int NodeGeometry::loadHierachy(bool movetocentre) {
 			float b[6], tb[6];
 			for(int i=0; i < 6; i++) {
 				b[i] = info->boundingBox[i] - info->boundingBoxCentre[i%3];
-				tb[i] = info->tightBoundingBox[i] - info->boundingBoxCentre[i%3];
+				tb[i] = info->tightBoundingBox[i]; // - info->boundingBoxCentre[i%3];
 			}
 			setBBox(b);
 			setTightBBox(tb);

@@ -14,7 +14,7 @@
 	"maxNodeInMem": 50000,
 	"maxLoadSize": 100,
 	"cameraSpeed": 100,
-	"cameraUpdatePosOri": 1,
+	"cameraUpdatePosOri": 0,
 	"cameraPosition": [-66.8498, -121.083, -107.495],
 	"cameraOrientation": [0.878953, 0.467479, 0.0833162, -0.0443124],
 	"menuOption": [30, 10, 30]
