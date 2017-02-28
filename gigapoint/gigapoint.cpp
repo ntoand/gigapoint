@@ -12,7 +12,7 @@ class GigapointRenderModule : public EngineModule
 {
 public:
     GigapointRenderModule() :
-        EngineModule("GigapointRenderModule")
+        EngineModule("GigapointRenderModule"), pointcloud(0), option(0)
     {
     	
     }
@@ -24,6 +24,14 @@ public:
         // After a frame all render passes had a chance to update their
         // textures. reset the raster update flag.
        
+    }
+    
+    virtual void dispose()
+    {
+    	if(pointcloud)
+		delete pointcloud;
+	if(option)
+		delete option;
     }
 
     void initPotree(const string& option_file)
@@ -104,27 +112,18 @@ public:
         RenderPass::initialize();
 
         //graphics
-		glEnable(GL_POINT_SPRITE);
-		glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+	glEnable(GL_POINT_SPRITE);
+	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
     }
 
     virtual void render(Renderer* client, const DrawContext& context)
     {
-        // Do we have new raster data?
-        /*
-        if(module->rasterUpdated)
-        {
-            oglError;
-            
-        }
-        */
-     
     	if(context.task == DrawContext::SceneDrawTask)
         {
             glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT | GL_CURRENT_BIT);
             client->getRenderer()->beginDraw3D(context);
 
-          	// Enable depth testing and lighting.
+            // Enable depth testing and lighting.
             glEnable(GL_DEPTH_TEST);
 			if(oglError) return;
 			glEnable(GL_LIGHTING);
