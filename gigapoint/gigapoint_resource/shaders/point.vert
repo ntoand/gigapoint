@@ -1,5 +1,7 @@
 attribute vec3 VertexPosition;
+#if defined MATERIAL_RGB
 attribute vec3 VertexColor;
+#endif
 
 uniform sampler2D uColorTexture;
 uniform vec2 uHeightMinMax;
@@ -16,7 +18,9 @@ void main()
     vec3 mvPosition = (gl_ModelViewMatrix * vec4(VertexPosition,1.0)).xyz;
 
     //color
+#if defined MATERIAL_RGB
     vColor = vec3(VertexColor.x / 255.0, VertexColor.y/255.0, VertexColor.z/255.0) ;
+#endif
 #if defined MATERIAL_ELEVATION
     float w = (VertexPosition.z - uHeightMinMax[0]) / (uHeightMinMax[1]-uHeightMinMax[0]);
     vColor = texture2D(uColorTexture, vec2(w,0.5)).rgb;

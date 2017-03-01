@@ -131,7 +131,7 @@ public:
 		   
 			// Test and draw
 			// get camera location in world coordinate
-            if(context.eye == DrawContext::EyeLeft || context.eye == DrawContext::EyeCyclop)
+            //if(context.eye == DrawContext::EyeLeft || context.eye == DrawContext::EyeCyclop)
             {
                 Vector3f cp = context.camera->getPosition();
                 float campos[3] = {cp[0], cp[1], cp[2]};

@@ -6,7 +6,7 @@ from cyclops import *
 from omegaToolkit import *
 import json
 
-config_filename = "gigapoint_resource/config/gigapoint_century_local.json"
+config_filename = "gigapoint_resource/config/gigapoint_mt_jen_cave2.json"
 
 # pointcloud
 gp = gigapoint.initialize()
@@ -101,4 +101,5 @@ b32 = menu.addButton("adaptive", "updateSizeType('adaptive')")
 b31.getButton().setCheckable(True)
 b32.getButton().setCheckable(True)
 updateSizeType(str(config["sizeType"]))
+
 

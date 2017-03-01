@@ -330,6 +330,7 @@ void NodeGeometry::draw(Material* material) {
 	if(oglError) return;
 
 	unsigned int attribute_vertex_pos = shader->attribute("VertexPosition");
+    //cout << "Vertex Position: " << attribute_vertex_pos << endl;
     glEnableVertexAttribArray(attribute_vertex_pos);  // Vertex position
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     glVertexAttribPointer(
@@ -340,9 +341,13 @@ void NodeGeometry::draw(Material* material) {
         0,                 // no extra data between each position
         0                  // offset of first element
     );
-    if(oglError) {cout << "Error"; return;};
+    if(oglError) return;
 
-    unsigned int attribute_color_pos = shader->attribute("VertexColor");
+    unsigned int attribute_color_pos;
+    if(option->material == MATERIAL_RGB)
+    {
+    attribute_color_pos = shader->attribute("VertexColor");
+    //cout << "Vertex Color: " << attribute_color_pos << endl;   
     glEnableVertexAttribArray(attribute_color_pos);  // Vertex position
     glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
     glVertexAttribPointer(
@@ -353,7 +358,8 @@ void NodeGeometry::draw(Material* material) {
         0,                 // no extra data between each position
         0                  // offset of first element
     );
-    if(oglError) {cout << "Error"; return;};
+    if(oglError) return;
+    }
 	
 	shader->transmitUniform("uColorTexture", (int)0);
 	shader->transmitUniform("uHeightMinMax", (float)info->tightBoundingBox[2], (float)info->tightBoundingBox[5]);
@@ -362,7 +368,7 @@ void NodeGeometry::draw(Material* material) {
     shader->transmitUniform("uPointSizeRange", (float)option->pointSizeRange[0], (float)option->pointSizeRange[1]);
 
 	glDrawArrays(GL_POINTS, 0, vertices.size()/3);
-	if(oglError) {cout << "Error"; return;};
+	if(oglError) return;
 	   
     glDisableVertexAttribArray(attribute_vertex_pos);
     glDisableVertexAttribArray(attribute_color_pos);
