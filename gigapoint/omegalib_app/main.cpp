@@ -54,7 +54,15 @@ public:
 	void resetCamera();
 	void printInfo();
 	virtual void handleEvent(const Event& evt);
-	
+	virtual void dispose()
+	{
+		if(pointcloud)
+			delete pointcloud;
+		if(menu)
+			delete menu;
+		if(option)
+			delete option;
+	}
 };
 
 
@@ -195,11 +203,11 @@ void GigapointApplication::menuAction(int type) {
 void GigapointApplication::resetCamera() {
 	Camera* cam = getEngine()->getDefaultCamera();
 
-        if(option->cameraUpdatePosOri) {
-                cam->setPosition(Vector3f(option->cameraPosition[0], option->cameraPosition[1], option->cameraPosition[2]));
-                cam->setOrientation(Quaternion(option->cameraOrientation[0], option->cameraOrientation[1],
-                                                                                option->cameraOrientation[2], option->cameraOrientation[3]));
-        }
+    if(option->cameraUpdatePosOri) {
+        cam->setPosition(Vector3f(option->cameraPosition[0], option->cameraPosition[1], option->cameraPosition[2]));
+        cam->setOrientation(Quaternion(option->cameraOrientation[0], option->cameraOrientation[1],
+                                        option->cameraOrientation[2], option->cameraOrientation[3]));
+    }
 }
 
 void GigapointApplication::printInfo() {

@@ -329,6 +329,18 @@ void NodeGeometry::draw(Material* material) {
 	texture->bind();
 	if(oglError) return;
 
+#ifdef OMEGALIB_APP
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glVertexPointer(3, GL_FLOAT, 3*sizeof(float), (GLvoid*)0);
+	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+    glColorPointer(3, GL_UNSIGNED_BYTE, 3*sizeof(unsigned char), (GLvoid*)0);
+	if(oglError) return;
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+	if(oglError) return;
+
+#else
 	unsigned int attribute_vertex_pos = shader->attribute("VertexPosition");
     //cout << "Vertex Position: " << attribute_vertex_pos << endl;
     glEnableVertexAttribArray(attribute_vertex_pos);  // Vertex position
@@ -360,6 +372,7 @@ void NodeGeometry::draw(Material* material) {
     );
     if(oglError) return;
     }
+#endif
 	
 	shader->transmitUniform("uColorTexture", (int)0);
 	shader->transmitUniform("uHeightMinMax", (float)info->tightBoundingBox[2], (float)info->tightBoundingBox[5]);
@@ -370,8 +383,13 @@ void NodeGeometry::draw(Material* material) {
 	glDrawArrays(GL_POINTS, 0, vertices.size()/3);
 	if(oglError) return;
 	   
+#ifdef OMEGALIB_APP
+	glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+#else
     glDisableVertexAttribArray(attribute_vertex_pos);
     glDisableVertexAttribArray(attribute_color_pos);
+#endif
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     shader->unbind();
     texture->unbind();

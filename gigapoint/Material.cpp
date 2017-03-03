@@ -22,7 +22,11 @@ Material::Material(Option* opt): option(opt) {
 	uniforms.push_back("uHeightMinMax");
 
 	shader = new Shader("point");
+#ifdef OMEGALIB_APP
+	shaderstr = "gigapoint_resource/shaders/point_app";
+#else
 	shaderstr = "gigapoint_resource/shaders/point";
+#endif
 	shader->load(shaderstr, attributes, uniforms, option);
 }
 

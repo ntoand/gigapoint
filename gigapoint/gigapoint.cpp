@@ -29,9 +29,9 @@ public:
     virtual void dispose()
     {
     	if(pointcloud)
-		delete pointcloud;
-	if(option)
-		delete option;
+            delete pointcloud;
+        if(option)
+            delete option;
     }
 
     void initPotree(const string& option_file)
