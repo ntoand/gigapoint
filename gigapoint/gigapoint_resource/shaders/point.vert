@@ -16,6 +16,7 @@ void main()
 	//position
     gl_Position = gl_ModelViewProjectionMatrix * vec4(VertexPosition,1.0);
     vec3 mvPosition = (gl_ModelViewMatrix * vec4(VertexPosition,1.0)).xyz;
+	
 
     //color
 #if defined MATERIAL_RGB

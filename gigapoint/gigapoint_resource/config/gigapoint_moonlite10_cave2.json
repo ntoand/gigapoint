@@ -1,5 +1,5 @@
 {
-	"dataDir": "/data/fast/toand/potree/century_hres",
+	"dataDir": "/data/fast/toand/potree/moonlite10",
 	"visiblePointTarget": 20000000,
 	"minNodePixelSize": 100,
 	"screenHeight": 3072,
@@ -8,11 +8,11 @@
 	"pointSizeRange": [2, 400],
 	"sizeType": "adaptive",
 	"quality": "circle",
-	"numReadThread": 4,
+	"numReadThread": 6,
 	"preloadToLevel": 4,
 	"maxNodeInMem": 100000,
 	"maxLoadSize": 300,
 	"cameraSpeed": 10,
-	"cameraPosition": [516.37, 125.89, 50.88],
-	"cameraOrientation": [0.68, 0.72, -0.07, -0.06]
+	"cameraPosition": [-75.478,-66.9424,-141.983],
+	"cameraOrientation": [0.625499,0.596305,-0.321409,-0.387127]
 }

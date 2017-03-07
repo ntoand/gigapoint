@@ -2,7 +2,6 @@
 	"dataDir": "/Users/toand/git/mivp/data/no-timemachine/P103.0/mt_jennifer_dense_point_cloud",
 	"visiblePointTarget": 10000000,
 	"minNodePixelSize": 100,
-	"moveToCentre": 1,
 	"screenHeight": 600,
 	"material": "rgb",
 	"pointScale": [0.2,0.01,0.5],

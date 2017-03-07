@@ -44,10 +44,10 @@ namespace gigapoint {
 
 typedef struct Option_t {
 	string dataDir;
+	string shaderDir;
 	unsigned int visiblePointTarget;
 	float minNodePixelSize;
 	float screenHeight;
-	bool moveToCentre;
 	int material;
 	float pointScale[3];
 	float pointSizeRange[2];
@@ -69,7 +69,6 @@ typedef struct PCInfo_t {
 	string dataDir;
 	string octreeDir;
 	float boundingBox[6];
-	float boundingBoxCentre[3];
 	float tightBoundingBox[6];
 	vector<int> pointAttributes;
 	float spacing;

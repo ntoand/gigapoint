@@ -1,11 +1,10 @@
 {
 	"dataDir": "/data/fast/toand/potree/mt_jennifer_dense_point_cloud",
-	"visiblePointTarget": 20000000,
+	"visiblePointTarget": 30000000,
 	"minNodePixelSize": 100,
-	"moveToCentre": 1,
 	"screenHeight": 3072,
 	"material": "rgb",
-	"pointScale": [0.7,0.1,1.0],
+	"pointScale": [1.0,0.5,1.5],
 	"pointSizeRange": [2, 600],
 	"sizeType": "adaptive",
 	"quality": "circle",
@@ -14,8 +13,6 @@
 	"maxNodeInMem": 100000,
 	"maxLoadSize": 200,
 	"cameraSpeed": 10,
-	"cameraUpdatePosOri": 1,
-	"cameraPosition": [-2214.49, -2950.76, -3960.92],
-	"cameraOrientation": [0.711302, 0.700816, -0.0380993, 0.0381424],
-	"menuOption": [200, 50, 150]
+	"cameraPosition": [845.14, -1761.43, 206.23],
+	"cameraOrientation": [0.73, 0.62, 0.14, 0.26]
 }

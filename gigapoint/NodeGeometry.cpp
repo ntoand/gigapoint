@@ -73,7 +73,7 @@ string NodeGeometry::getHierarchyPath() {
 	return path;
 }
 
-int NodeGeometry::loadHierachy(bool movetocentre) {
+int NodeGeometry::loadHierachy() {
 
 	if(level % info->hierarchyStepSize != 0)
 		return 0;
@@ -84,18 +84,8 @@ int NodeGeometry::loadHierachy(bool movetocentre) {
 	assert(info);
 
 	if(level == 0) { // root
-		if(movetocentre) {
-			float b[6], tb[6];
-			for(int i=0; i < 6; i++) {
-				b[i] = info->boundingBox[i] - info->boundingBoxCentre[i%3];
-				tb[i] = info->tightBoundingBox[i]; // - info->boundingBoxCentre[i%3];
-			}
-			setBBox(b);
-			setTightBBox(tb);
-		} else {
-			setBBox(info->boundingBox);
-			setTightBBox(info->tightBoundingBox);
-		}
+		setBBox(info->boundingBox);
+		setTightBBox(info->tightBoundingBox);
 	} 
 
 	string hrc_filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".hrc";
@@ -229,6 +219,7 @@ int NodeGeometry::loadData() {
 				offset += 3 * sizeof(float);
 				addPoint(x, y, z);
 				//cout << "pos: " << x << " " << y << " " << z << endl;
+				//cout << "bbox: " << bbox[0] << " " << bbox[1] << " " << bbox[2] <<endl;
 
 			}else if(attribute == INTENSITY) {
 				//unsigned short* usBuffer = reinterpret_cast<unsigned short*>(buffer+offset);
@@ -317,14 +308,11 @@ int NodeGeometry::initVBO() {
 void NodeGeometry::draw(Material* material) {
 	if(loading || !loaded)
 		return;
-
 	if(!initvbo)
 		initVBO();
-
 	Shader* shader = material->getShader();
 	Option* option = material->getOption();
 	ColorTexture* texture = material->getColorTexture();
-
 	shader->bind();
 	texture->bind();
 	if(oglError) return;
@@ -356,8 +344,7 @@ void NodeGeometry::draw(Material* material) {
     if(oglError) return;
 
     unsigned int attribute_color_pos;
-    if(option->material == MATERIAL_RGB)
-    {
+    if(option->material == MATERIAL_RGB) {
     attribute_color_pos = shader->attribute("VertexColor");
     //cout << "Vertex Color: " << attribute_color_pos << endl;   
     glEnableVertexAttribArray(attribute_color_pos);  // Vertex position
@@ -388,7 +375,8 @@ void NodeGeometry::draw(Material* material) {
     glDisableClientState(GL_COLOR_ARRAY);
 #else
     glDisableVertexAttribArray(attribute_vertex_pos);
-    glDisableVertexAttribArray(attribute_color_pos);
+    if(option->material == MATERIAL_RGB)
+    	glDisableVertexAttribArray(attribute_color_pos);
 #endif
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     shader->unbind();
