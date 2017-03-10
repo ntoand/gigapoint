@@ -8,9 +8,11 @@ using namespace omicron;
 
 namespace gigapoint {
 
-PointCloud::PointCloud(Option* opt, bool mas): option(opt), master(mas), 
+PointCloud::PointCloud(Option* opt, bool mas): option(opt), master(mas), width(0), height(0),
 												needReloadShader(false), printInfo(false), 
-												interactMode(INTERACT_NONE), material(0) {
+												interactMode(INTERACT_NONE), frameBuffer(0),
+												materialPoint(0), materialEdl(0),
+												quadVao(0), quadVbo(0) {
 
 }
 
@@ -18,6 +20,31 @@ PointCloud::~PointCloud() {
 	// desktroy tree
 	if(pcinfo)
 		delete pcinfo;
+	if(materialPoint)
+		delete materialPoint;
+	if(materialEdl)
+		delete materialEdl;
+	if(frameBuffer)
+		delete frameBuffer;
+
+	if (glIsBuffer(quadVbo))
+		glDeleteBuffers(1, &quadVbo);
+	if (glIsVertexArray(quadVao))
+		glDeleteVertexArrays(1, &quadVao);
+}
+
+void PointCloud::initMaterials() {
+	if(!materialPoint)
+		materialPoint = new Material(option, "point");
+	if(!materialEdl)
+		materialEdl = new Material(option, "edl");
+	if(!frameBuffer) {
+		vector<string> targets;
+		targets.push_back("tex0");
+		frameBuffer = new FrameBuffer(targets, width, height, true);
+		frameBuffer->init();
+		if(oglError) return;
+	}
 }
 
 int PointCloud::initPointCloud() {
@@ -109,7 +136,11 @@ int PointCloud::preloadUpToLevel(const int level) {
 	return 0;
 }
 
-int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
+int PointCloud::updateVisibility(const float MVP[16], const float campos[3], const int width, const int height) {
+
+	this->width = width;
+	this->height = height;
+
 	float V[6][4];
     Utils::getFrustum(V, MVP);
 	
@@ -178,12 +209,10 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 
 void PointCloud::draw() {
 
-	if(!material) {
-		material = new Material(option);
-		if(oglError) return;
-	}
+	initMaterials();
+
 	if(needReloadShader) {
-		material->reloadShader(); 
+		materialPoint->reloadShader(); 
 		needReloadShader = false;
 		if(oglError) return;
 	}
@@ -194,38 +223,81 @@ void PointCloud::draw() {
 		printInfo = false;
 	}
 
+	//draw to bufferframe
+	frameBuffer->bind();
+	frameBuffer->clear();
+	glEnable(GL_DEPTH_TEST);
+
 #ifdef OMEGALIB_APP
 	glAlphaFunc(GL_GREATER, 0.1);
-    	glEnable(GL_ALPHA_TEST);
+    glEnable(GL_ALPHA_TEST);
 #endif
 	for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
 		NodeGeometry* node = *it;
-		node->draw(material);
+		node->draw(materialPoint);
 	}
 
 	// draw interaction
-	if(interactMode == INTERACT_NONE)
-		return;
-	glDisable(GL_LIGHTING);
-	glDisable(GL_BLEND);
-	//draw ray line
-	Vector3f spos = ray.getOrigin(); //- 1*ray.getDirection();
-	Vector3f epos = ray.getOrigin() + 100*ray.getDirection();
-	glLineWidth(4.0); 
-	glColor3f(1.0, 1.0, 1.0);
-	glBegin(GL_LINES);
-	glVertex3f(spos[0], spos[1], spos[2]);
-	glVertex3f(epos[0], epos[1], epos[2]);
-	glEnd();
+	if(interactMode != INTERACT_NONE) {
+		glDisable(GL_LIGHTING);
+		glDisable(GL_BLEND);
+		//draw ray line
+		Vector3f spos = ray.getOrigin(); //- 1*ray.getDirection();
+		Vector3f epos = ray.getOrigin() + 100*ray.getDirection();
+		glLineWidth(4.0); 
+		glColor3f(1.0, 1.0, 1.0);
+		glBegin(GL_LINES);
+		glVertex3f(spos[0], spos[1], spos[2]);
+		glVertex3f(epos[0], epos[1], epos[2]);
+		glEnd();
 
-	glEnable(GL_PROGRAM_POINT_SIZE_EXT);
-    glPointSize(40);
-    glColor3f(0.0, 1.0, 0.0);
-    glBegin(GL_POINTS);
-    for(int i=0; i < hitPoints.size(); i++) {
-    	glVertex3f(hitPoints[i]->position[0], hitPoints[i]->position[1], hitPoints[i]->position[2]);
-    }
-    glEnd();
+		glEnable(GL_PROGRAM_POINT_SIZE_EXT);
+	    glPointSize(40);
+	    glColor3f(0.0, 1.0, 0.0);
+	    glBegin(GL_POINTS);
+	    for(int i=0; i < hitPoints.size(); i++) {
+	    	glVertex3f(hitPoints[i]->position[0], hitPoints[i]->position[1], hitPoints[i]->position[2]);
+	    }
+	    glEnd();
+	}
+
+	frameBuffer->unbind();
+	materialEdl->getShader()->bind();
+	materialEdl->getShader()->transmitUniform("uColorTexture", (int)0);
+	frameBuffer->getTexture("tex0")->bind();
+	drawViewQuad();
+	frameBuffer->getTexture("tex0")->unbind();
+	materialEdl->getShader()->unbind();
+}
+
+void PointCloud::drawViewQuad()
+{
+	if (!quadVbo)
+	{
+		float points[] = {
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+			1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+			-1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+			1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f};
+
+		glGenBuffers(1, &quadVbo);
+
+		glBindBuffer(GL_ARRAY_BUFFER, quadVbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float)*24, points, GL_STATIC_DRAW);
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, quadVbo);
+	Shader* shader = materialEdl->getShader();
+	unsigned int attribute_vertex_pos = shader->attribute("VertexPosition");
+	glEnableVertexAttribArray(attribute_vertex_pos);
+	glVertexAttribPointer(attribute_vertex_pos, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (const GLvoid*)0);
+
+	unsigned int attribute_vertex_tex_coor = shader->attribute("VertexTexCoord");
+	glEnableVertexAttribArray(attribute_vertex_tex_coor);
+	glVertexAttribPointer(attribute_vertex_tex_coor, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (const GLvoid*)12);
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 // interaction

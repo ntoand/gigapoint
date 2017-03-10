@@ -143,7 +143,7 @@ public:
                 	Vector3f cp = context.camera->getPosition();
                 	float campos[3] = {cp[0], cp[1], cp[2]};
                 	float* MVP = (context.projection*context.modelview).cast<float>().data();
-                	module->pointcloud->updateVisibility(MVP, campos);
+                    module->pointcloud->updateVisibility(MVP, campos, context.viewport.width(), context.viewport.height());
             	}
 
 		module->pointcloud->draw();

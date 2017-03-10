@@ -18,7 +18,7 @@ private:
 	std::list<std::string> uniforms;
 
 public:
-	Material(Option* option);
+	Material(Option* option, string name="point");
 
 	Shader* getShader() { return shader; };
     Shader* bind();

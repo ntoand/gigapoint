@@ -9,6 +9,7 @@
 #include "LRU.h"
 #include "Thread.h"
 #include "wqueue.h"
+#include "FrameBuffer.h"
 
 namespace gigapoint {
 
@@ -53,9 +54,13 @@ public:
 class PointCloud {
 private:
 	bool master;
+
+	int width, height;
 	
 	PCInfo* pcinfo;
-	Material* material;
+	Material* materialPoint;
+	Material* materialEdl;
+	FrameBuffer* frameBuffer;
 	NodeGeometry* root;
 	std::list<NodeGeometry*> displayList;
 	int preDisplayListSize;
@@ -79,6 +84,13 @@ private:
 	omega::Ray ray;
 	vector<HitPoint*> hitPoints; 
 
+	// draw quad
+	unsigned int quadVao;
+	unsigned int quadVbo;
+
+private:
+	void initMaterials();
+
 public:
 	PointCloud(Option* option, bool master = false);
 	~PointCloud();
@@ -87,8 +99,9 @@ public:
 	void setPrintInfo(bool b) { printInfo = b; }
 
 	int preloadUpToLevel(const int level=0);
-	int updateVisibility(const float MVP[16], const float campos[3]);
+	int updateVisibility(const float MVP[16], const float campos[3], const int width, const int height);
 	void draw();
+	void drawViewQuad();
 
 	// interaction
 	void setInteractMode(int v) { interactMode = v; }

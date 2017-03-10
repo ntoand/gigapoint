@@ -26,21 +26,34 @@ Shader& Shader::load(string shaderPrefix, list<string> attributes, list<string> 
     unload();
 
     string ver = "#version 120\n";
-    if(option->sizeType == SIZE_FIXED)
-        ver.append("#define FIXED_POINT_SIZE\n");
+    string fra = "#version 120\n";
+
+    if(name.compare("point") == 0) {
+        if(option->sizeType == SIZE_FIXED)
+            ver.append("#define FIXED_POINT_SIZE\n");
     
-    if(option->material == MATERIAL_RGB)
-        ver.append("#define MATERIAL_RGB\n");
-    else if (option->material == MATERIAL_ELEVATION)
-        ver.append("#define MATERIAL_ELEVATION\n");
+        if(option->material == MATERIAL_RGB)
+            ver.append("#define MATERIAL_RGB\n");
+        else if (option->material == MATERIAL_ELEVATION)
+            ver.append("#define MATERIAL_ELEVATION\n");
+
+        if(option->quality == QUALITY_SQUARE)
+            fra.append("#define SQUARE_POINT_SHAPE\n");
+    }
+
+    else if(name.compare("edl") == 0) {
+
+    }
+
+    else {
+        cout << "ERROR: invalid shader name" << endl;
+        return *this;
+    }
 
     ver.append(Utils::getFileContent(shaderPrefix+".vert"));
     vertex = ver.c_str();
     //cout << "vertex shader: " << endl << vertex << endl;
-
-    string fra = "#version 120\n";
-    if(option->quality == QUALITY_SQUARE)
-        fra.append("#define SQUARE_POINT_SHAPE\n");
+    
     fra.append(fragment = Utils::getFileContent(shaderPrefix+".frag"));
     fragment = fra.c_str();
     //cout << "fragment shader: " << fragment << endl;

@@ -4,8 +4,6 @@
 cmake_minimum_required(VERSION 2.8.1) 
 find_package(Omegalib)
 
-set (CMAKE_CXX_STANDARD 11)
-
 # Set the module name here
 SET(MODULE_NAME gigapoint)
 
@@ -32,12 +30,15 @@ add_library(${MODULE_NAME} MODULE
 	ColorTexture.cpp 
 	Material.h
 	Material.cpp
+	FrameBuffer.h
+	FrameBuffer.cpp
         )
 
 # Set the module library dependencies here
 target_link_libraries(${MODULE_NAME}
         stdc++
         ${OMEGA_LIB}
+        python2.7
         )
 
 #------------------------------------------------------------------------------
