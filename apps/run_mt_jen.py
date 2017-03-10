@@ -56,6 +56,12 @@ def updatePointScale(value):
 	lscale.setText('Point scale: ' + str(val))
 	gp.updatePointScale(val)
 
+def printInfo():
+        global cam
+        print 'Camera position: ' + str(cam.getPosition())
+        print 'Camera orientation: ' + str(cam.getOrientation())
+        gp.printInfo()
+
 
 mm = MenuManager.createAndInitialize()
 menu = mm.getMainMenu()
@@ -64,7 +70,7 @@ campos = config["cameraPosition"]
 camori = config["cameraOrientation"]
 cmd = 'cam.setPosition(Vector3(' + str(campos[0]) + ',' + str(campos[1]) + ',' + str(campos[2]) + ')),' + \
 		'cam.setOrientation(Quaternion(' + str(camori[0]) + ',' + str(camori[1]) + ',' + str(camori[2]) + ',' + str(camori[3]) + '))'
-menu.addButton("Go to cameara 1", cmd)
+menu.addButton("Go to camera 1", cmd)
 
 lscale = menu.addLabel("Point scale")
 #l3.getWidget().setStyleValue('border-top', '1 white')
@@ -102,4 +108,5 @@ b31.getButton().setCheckable(True)
 b32.getButton().setCheckable(True)
 updateSizeType(str(config["sizeType"]))
 
+menu.addButton("Print info", "printInfo()")
 

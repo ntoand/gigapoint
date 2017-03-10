@@ -34,4 +34,4 @@ add_definitions(-DOMEGALIB_APP)
 add_executable(gigapoint ${headers} ${srcs} )
 target_link_libraries(gigapoint ${OMEGA_LIB} ${OMEGA_TOOLKIT_LIB} python2.7)
 
-file (COPY ${CMAKE_SOURCE_DIR}/../gigapoint_resource DESTINATION ${CMAKE_BINARY_DIR}/ )
+#file (COPY ${CMAKE_SOURCE_DIR}/../gigapoint_resource DESTINATION ${CMAKE_BINARY_DIR}/ )

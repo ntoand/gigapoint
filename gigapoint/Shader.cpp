@@ -52,6 +52,9 @@ Shader& Shader::load(string shaderPrefix, list<string> attributes, list<string> 
     printf("fragment shader:\n%s\n", fragment);
 #endif
 
+    //cout << vertex << endl;
+    //cout << fragment << endl;
+
     setup();
     setupLocations(attributes, uniforms);
 

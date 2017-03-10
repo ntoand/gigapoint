@@ -1,6 +1,18 @@
-module_version(0.9)
+#module_version(0.9)
+#declare_native_module(gigapoint)
 
-add_library(gigapoint MODULE 
+cmake_minimum_required(VERSION 2.8.1) 
+find_package(Omegalib)
+
+set (CMAKE_CXX_STANDARD 11)
+
+# Set the module name here
+SET(MODULE_NAME gigapoint)
+
+include_directories(${OMEGA_INCLUDE_DIRS})
+
+# Set module name and source files here
+add_library(${MODULE_NAME} MODULE 
 	gigapoint.cpp
 	Utils.h
 	Utils.cpp
@@ -20,7 +32,18 @@ add_library(gigapoint MODULE
 	ColorTexture.cpp 
 	Material.h
 	Material.cpp
-    )
-	
-target_link_libraries(gigapoint omega)
-declare_native_module(gigapoint)
+        )
+
+# Set the module library dependencies here
+target_link_libraries(${MODULE_NAME}
+        stdc++
+        ${OMEGA_LIB}
+        )
+
+#------------------------------------------------------------------------------
+# DO NOT MODIFY ANYTHING BELOW AFTER THIS LINE
+set_target_properties(${MODULE_NAME} PROPERTIES PREFIX "")
+if(WIN32)
+        set_target_properties(${MODULE_NAME} PROPERTIES FOLDER modules SUFFIX ".pyd")
+endif()
+

@@ -95,7 +95,7 @@ public:
 	void addPoint(float x, float y, float z);
 	void addColor(float r, float g, float b);
 	string getHierarchyPath();
-	int loadHierachy(bool movetocentre = true);
+	int loadHierachy();
 	int loadData();
 	void printInfo();
 	int initVBO();

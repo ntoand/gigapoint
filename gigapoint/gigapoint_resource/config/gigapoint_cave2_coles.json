@@ -2,7 +2,6 @@
 	"dataDir": "/data/big/handreas/coles-highres-pts/",
 	"visiblePointTarget": 22000000,
 	"minNodePixelSize": 100,
-	"moveToCentre": 1,
 	"screenHeight": 3072,
 	"material": "rgb",
 	"pointScale": [0.63, 0.01, 0.8],
@@ -14,8 +13,6 @@
 	"maxNodeInMem": 100000,
 	"maxLoadSize": 200,
 	"cameraSpeed": 10,
-	"cameraUpdatePosOri": 1,
 	"cameraPosition": [-57.9993,-106.496,-39.6508],
-	"cameraOrientation": [-0.0974876,0.925301,-0.0781386,0.358061],
-	"menuOption": [200, 50, 150]
+	"cameraOrientation": [-0.0974876,0.925301,-0.0781386,0.358061]
 }

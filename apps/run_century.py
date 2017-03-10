@@ -6,7 +6,7 @@ from cyclops import *
 from omegaToolkit import *
 import json
 
-config_filename = "gigapoint_resource/config/gigapoint_century_local.json"
+config_filename = "gigapoint_resource/config/gigapoint_century_hres_cave2.json"
 
 # pointcloud
 gp = gigapoint.initialize()
@@ -17,6 +17,7 @@ with open(config_filename) as json_file:
     config = json.load(json_file)
 
 cam = getDefaultCamera()
+cam.setTrackingEnabled(True)
 
 # menu
 def updateMaterial(material):
@@ -57,10 +58,11 @@ def updatePointScale(value):
 	gp.updatePointScale(val)
 
 def printInfo():
-	global cam
-	print 'Camera position: ' + str(cam.getPosition())
-	print 'Camera orientation: ' + str(cam.getOrientation())
-	gp.printInfo()
+        global cam
+        print 'Camera position: ' + str(cam.getPosition())
+        print 'Camera orientation: ' + str(cam.getOrientation())
+        gp.printInfo()
+
 
 mm = MenuManager.createAndInitialize()
 menu = mm.getMainMenu()
@@ -108,3 +110,5 @@ b32.getButton().setCheckable(True)
 updateSizeType(str(config["sizeType"]))
 
 menu.addButton("Print info", "printInfo()")
+
+

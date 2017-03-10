@@ -12,7 +12,7 @@ class GigapointRenderModule : public EngineModule
 {
 public:
     GigapointRenderModule() :
-        EngineModule("GigapointRenderModule"), pointcloud(0), option(0)
+        EngineModule("GigapointRenderModule"), pointcloud(0), option(0), visible(true)
     {
     	
     }
@@ -43,7 +43,6 @@ public:
     	pointcloud->initPointCloud();
 
     	//Camera
-	    cout << "Update cam..." << endl;
 		Camera* cam = getEngine()->getDefaultCamera();
 		cam->getController()->setSpeed(option->cameraSpeed);
 		cam->getController()->setFreeFlyEnabled(true);
@@ -95,8 +94,20 @@ public:
         pointcloud->setReloadShader(false);
     }
 
+    void updateVisible(const bool b)
+    {
+	visible = b;
+    }
+
+    void printInfo()
+    {
+	if(pointcloud)
+		pointcloud->setPrintInfo(true);
+    }
+
     gigapoint::PointCloud* pointcloud;
-    gigapoint::Option* option;
+    gigapoint::Option* option; 
+    bool visible;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -123,25 +134,21 @@ public:
             glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT | GL_CURRENT_BIT);
             client->getRenderer()->beginDraw3D(context);
 
-            // Enable depth testing and lighting.
-            glEnable(GL_DEPTH_TEST);
-			if(oglError) return;
-			glEnable(GL_LIGHTING);
-			if(oglError) return;
-		   
+	    if(module->visible)
+	    { 
 			// Test and draw
 			// get camera location in world coordinate
-            //if(context.eye == DrawContext::EyeLeft || context.eye == DrawContext::EyeCyclop)
-            {
-                Vector3f cp = context.camera->getPosition();
-                float campos[3] = {cp[0], cp[1], cp[2]};
-                float* MVP = (context.projection*context.modelview).cast<float>().data();
-                module->pointcloud->updateVisibility(MVP, campos);
-            }
+            	//if(context.eye == DrawContext::EyeLeft || context.eye == DrawContext::EyeCyclop)
+            	{
+                	Vector3f cp = context.camera->getPosition();
+                	float campos[3] = {cp[0], cp[1], cp[2]};
+                	float* MVP = (context.projection*context.modelview).cast<float>().data();
+                	module->pointcloud->updateVisibility(MVP, campos);
+            	}
 
-			module->pointcloud->draw();
-			if(oglError) return;
-
+		module->pointcloud->draw();
+		if(oglError) return;
+	    }
             client->getRenderer()->endDraw();
             glPopAttrib();
         }
@@ -180,6 +187,8 @@ BOOST_PYTHON_MODULE(gigapoint)
         PYAPI_METHOD(GigapointRenderModule, updateQuality)
         PYAPI_METHOD(GigapointRenderModule, updateSizeType)
         PYAPI_METHOD(GigapointRenderModule, updatePointScale)
+	PYAPI_METHOD(GigapointRenderModule, updateVisible)
+	PYAPI_METHOD(GigapointRenderModule, printInfo)
         ;
 
     def("initialize", initialize, PYAPI_RETURN_REF);

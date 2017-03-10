@@ -6,7 +6,7 @@ from cyclops import *
 from omegaToolkit import *
 import json
 
-config_filename = "gigapoint_resource/config/gigapoint_century_hres_cave2.json"
+config_filename = "gigapoint_resource/config/gigapoint_moonlite_cave2.json"
 
 # pointcloud
 gp = gigapoint.initialize()

@@ -199,10 +199,19 @@ Option* Utils::loadOption(const string filename) {
 
         option->dataDir = getJsonItemString(json, "dataDir", "./");
         option->dataDir.append("/");
+
+	cJSON* sp = cJSON_GetObjectItem(json, "shaderDir");
+	if(sp) {
+		option->shaderDir = sp->valuestring;
+		option->shaderDir.append("/");
+	}
+	else {
+		option->shaderDir = "gigapoint_resource/shaders/";
+	}
+
         option->visiblePointTarget = getJsonItemDouble(json, "visiblePointTarget", 1000000);
         option->minNodePixelSize = getJsonItemDouble(json, "minNodePixelSize", 100);
         option->screenHeight = getJsonItemDouble(json, "screenHeight", 600);
-        option->moveToCentre = getJsonItemInt(json, "moveToCentre", 1) > 0;
 
         string tmp = getJsonItemString(json, "material", "rgb");
         if (tmp.compare("rgb") == 0)
@@ -289,7 +298,9 @@ Option* Utils::loadOption(const string filename) {
             option->menuOption[2] = cJSON_GetArrayItem(menuopt, 2)->valuedouble;
         }
         else {
-            option->menuOption[0] = option->menuOption[1] = option->menuOption[2] = 30;
+            option->menuOption[0] = 30;
+	    option->menuOption[1] = 10;
+	    option->menuOption[2] = 30;
         }
         
     }
@@ -302,10 +313,10 @@ Option* Utils::loadOption(const string filename) {
 void Utils::printOption(const Option* option) {
     cout << "==== OPTION ====" << endl;
     cout << "data dir: " << option->dataDir << endl;
+    cout << "shader dir: " << option->shaderDir << endl;
     cout << "visiblePointTarget: " << option->visiblePointTarget << endl;
     cout << "minNodePixelSize: " << option->minNodePixelSize << endl;
     cout << "screenHeight: " << option->screenHeight << endl;
-    cout << "moveToCentre: " << option->moveToCentre << endl;
     cout << "material: " << option->material << endl;
     cout << "pointScale: " << option->pointScale[0] << " " << option->pointScale[1] << " " << option->pointScale[2] << endl;
     cout << "pointSizeRange: " << option->pointSizeRange[0] << " " << option->pointSizeRange[1] << endl;
@@ -414,15 +425,6 @@ PCInfo* Utils::loadPCInfo(const string data_dir) {
 
         // other settings
         info->dataDir = data_dir;
-
-        info->boundingBoxCentre[0] = (info->boundingBox[0] + info->boundingBox[3]) / 2;
-        info->boundingBoxCentre[1] = (info->boundingBox[1] + info->boundingBox[4]) / 2;
-        info->boundingBoxCentre[2] = (info->boundingBox[2] + info->boundingBox[5]) / 2;
-        for(int i=0; i < 3; i++) {
-          info->tightBoundingBox[i] -= info->boundingBoxCentre[i];
-          info->tightBoundingBox[i+3] -= info->boundingBoxCentre[i];
-        } 
-       
     }
 
     cJSON_Delete(json);
