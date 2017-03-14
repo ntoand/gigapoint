@@ -66,7 +66,7 @@ ColorTexture::ColorTexture(unsigned int _index, unsigned int _width, unsigned in
     magFilter = GL_LINEAR;
     format = _format;
     globalFormat = _globalFormat;
-
+    
     glActiveTexture(glunit);
     glGenTextures(1, &gluid);
     glBindTexture(GL_TEXTURE_2D, gluid);

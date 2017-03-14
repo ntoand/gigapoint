@@ -56,6 +56,22 @@ def updatePointScale(value):
 	lscale.setText('Point scale: ' + str(val))
 	gp.updatePointScale(val)
 
+def updateFilter(filter):
+	print filter
+	b41.getButton().setChecked(False)
+	b42.getButton().setChecked(False)
+	if filter == "none":
+		b41.getButton().setChecked(True)
+	else:
+		b42.getButton().setChecked(True)
+	gp.updateFilter(filter)
+
+def updateEdl(strength, radius):
+	val = strength/100.0
+	print str(val) + ' ' + str(radius)
+	ledl_strength.setText('edl strength: ' + str(val))
+	gp.updateEdl(val, radius)
+
 def printInfo():
 	global cam
 	print 'Camera position: ' + str(cam.getPosition())
@@ -106,5 +122,22 @@ b32 = menu.addButton("adaptive", "updateSizeType('adaptive')")
 b31.getButton().setCheckable(True)
 b32.getButton().setCheckable(True)
 updateSizeType(str(config["sizeType"]))
+
+l4 = menu.addLabel("Filter")
+#l2.getWidget().setStyleValue('border-top', '1 white')
+b41 = menu.addButton("none", "updateFilter('none')")
+b42 = menu.addButton("edl", "updateFilter('edl')")
+b41.getButton().setCheckable(True)
+b42.getButton().setCheckable(True)
+updateFilter(str(config["filter"]))
+
+ledl_strength = menu.addLabel("edl strength")
+#l3.getWidget().setStyleValue('border-top', '1 white')
+pstrength = config["filterEdl"][0]
+radius = config["filterEdl"][1]
+pointscale = menu.addSlider(300, "updateEdl(%value%, radius)")
+pointscale.getSlider().setValue(pstrength*100)
+pointscale.getWidget().setWidth(200)
+updateEdl(pstrength*100)
 
 menu.addButton("Print info", "printInfo()")

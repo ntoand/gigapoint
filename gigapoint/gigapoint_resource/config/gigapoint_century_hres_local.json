@@ -2,7 +2,6 @@
 	"dataDir": "century_hres",
 	"visiblePointTarget": 10000000,
 	"minNodePixelSize": 100,
-	"screenHeight": 600,
 	"material": "rgb",
 	"pointScale": [0.2,0.01,0.5],
 	"pointSizeRange": [2, 50],
@@ -15,6 +14,5 @@
 	"cameraSpeed": 100,
 	"cameraUpdatePosOri": 0,
 	"cameraPosition": [500,300,200],
-	"cameraOrientation": [0.878953, 0.467479, 0.0833162, -0.0443124],
-	"menuOption": [30, 10, 30]
+	"cameraOrientation": [0.878953, 0.467479, 0.0833162, -0.0443124]
 }

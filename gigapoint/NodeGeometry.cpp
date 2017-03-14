@@ -305,14 +305,14 @@ int NodeGeometry::initVBO() {
     return 0;
 }
 
-void NodeGeometry::draw(Material* material) {
+void NodeGeometry::draw(Material* material, const int height) {
 	if(loading || !loaded)
 		return;
 	if(!initvbo)
 		initVBO();
 	Shader* shader = material->getShader();
 	Option* option = material->getOption();
-	ColorTexture* texture = material->getColorTexture();
+	ColorTexture* texture = ((MaterialPoint*)material)->getColorTexture();
 	shader->bind();
 	texture->bind();
 	if(oglError) return;
@@ -362,8 +362,11 @@ void NodeGeometry::draw(Material* material) {
 #endif
 	
 	shader->transmitUniform("uColorTexture", (int)0);
-	shader->transmitUniform("uHeightMinMax", (float)info->tightBoundingBox[2], (float)info->tightBoundingBox[5]);
-	shader->transmitUniform("uScreenHeight", (float)option->screenHeight);
+	float range = info->tightBoundingBox[5] - info->tightBoundingBox[2];
+	float range_min = info->tightBoundingBox[2] + option->elevationRange[0] * range;
+	float range_max = info->tightBoundingBox[2] + option->elevationRange[1] * range;
+	shader->transmitUniform("uHeightMinMax", range_min, range_max);
+	shader->transmitUniform("uScreenHeight", (float)height);
     shader->transmitUniform("uPointScale", (float)option->pointScale[0]);
     shader->transmitUniform("uPointSizeRange", (float)option->pointSizeRange[0], (float)option->pointSizeRange[1]);
 

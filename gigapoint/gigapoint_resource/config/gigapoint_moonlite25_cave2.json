@@ -4,7 +4,6 @@
 	"visiblePointTarget": 20000000,
 	"minNodePixelSize": 100,
 	"moveToCentre": 1,
-	"screenHeight": 3072,
 	"material": "rgb",
 	"pointScale": [0.01,0.01,0.5],
 	"pointSizeRange": [2, 400],
@@ -17,6 +16,5 @@
 	"cameraSpeed": 10,
 	"cameraUpdatePosOri": 1,
 	"cameraPosition": [-90.478,-18.9424,466],
-	"cameraOrientation": [0.63, 0.52,-0.34,-0.45],
-	"menuOption": [200, 50, 150]
+	"cameraOrientation": [0.63, 0.52,-0.34,-0.45]
 }

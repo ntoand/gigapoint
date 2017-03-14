@@ -39,6 +39,14 @@ Shader& Shader::load(string shaderPrefix, list<string> attributes, list<string> 
 
         if(option->quality == QUALITY_SQUARE)
             fra.append("#define SQUARE_POINT_SHAPE\n");
+        else if (option->quality == QUALITY_CIRCLE)
+            fra.append("#define CIRCLE_POINT_SHAPE\n");
+
+        if(option->filter == FILTER_EDL) {
+            ver.append("#define FILTER_EDL\n");
+            fra.append("#define FILTER_EDL\n");
+        }
+
     }
 
     else if(name.compare("edl") == 0) {
@@ -212,6 +220,10 @@ void Shader::transmitUniform(string name, float f1, float f2, float f3) {
 
 void Shader::transmitUniform(string name, const float mat[16]) {
     glUniformMatrix4fv(uniforms.at(name), 1, GL_FALSE, mat);
+}
+
+void Shader::transmitUniform2fv(string name, const float arr[8]) {
+    glUniform2fv(uniforms.at(name), 4, arr);
 }
 
 }; //namespace gigapoint

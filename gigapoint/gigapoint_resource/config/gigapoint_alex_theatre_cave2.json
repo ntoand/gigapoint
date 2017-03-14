@@ -2,7 +2,6 @@
 	"dataDir": "/data/fast/toand/potree/alex_theatre",
 	"visiblePointTarget": 15000000,
 	"minNodePixelSize": 100,
-	"screenHeight": 3072,
 	"material": "rgb",
 	"pointScale": [0.05,0.01,0.7],
 	"pointSizeRange": [2, 100],

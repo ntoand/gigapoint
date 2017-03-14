@@ -2,7 +2,6 @@
 	"dataDir": "/Users/toand/git/mivp/data/no-timemachine/P103.0/mt_jennifer_dense_point_cloud",
 	"visiblePointTarget": 10000000,
 	"minNodePixelSize": 100,
-	"screenHeight": 600,
 	"material": "rgb",
 	"pointScale": [0.2,0.01,0.5],
 	"pointSizeRange": [2, 50],
@@ -15,6 +14,5 @@
 	"cameraSpeed": 200,
 	"cameraUpdatePosOri": 1,
 	"cameraPosition": [-2371.58,-1830.57,-3531.99],
-	"cameraOrientation": [0.851164,0.524662,0.0134534,-0.00829276],
-	"menuOption": [30, 10, 30]
+	"cameraOrientation": [0.851164,0.524662,0.0134534,-0.00829276]
 }

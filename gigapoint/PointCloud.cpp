@@ -35,9 +35,9 @@ PointCloud::~PointCloud() {
 
 void PointCloud::initMaterials() {
 	if(!materialPoint)
-		materialPoint = new Material(option, "point");
+		materialPoint = new MaterialPoint(option);
 	if(!materialEdl)
-		materialEdl = new Material(option, "edl");
+		materialEdl = new MaterialEdl(option);
 	if(!frameBuffer) {
 		vector<string> targets;
 		targets.push_back("tex0");
@@ -194,7 +194,7 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3], con
 			if(distance - radius < 0)
 				weight = FLT_MAX;
 
-			float screenpixelradius = option->screenHeight * pr;
+			float screenpixelradius = height * pr;
 			if(screenpixelradius < option->minNodePixelSize)
 				continue;
 
@@ -224,9 +224,10 @@ void PointCloud::draw() {
 	}
 
 	//draw to bufferframe
-	frameBuffer->bind();
-	frameBuffer->clear();
-	glEnable(GL_DEPTH_TEST);
+	if(option->filter != FILTER_NONE) {
+		frameBuffer->bind();
+		frameBuffer->clear();
+	}
 
 #ifdef OMEGALIB_APP
 	glAlphaFunc(GL_GREATER, 0.1);
@@ -234,7 +235,7 @@ void PointCloud::draw() {
 #endif
 	for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
 		NodeGeometry* node = *it;
-		node->draw(materialPoint);
+		node->draw(materialPoint, height);
 	}
 
 	// draw interaction
@@ -261,13 +262,26 @@ void PointCloud::draw() {
 	    glEnd();
 	}
 
-	frameBuffer->unbind();
-	materialEdl->getShader()->bind();
-	materialEdl->getShader()->transmitUniform("uColorTexture", (int)0);
-	frameBuffer->getTexture("tex0")->bind();
-	drawViewQuad();
-	frameBuffer->getTexture("tex0")->unbind();
-	materialEdl->getShader()->unbind();
+	if(option->filter != FILTER_NONE) {
+
+		frameBuffer->unbind();
+		Shader* edlShader = materialEdl->getShader();
+		edlShader->bind();
+		edlShader->transmitUniform("uColorTexture", (int)0);
+		edlShader->transmitUniform("uScreenWidth", (float)width);
+		edlShader->transmitUniform("uScreenHeight", (float)height);
+		edlShader->transmitUniform("uEdlStrength", option->filterEdl[0]);
+		edlShader->transmitUniform("uRadius", option->filterEdl[1]);
+		edlShader->transmitUniform("uOpacity", 1.0f);
+		edlShader->transmitUniform2fv("uNeighbours", ((MaterialEdl*)materialEdl)->getNeighbours());
+
+		frameBuffer->getTexture("tex0")->bind();
+		
+		drawViewQuad();
+
+		frameBuffer->getTexture("tex0")->unbind();
+		materialEdl->getShader()->unbind();
+	}
 }
 
 void PointCloud::drawViewQuad()

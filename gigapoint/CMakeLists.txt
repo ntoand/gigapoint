@@ -1,4 +1,4 @@
-#module_version(0.9)
+#module_version(0.9.1)
 #declare_native_module(gigapoint)
 
 cmake_minimum_required(VERSION 2.8.1) 

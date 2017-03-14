@@ -96,7 +96,23 @@ public:
 
     void updateVisible(const bool b)
     {
-	visible = b;
+	   visible = b;
+    }
+
+    void updateFilter(const string& filter)
+    {
+        if(filter.compare("none") == 0)
+            option->filter = FILTER_NONE;
+        else if (filter.compare("edl") == 0)
+            option->filter = FILTER_EDL;
+        pointcloud->setReloadShader(true);
+    }
+
+    void updateEdl(const float strength, const float radius) 
+    {
+        option->filterEdl[0] = strength;
+        option->filterEdl[1] = radius;
+        pointcloud->setReloadShader(false);
     }
 
     void printInfo()
@@ -123,8 +139,8 @@ public:
         RenderPass::initialize();
 
         //graphics
-	glEnable(GL_POINT_SPRITE);
-	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+	    glEnable(GL_POINT_SPRITE);
+	    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
     }
 
     virtual void render(Renderer* client, const DrawContext& context)
@@ -187,8 +203,10 @@ BOOST_PYTHON_MODULE(gigapoint)
         PYAPI_METHOD(GigapointRenderModule, updateQuality)
         PYAPI_METHOD(GigapointRenderModule, updateSizeType)
         PYAPI_METHOD(GigapointRenderModule, updatePointScale)
-	PYAPI_METHOD(GigapointRenderModule, updateVisible)
-	PYAPI_METHOD(GigapointRenderModule, printInfo)
+        PYAPI_METHOD(GigapointRenderModule, updateVisible)
+        PYAPI_METHOD(GigapointRenderModule, printInfo)
+        PYAPI_METHOD(GigapointRenderModule, updateFilter)
+        PYAPI_METHOD(GigapointRenderModule, updateEdl)
         ;
 
     def("initialize", initialize, PYAPI_RETURN_REF);

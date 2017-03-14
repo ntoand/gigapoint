@@ -2,7 +2,6 @@
 	"dataDir": "/home/toand/git/potree/PotreeConverter/master/build/PotreeConverter/cannington",
 	"visiblePointTarget": 20000000,
 	"minNodePixelSize": 100,
-	"screenHeight": 3072,
 	"material": "rgb",
 	"pointScale": [0.3,0.01,0.5],
 	"pointSizeRange": [2, 500],

@@ -2,7 +2,6 @@
 	"dataDir": "/data/big/handreas/coles-highres-pts/",
 	"visiblePointTarget": 22000000,
 	"minNodePixelSize": 100,
-	"screenHeight": 3072,
 	"material": "rgb",
 	"pointScale": [0.63, 0.01, 0.8],
 	"pointSizeRange": [2, 500],

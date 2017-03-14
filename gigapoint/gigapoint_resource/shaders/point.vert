@@ -10,20 +10,26 @@ uniform float uPointScale;
 uniform vec2 uPointSizeRange;
 
 varying vec3 vColor;
+#if defined FILTER_EDL
+varying float vDepth;
+#endif
 
 void main()
 {
 	//position
     gl_Position = gl_ModelViewProjectionMatrix * vec4(VertexPosition,1.0);
     vec3 mvPosition = (gl_ModelViewMatrix * vec4(VertexPosition,1.0)).xyz;
-	
-
+#if defined FILTER_EDL
+    vDepth = log2(gl_Position.w);
+#endif
+    
     //color
 #if defined MATERIAL_RGB
     vColor = vec3(VertexColor.x / 255.0, VertexColor.y/255.0, VertexColor.z/255.0) ;
 #endif
 #if defined MATERIAL_ELEVATION
     float w = (VertexPosition.z - uHeightMinMax[0]) / (uHeightMinMax[1]-uHeightMinMax[0]);
+    w = clamp(w, 0.01, 0.99);
     vColor = texture2D(uColorTexture, vec2(w,0.5)).rgb;
 #endif
         

@@ -43,7 +43,6 @@ void FrameBuffer::init(int textureUnitOffset, bool linearFilter)
     int bcount = texturesNames.size() + (hasDepth ? 1 : 0);
     if(bcount <= 0)
     {
-        //qDebug()<<"Empty framebuffer.";
         return;
     }
     else
@@ -67,7 +66,7 @@ void FrameBuffer::init(int textureUnitOffset, bool linearFilter)
         ColorTexture::resetUnit(textureUnitOffset);
         for(int i = 0; i < texturesNames.size(); i++)
         {
-            ColorTexture* tex = ColorTexture::newFromNextUnit(width, height);
+            ColorTexture* tex = ColorTexture::newFromNextUnit(width, height, GL_RGBA32F);
             tex->bind();
 
             unsigned int attachment = getAttachementFromIndex(i);
