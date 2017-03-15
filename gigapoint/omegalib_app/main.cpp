@@ -244,11 +244,12 @@ void GigapointApplication::printInfo() {
     cout << "orientation: " << q.w() << "," << q.x() << "," << q.y() << "," << q.z() << endl;
 }
 
-bool GigapointApplication::handleCommand(const String& cmd) {
-    cout <<  "got Command: " << cmd.substr(0,5) << endl;
+
+bool GigapointApplication::handleCommand(const String& cmd) { // ":dirty NODENAME eg: ':dirty r0012' "
+    //cout <<  "got Command: " << cmd.substr(0,5) << endl;    
     if (0==cmd.substr(0,5).compare("dirty"))
-    {
-        cout << "got dirty" << cmd.substr(6,cmd.size()) << endl;
+    {        
+        cout << "testing substring" << cmd.substr(6,cmd.size()-1);
         pointcloud->flagNodeAsDirty(cmd.substr(6,cmd.size()));
     }
     return true;
