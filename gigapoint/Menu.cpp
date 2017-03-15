@@ -45,6 +45,14 @@ void PCMenu::initMenu(const Option* option) {
 	item4.value = option->pointScale[0];
 	menu.push_back(item4);
 
+    MenuItem item5;
+    item5.name = "interactMode";
+    item5.type = ITEM_STRING;
+    item5.options.push_back("NONE");
+    item5.options.push_back("POINT");
+    item5.value = option->interactMode;
+    menu.push_back(item5);
+
 	item = 0;
 }
 
@@ -53,6 +61,7 @@ bool PCMenu::updateOption(Option* option) {
 	option->quality = menu[1].value;
 	option->sizeType = menu[2].value;
 	option->pointScale[0] = menu[3].value;
+    option->interactMode = menu[4].value;
 	if(needReloadShader) {
 		needReloadShader = false;
 		return true;

@@ -83,7 +83,6 @@ private:
 	LRUCache* lrucache;
 
 	// interaction
-	int interactMode;
 	omega::Ray ray;
 	vector<HitPoint*> hitPoints; 
 
@@ -91,6 +90,7 @@ private:
     void debug();
     void reload();
     void unload();
+
 
 
 
@@ -107,8 +107,8 @@ public:
 
 
 	// interaction
-	void setInteractMode(int v) { interactMode = v; }
-	int getInteractMode() { return interactMode; }
+    //void setInteractMode(int v) { interactMode = v; }
+    //int getInteractMode() { return interactMode; }
 	void updateRay(const omega::Ray& r);
 	void findHitPoint();
 

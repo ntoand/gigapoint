@@ -10,9 +10,8 @@ namespace gigapoint {
 
 PointCloud::PointCloud(Option* opt, bool mas): option(opt), master(mas), pauseUpdate(false),fullReload(false),
                                                 material(NULL),lrucache(NULL),_unload(false),render(true),
-                                                needReloadShader(false), interactMode(INTERACT_NONE),printInfo(false) {
+                                                needReloadShader(false),printInfo(false) {
     nodes = new std::map<string,NodeGeometry* >();
-
 }
 
 PointCloud::~PointCloud() {
@@ -247,7 +246,7 @@ void PointCloud::flagNodeAsDirty(const std::string &nodename)
              if (node->canLoadHierarchy())
              {
                  foundHierarchyNode=true;
-                 node->loadHierachy(nodes,false,true);
+                 node->loadHierachy(nodes,true);
              }
         }
     }
@@ -326,7 +325,7 @@ void PointCloud::draw() {
 	}
 
 	// draw interaction
-	if(interactMode == INTERACT_NONE)
+    if(option->interactMode == INTERACT_NONE)
 		return;
 	glDisable(GL_LIGHTING);
 	glDisable(GL_BLEND);
@@ -356,10 +355,10 @@ void PointCloud::updateRay(const omega::Ray& r) {
 }
 
 void PointCloud::findHitPoint() {
-	if (interactMode == INTERACT_NONE)
+    if (option->interactMode == INTERACT_NONE)
 		return;
 
-	if (interactMode == INTERACT_POINT) {
+    if (option->interactMode == INTERACT_POINT) {
 		unsigned int start_time = Utils::getTime();
 		hitPoints.clear();
 		HitPoint* point = new HitPoint();

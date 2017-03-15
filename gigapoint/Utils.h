@@ -42,6 +42,11 @@ namespace gigapoint {
 #define QUALITY_SQUARE 0
 #define QUALITY_CIRCLE 1
 
+// interaction
+#define INTERACT_NONE		0
+#define INTERACT_POINT 		1
+//#define INTERACT_DISTANCE	1
+
 typedef struct Option_t {
 	string dataDir;
 	string shaderDir;
@@ -63,6 +68,7 @@ typedef struct Option_t {
 	float cameraPosition[3];
 	float cameraOrientation[4];
 	float menuOption[3];
+    int interactMode;
 } Option;
 
 typedef struct PCInfo_t {
@@ -78,10 +84,8 @@ typedef struct PCInfo_t {
 	int pointByteSize;
 } PCInfo;
 
-// interaction
-#define INTERACT_NONE		-1
-#define INTERACT_POINT 		0
-#define INTERACT_DISTANCE	1
+
+
 
 typedef struct HitPoint_ {
 	float distance;
@@ -90,6 +94,7 @@ typedef struct HitPoint_ {
 		distance = -1;
 	}
 } HitPoint;
+
 
 // Utils class
 class Utils {

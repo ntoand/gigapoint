@@ -15,12 +15,8 @@ using namespace omegaToolkit::ui;
 using namespace std;
 using namespace gigapoint;
 
-<<<<<<< HEAD:gigapoint/omegalib_app/main.cpp
-class GigapointRenderPass: public RenderPass
-=======
 
-class OPotreeRenderPass: public RenderPass
->>>>>>> need to avoid too many filesystem reads, recieving MC commands to flag nodes as dirty:opotree/main.cpp
+class GigapointRenderPass: public RenderPass
 {
 public:
 	GigapointRenderPass(Renderer* client, Option* opt, PointCloud* pc): 
@@ -59,7 +55,7 @@ public:
 	void resetCamera();
 	void printInfo();
 	virtual void handleEvent(const Event& evt);
-<<<<<<< HEAD:gigapoint/omegalib_app/main.cpp
+
 	virtual void dispose()
 	{
 		if(pointcloud)
@@ -69,10 +65,10 @@ public:
 		if(option)
 			delete option;
 	}
-=======
+
     virtual bool handleCommand(const String& cmd);
 
->>>>>>> need to avoid too many filesystem reads, recieving MC commands to flag nodes as dirty:opotree/main.cpp
+
 };
 
 
@@ -306,7 +302,18 @@ void GigapointApplication::handleEvent(const Event& evt) {
             pointcloud->resetRootHierarchy();
 
         }
+<<<<<<< HEAD:gigapoint/omegalib_app/main.cpp
 
+=======
+/*
+		else if (evt.isKeyDown('p')) {
+			if(pointcloud->getInteractMode() == INTERACT_NONE)
+				pointcloud->setInteractMode(INTERACT_POINT);
+			else
+				pointcloud->setInteractMode(INTERACT_NONE);
+		}
+*/
+>>>>>>> interactMode is now part of the menu:opotree/main.cpp
 
     }
     
@@ -324,7 +331,7 @@ void GigapointApplication::handleEvent(const Event& evt) {
     }
 
     else if(evt.getServiceType() == Service::Wand) {
-    	if(pointcloud->getInteractMode() != INTERACT_NONE) {
+        if(option->interactMode != INTERACT_NONE) {
     		DisplaySystem* ds = SystemManager::instance()->getDisplaySystem();
 		    Ray r;
 		    bool res = ds->getViewRayFromEvent(evt, r);
@@ -350,12 +357,21 @@ void GigapointApplication::handleEvent(const Event& evt) {
 		else if (evt.isButtonDown(Event::Button2)) { // circle
 			printInfo();
 		}
+<<<<<<< HEAD:gigapoint/omegalib_app/main.cpp
 		else if (evt.isButtonDown(Event::Button1) || evt.isButtonDown(Event::Button4)) {
+=======
+        else if (evt.isButtonDown(Event::Button4)) { // circle
+            pointcloud->setReloading(true);
+        }
+        /*
+        else if (evt.isButtonDown(Event::Button1) ) {
+>>>>>>> interactMode is now part of the menu:opotree/main.cpp
 			if(pointcloud->getInteractMode() == INTERACT_NONE)
 				pointcloud->setInteractMode(INTERACT_POINT);
 			else
 				pointcloud->setInteractMode(INTERACT_NONE);
 		}
+        */
 		else if (evt.isButtonDown(Event::Button5)) {  // L1
 			pointcloud->findHitPoint();
 		}

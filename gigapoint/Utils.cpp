@@ -263,6 +263,14 @@ Option* Utils::loadOption(const string filename) {
         else
             option->quality = QUALITY_SQUARE;
 
+        tmp = getJsonItemString(json, "interactMode", "None");
+        if (tmp.compare("None") == 0)
+            option->interactMode = INTERACT_NONE;
+        else if (tmp.compare("Point") == 0)
+            option->interactMode = INTERACT_POINT;
+        else
+            option->interactMode = INTERACT_NONE;
+
         option->numReadThread = getJsonItemInt(json, "numReadThread", 2);
         option->preloadToLevel = getJsonItemInt(json, "preloadToLevel", 5);
         option->maxNodeInMem = getJsonItemInt(json, "maxNodeInMem", 50000);  
@@ -332,7 +340,9 @@ void Utils::printOption(const Option* option) {
     cout << "maxNodeInMem: " << option->maxNodeInMem << endl;
     cout << "maxLoadSize: " << option->maxLoadSize << endl;
     cout << "onlineUpdate: " << option->onlineUpdate << endl;
-    cout << "cameraUpdatePosOri" << option->cameraUpdatePosOri << endl;
+    cout << "interactMode: " << option->interactMode << endl;
+    cout << "cameraUpdatePosOri: " << option->cameraUpdatePosOri << endl;
+
     if(option->cameraUpdatePosOri) {
         cout << "cameraPosition: ";
         for(int i=0; i < 3; i++)
