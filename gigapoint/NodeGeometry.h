@@ -99,7 +99,7 @@ public:
 	int loadData();
 	void printInfo();
 	int initVBO();
-	void draw(Material* material);
+	void draw(Material* material, const int height);
 
 	void freeData();
 

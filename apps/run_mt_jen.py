@@ -17,6 +17,7 @@ with open(config_filename) as json_file:
     config = json.load(json_file)
 
 cam = getDefaultCamera()
+cam.setTrackingEnabled(True)
 
 # menu
 def updateMaterial(material):
@@ -56,6 +57,22 @@ def updatePointScale(value):
 	lscale.setText('Point scale: ' + str(val))
 	gp.updatePointScale(val)
 
+def updateFilter(filter):
+	print filter
+	b41.getButton().setChecked(False)
+	b42.getButton().setChecked(False)
+	if filter == "none":
+		b41.getButton().setChecked(True)
+	else:
+		b42.getButton().setChecked(True)
+	gp.updateFilter(filter)
+
+def updateEdl(strength, radius):
+	val = strength/100.0
+	print str(val) + ' ' + str(radius)
+	ledl_strength.setText('edl strength: ' + str(val))
+	gp.updateEdl(val, radius)
+
 def printInfo():
         global cam
         print 'Camera position: ' + str(cam.getPosition())
@@ -66,8 +83,12 @@ def printInfo():
 mm = MenuManager.createAndInitialize()
 menu = mm.getMainMenu()
 mm.setMainMenu(menu)
-campos = config["cameraPosition"]
-camori = config["cameraOrientation"]
+campos = [0, 0, 0]
+camori = [1, 0, 0, 0]
+if "cameraPosition" in config:
+	campos = config["cameraPosition"]
+if "cameraOrientation" in config:
+	camori = config["cameraOrientation"]
 cmd = 'cam.setPosition(Vector3(' + str(campos[0]) + ',' + str(campos[1]) + ',' + str(campos[2]) + ')),' + \
 		'cam.setOrientation(Quaternion(' + str(camori[0]) + ',' + str(camori[1]) + ',' + str(camori[2]) + ',' + str(camori[3]) + '))'
 menu.addButton("Go to camera 1", cmd)
@@ -75,9 +96,13 @@ menu.addButton("Go to camera 1", cmd)
 lscale = menu.addLabel("Point scale")
 #l3.getWidget().setStyleValue('border-top', '1 white')
 pscale = config["pointScale"]
-pscale_value = int(100*float(pscale[0]))
-pscale_min = int(100*float(pscale[1]))
-pscale_max = int(100*float(pscale[2]))
+pscale_value = 0.1
+pscale_min = 0.01
+pscale_max = 1.0
+if "pointScale" in config:
+	pscale_value = int(100*float(pscale[0]))
+	pscale_min = int(100*float(pscale[1]))
+	pscale_max = int(100*float(pscale[2]))
 val = int( float(pscale_value - pscale_min) / (pscale_max-pscale_min) * 100 )
 pointscale = menu.addSlider(100, "updatePointScale(%value%)")
 pointscale.getSlider().setValue(val)
@@ -90,7 +115,10 @@ b11 = menu.addButton("rgb", "updateMaterial('rgb')")
 b12 = menu.addButton("elevation", "updateMaterial('elevation')")
 b11.getButton().setCheckable(True)
 b12.getButton().setCheckable(True)
-updateMaterial(str(config["material"]))
+if "material" in config:
+	updateMaterial(str(config["material"]))
+else:
+	updateMaterial("rgb")
 
 l2 = menu.addLabel("Quality")
 #l2.getWidget().setStyleValue('border-top', '1 white')
@@ -98,7 +126,10 @@ b21 = menu.addButton("square", "updateQuality('square')")
 b22 = menu.addButton("circle", "updateQuality('circle')")
 b21.getButton().setCheckable(True)
 b22.getButton().setCheckable(True)
-updateQuality(str(config["quality"]))
+if "quality" in config:
+	updateQuality(str(config["quality"]))
+else:
+	updateQuality("square");
 
 l3 = menu.addLabel("Size type")
 #l2.getWidget().setStyleValue('border-top', '1 white')
@@ -106,7 +137,34 @@ b31 = menu.addButton("fixed", "updateSizeType('fixed')")
 b32 = menu.addButton("adaptive", "updateSizeType('adaptive')")
 b31.getButton().setCheckable(True)
 b32.getButton().setCheckable(True)
-updateSizeType(str(config["sizeType"]))
+if "sizeType" in config:
+	updateSizeType(str(config["sizeType"]))
+else:
+	updateSizeType("adaptive");
+
+l4 = menu.addLabel("Filter")
+#l2.getWidget().setStyleValue('border-top', '1 white')
+b41 = menu.addButton("none", "updateFilter('none')")
+b42 = menu.addButton("edl", "updateFilter('edl')")
+b41.getButton().setCheckable(True)
+b42.getButton().setCheckable(True)
+if "filter" in config:
+	updateFilter(config["filter"])
+else:
+	updateFilter("none")
+
+ledl_strength = menu.addLabel("edl strength")
+#l3.getWidget().setStyleValue('border-top', '1 white')
+pstrength = 1.0
+radius = 1.4
+if "filterEdl" in config:
+	pstrength = config["filterEdl"][0]
+	radius = config["filterEdl"][1]
+pointscale = menu.addSlider(300, "updateEdl(%value%, radius)")
+pointscale.getSlider().setValue(int(pstrength*100))
+pointscale.getWidget().setWidth(200)
+updateEdl(int(pstrength*100), int(radius))
 
 menu.addButton("Print info", "printInfo()")
+
 
