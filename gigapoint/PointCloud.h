@@ -28,8 +28,7 @@ struct NodeWeight {
     }
 };
 
-class NodeLoaderThread: public Thread {
-
+class NodeLoaderThread: public Thread {    
 private:
 	wqueue<NodeGeometry*>& m_queue;
 	int maxLoadSize;
@@ -40,9 +39,15 @@ public:
 	void* run() {
         for (;;) {
             NodeGeometry* node = (NodeGeometry*)m_queue.remove();
-	    node->setInQueue(false);
+	    node->setInQueue(false);        
 	    if(m_queue.size() < maxLoadSize)
-            	node->loadData();
+            if(!node->isDirty()) {
+                node->loadData();
+            } else {
+                node->initUpdateCache();
+                //node->updateCache->loadHierachy(); // called during update visibility
+                node->getUpdateCache()->loadData();
+            }
         }
         return NULL;
     }
@@ -78,6 +83,9 @@ private:
 	int interactMode;
 	omega::Ray ray;
 	vector<HitPoint*> hitPoints; 
+
+    map<string, NodeGeometry*> nodes;
+
 
 public:
 	PointCloud(Option* option, bool master = false);

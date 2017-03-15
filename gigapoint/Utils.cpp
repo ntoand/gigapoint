@@ -199,6 +199,9 @@ Option* Utils::loadOption(const string filename) {
 
         option->dataDir = getJsonItemString(json, "dataDir", "./");
         option->dataDir.append("/");
+        cJSON* jtmp=cJSON_GetObjectItem(json, "onlineUpdate");
+        if (jtmp != NULL )
+            option->onlineUpdate = jtmp->valueint > 0;
 
 	cJSON* sp = cJSON_GetObjectItem(json, "shaderDir");
 	if(sp) {
@@ -222,6 +225,7 @@ Option* Utils::loadOption(const string filename) {
             option->material = MATERIAL_TREEDEPTH;
         else
             option->material = MATERIAL_RGB;
+
 
 	    cJSON* ps = cJSON_GetObjectItem(json, "pointScale");
         if(ps) {
@@ -327,6 +331,7 @@ void Utils::printOption(const Option* option) {
     cout << "preloadToLevel: " << option->preloadToLevel << endl;
     cout << "maxNodeInMem: " << option->maxNodeInMem << endl;
     cout << "maxLoadSize: " << option->maxLoadSize << endl;
+    cout << "onlineUpdate: " << option->onlineUpdate << endl;
     cout << "cameraUpdatePosOri" << option->cameraUpdatePosOri << endl;
     if(option->cameraUpdatePosOri) {
         cout << "cameraPosition: ";
@@ -348,7 +353,7 @@ void Utils::printOption(const Option* option) {
 PCInfo* Utils::loadPCInfo(const string data_dir) {
 
     string filename = data_dir + "cloud.js";
-    cout << "Load PC info from file: " << filename << endl;
+    //cout << "Load PC info from file: " << filename << endl;
 
     FILE *f;long len;char *data;
     f=fopen(filename.c_str(),"rb");
@@ -431,6 +436,30 @@ PCInfo* Utils::loadPCInfo(const string data_dir) {
     delete [] data;
 
     return info;
+}
+
+//this implementation is very simple!
+// it should be checked if loading is necessary and also what values are allowed to update
+bool Utils::updatePCInfo(const string data_dir, PCInfo *t)
+{
+    // t for target, s for source
+    PCInfo* s = Utils::loadPCInfo(data_dir);
+    t->version=s->version;
+    for (int i=0;i<6;i++) {
+        t->boundingBox[i]=s->boundingBox[i];
+        t->tightBoundingBox[i]=s->tightBoundingBox[i];
+        t->pointAttributes.clear();t->pointAttributes=s->pointAttributes;
+
+    }
+    /*for (int i=0;i<3;i++) {
+        t->boundingBoxCentre[i]=s->boundingBoxCentre[i];
+    }*/
+    t->spacing=s->spacing;
+    t->scale=s->scale;
+    t->hierarchyStepSize=s->hierarchyStepSize;
+    t->pointByteSize=s->pointByteSize;
+
+    delete s;
 }
 
 void Utils::printPCInfo(const PCInfo* info) {

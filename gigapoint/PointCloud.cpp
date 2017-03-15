@@ -43,7 +43,7 @@ int PointCloud::initPointCloud() {
 	string name = "r";
 	root = new NodeGeometry(name);
 	root->setInfo(pcinfo);
-	if(root->loadHierachy()) {
+    if(root->loadHierachy(nodes)) {
 		cout << "fail to load root hierachy" << endl;
 		return -1;
 	}
@@ -91,7 +91,7 @@ int PointCloud::preloadUpToLevel(const int level) {
     	if(!canload)
     		continue;
 
-		node->loadHierachy();
+        node->loadHierachy(nodes);
 		node->loadData();
 		lrucache->insert(node->getName(), node);
 
@@ -112,20 +112,29 @@ int PointCloud::preloadUpToLevel(const int level) {
 int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 	float V[6][4];
     Utils::getFrustum(V, MVP);
-	
-    priority_queue<NodeWeight> priority_queue;
-
-    priority_queue.push(NodeWeight(root, 1));
+	    
     displayList.clear();
     numVisibleNodes = 0;
     numVisiblePoints = 0;
 
     unsigned int start_time = Utils::getTime();
 
+    if (option->onlineUpdate) {
+        Utils::updatePCInfo(option->dataDir,root->getInfo());
+    }
+
+    root->Update();
+
+    priority_queue<NodeWeight> priority_queue;
+    priority_queue.push(NodeWeight(root, 1));
+
     while(priority_queue.size() > 0){
     	NodeGeometry* node = priority_queue.top().node;
     	priority_queue.pop();
     	bool visible = false;
+
+        node->Update();
+
     	if(Utils::testFrustum(V, node->getBBox()) >= 0 && numVisiblePoints + node->getNumPoints() < option->visiblePointTarget)
     		visible = true;
 	    
@@ -135,12 +144,18 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 	    numVisibleNodes++;
 		numVisiblePoints += node->getNumPoints();
 
-		node->loadHierachy();
+        node->loadHierachy(nodes);
+        node->checkForUpdate();
+
 
 		// add to load queue
-		if(!node->inQueue() && node->canAddToQueue()) {
+        if(!node->inQueue() && ( node->canAddToQueue() || node->isDirty() ) ) {
 			node->setInQueue(true);
 			nodeQueue.add(node);
+            //TODO REMOVE
+            if (node->getUpdateCache() != NULL)
+                int remove = 1;
+                cout << "This should not happen fix it ! " << endl;
 		}
 		
 		displayList.push_back(node);

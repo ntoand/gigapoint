@@ -68,6 +68,7 @@ public:
 
 int main(int argc, char** argv)
 {
+
     Application<GigapointApplication> app("OPotree");
     return omain(app, argc, argv);
 }

@@ -13,10 +13,12 @@ using namespace omega;
 
 namespace gigapoint {
 
-NodeGeometry::NodeGeometry(string _name): numpoints(0), level(-1), parent(NULL), index(-1),
+NodeGeometry::NodeGeometry(string _name): numpoints(0), level(-1), parent(NULL),updateCache(NULL),
 										  loaded(false), initvbo(false), haschildren(false),
-										  hierachyloaded(false), inqueue(false),
-										  vertexbuffer(-1), colorbuffer(-1), loading(false) {
+                                          hierachyloaded(false), inqueue(false), index(-1),
+                                          vertexbuffer(-1), colorbuffer(-1), loading(false),
+                                          dirty(false),isupdating(false),
+                                          filesize(-1),hrcfilesize(-1){
 	name = _name;
 	//tightbbox[0] = tightbbox[1] = tightbbox[2] = FLT_MAX;
 	//tightbbox[3] = tightbbox[4] = tightbbox[5] = FLT_MIN;
@@ -27,22 +29,19 @@ NodeGeometry::NodeGeometry(string _name): numpoints(0), level(-1), parent(NULL),
 		bbox[i] = -1;
 }
 
-NodeGeometry::~NodeGeometry() {
-
+NodeGeometry::~NodeGeometry() {    
 }
 
-bool NodeGeometry::isLoaded()
-{
-    if (loaded)
-    {
-            if (filesize != getFilesize(datafile.c_str()))
-            {
-                loaded = false;
-                cout << "reloading " << datafile << endl;
-            }
+void NodeGeometry::checkForUpdate() {
+    if (dirty)
+        return;
+    if (filesize != getFilesize(datafile.c_str()))
+    {        
+        dirty = true;        
+        cout << datafile << " marked dirty" <<endl;
     }
-    return loaded;
 }
+
 
 void NodeGeometry::addPoint(float x, float y, float z) {
 	vertices.push_back(x); 
@@ -86,24 +85,31 @@ string NodeGeometry::getHierarchyPath() {
 	return path;
 }
 
-int NodeGeometry::loadHierachy() {
+int NodeGeometry::loadHierachy(map<string, NodeGeometry *> nodes) {
 
 	if(level % info->hierarchyStepSize != 0)
 		return 0;
 
-        string hrc_filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".hrc";
-        //cout << "Load hierachy file: " << hrc_filename << endl;
+    string hrc_filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".hrc";
+    //cout << "Load hierachy file: " << hrc_filename << endl;
 
-        if(hierachyloaded && (hrcfilesize == getFilesize(hrc_filename.c_str())) )
-		return 0;
+    //if(hierachyloaded && (hrcfilesize == getFilesize(hrc_filename.c_str())) )
+    if(hierachyloaded && !isDirty() )
+        return 0;
 
 	assert(info);
+
+    NodeGeometry* n=NULL;
+    if (isDirty()) {
+        n=this->updateCache;
+    } else {
+        n=this;
+    }
 
 	if(level == 0) { // root
 		setBBox(info->boundingBox);
 		setTightBBox(info->tightBoundingBox);
 	} 
-
 
 	list<HRC_Item> stack;
 	list<HRC_Item> decoded;
@@ -120,14 +126,15 @@ int NodeGeometry::loadHierachy() {
 	// root of subtree
 	int offset = 0;
 	unsigned char children = data[offset];
-	numpoints = (data[offset+4] << 24) | (data[offset+3] << 16) | (data[offset+2] << 8) | data[offset+1]; // little andian
+    //TODO if isDirty then updatecache else node
+    n->numpoints = (data[offset+4] << 24) | (data[offset+3] << 16) | (data[offset+2] << 8) | data[offset+1]; // little andian
 	offset += 5;
 
 	std::bitset<8> x(children);
         cout << "Root children: " << x << endl;
-        cout << "Root numpoints: " << numpoints << endl;
+        cout << "Root numpoints: " << n->numpoints << endl;
 
-	stack.push_back(HRC_Item(name, children, numpoints));
+    stack.push_back(HRC_Item(name, children, n->numpoints));
         cout << "Root name: " << name << endl;
 	while(stack.size() > 0){
 
@@ -155,8 +162,10 @@ int NodeGeometry::loadHierachy() {
 			break;
 	}
 
-	map<string, NodeGeometry*> nodes;
-	nodes[name] = this;
+    //map<string, NodeGeometry*> nodes;
+
+    if ( nodes.find(name) == nodes.end() )
+        nodes[name] = this;
 
 	for(list<HRC_Item>::iterator it = decoded.begin(); it != decoded.end(); it++) {
 		HRC_Item item = *it;
@@ -170,27 +179,37 @@ int NodeGeometry::loadHierachy() {
 		NodeGeometry* pnode = nodes[parentname];
 		assert(pnode);
 
-		NodeGeometry* cnode = new NodeGeometry(item.name);
-		assert(cnode);
-		int cindex = atoi(str_ind.c_str());
-		cnode->setLevel(item.name.length()-1);
-		cnode->setIndex(cindex);
-		cnode->setNumPoints(item.numpoints);
-		cnode->setHasChildren(item.children > 0);
-		float cbbox[6], tightcbbox[6];
-		Utils::createChildAABB(pnode->getBBox(), cindex, cbbox);
-		Utils::createChildAABB(pnode->getTightBBox(), cindex, tightcbbox);
-		cnode->setBBox(cbbox);
-		cnode->setTightBBox(tightcbbox);
-		cnode->setInfo(pnode->getInfo());
-		//cnode->printInfo();
-	
-		pnode->addChild(cnode);
-		nodes[item.name] = cnode;
+        //TODO check if childnode already exists or if its new!
+        NodeGeometry* cnode = NULL;
+        if ( nodes.find(item.name) == nodes.end() ) {
+            cnode = new NodeGeometry(item.name);
+            assert(cnode);
+            int cindex = atoi(str_ind.c_str());
+            cnode->setLevel(item.name.length()-1);
+            cnode->setIndex(cindex); // TODO is this needed ?
+            cnode->setNumPoints(item.numpoints);
+            cnode->setHasChildren(item.children > 0);
+            float cbbox[6], tightcbbox[6];
+            Utils::createChildAABB(pnode->getBBox(), cindex, cbbox);
+            Utils::createChildAABB(pnode->getTightBBox(), cindex, tightcbbox);
+            cnode->setBBox(cbbox);
+            cnode->setInfo(pnode->getInfo());
+            cnode->setTightBBox(tightcbbox);
+            //cnode->printInfo();
+
+            pnode->addChild(cnode);
+            nodes[item.name] = cnode;
+        } else {
+            cnode = nodes[item.name];
+            if ( (cnode->getNumPoints() != item.numpoints) || ( cnode->hasChildren() != (item.children >0) ) )
+            {
+                cnode->checkForUpdate();
+            }
+        }
 	}
 
 	hierachyloaded = true;
-        hrcfilesize = getFilesize(hrc_filename.c_str());
+    //hrcfilesize = getFilesize(hrc_filename.c_str());
 	return 0;
 }
 
@@ -203,9 +222,8 @@ ifstream::pos_type NodeGeometry::getFilesize(const char* filename)
 
 int NodeGeometry::loadData() {
 
-
-        if(loaded)
-		return 0;
+    if(loaded)
+    return 0;
 	
 	assert(info);
 
@@ -407,7 +425,7 @@ void NodeGeometry::draw(Material* material) {
     texture->unbind();
 }
 
-void NodeGeometry::freeData() {
+void NodeGeometry::freeData(bool keepupdatecache) {
 	//cout << "Free data for node: " << name << endl;
 	if(initvbo) {
 		glDeleteBuffers(1, &vertexbuffer);
@@ -419,7 +437,56 @@ void NodeGeometry::freeData() {
 		colors.clear();
 		loaded = false;
 	}
+    if (keepupdatecache)
+        return;
+    if (updateCache != NULL)
+    {
+        if ( loading || isupdating)
+        {
+            cout << "node is freed while loading or updating" << std::endl;
+        }
+        updateCache->freeData();
+        delete updateCache;
+        updateCache=NULL;
+
+    }
 }
+
+void NodeGeometry::Update() {
+    if (!dirty || updateCache == NULL)
+        return;
+
+    if (!updateCache->isLoaded())
+        return;
+
+    freeData(true); //keep updateCache=true
+
+    //update data
+    vertices=updateCache->vertices;
+    colors=updateCache->colors;
+    for(int i=0; i < 8; i++) {
+        if ( (children[i] == NULL) && (updateCache->children[i] != NULL) ) {
+            cout << "node has new child" << name << " " << updateCache->children[i]->name << endl;
+            children[i]=updateCache->children[i];
+        }
+    }
+    setBBox(updateCache->getBBox());
+    cout << "updated " << name << " filesize old/new "<< filesize<<" " <<updateCache->filesize << endl;
+    filesize=updateCache->filesize;
+
+    haschildren=updateCache->hasChildren();
+    numpoints=updateCache->numpoints;
+
+    //delete updateCache
+    updateCache->freeData();
+    delete updateCache;
+    updateCache = NULL;
+    hierachyloaded = false;
+    dirty = false;
+
+
+}
+
 
 // interaction
 void NodeGeometry::findHitPoint(const omega::Ray& r, HitPoint* point) {
@@ -446,4 +513,11 @@ void NodeGeometry::findHitPoint(const omega::Ray& r, HitPoint* point) {
 	}
 }
 
+void NodeGeometry::initUpdateCache()
+{
+    updateCache = new NodeGeometry(name);
+    updateCache->setInfo(info);
+}
+
 }; //namespace gigapoint
+

@@ -26,7 +26,7 @@ struct HRC_Item {
 class NodeGeometry {
 
 private:
-	int id;
+    //int id; //dead variable ?
 	string name;
 	int index;
 	float bbox[6];
@@ -36,17 +36,22 @@ private:
 	float sphereradius;
 	int numpoints;
 	int level;
-
+    bool initvbo;
+    bool visible;
 	bool hierachyloaded;
 	bool inqueue;
 	bool loading;
 	bool loaded;
-	bool initvbo;
-	bool visible;
-        ifstream::pos_type filesize;
-        ifstream::pos_type hrcfilesize;
+
+    bool isupdating; // currently updating similar to isloading
+    bool dirty; // marked for update, similar to inqueue
+
+
+
+    ifstream::pos_type filesize;
+    ifstream::pos_type hrcfilesize;
 	PCInfo* info;
-        ifstream::pos_type getFilesize(const char* filename);
+    ifstream::pos_type getFilesize(const char* filename);
 
 	//data
 	vector<float> vertices;
@@ -57,14 +62,32 @@ private:
 
 	NodeGeometry* parent;
 	NodeGeometry* children[8];
+    NodeGeometry* updateCache;
+
 	bool haschildren;
 	string datafile;
+    bool updateFinished() {
+        if (updateCache != NULL)
+            if (updateCache->isLoaded())
+                return true;
+        return false;
+    }
 
 public:
 	NodeGeometry(string name);
 	~NodeGeometry();
 
-	void setIndex(int ind) { index = ind; }
+    // indicates that the current data is out of date
+    void checkForUpdate();
+    // true if new data is loaded, but not active
+    bool canSwapUpdate(){return !isupdating && dirty && updateFinished();}
+    // swap between old and new data, and free old data
+    void swapUpdate();
+    bool isDirty() {return dirty;}
+    void initUpdateCache();
+    NodeGeometry* getUpdateCache() {return updateCache;}
+
+    void setIndex(int ind) { index = ind; }
 	int getIndex() { return index; }
 	void setLevel(int l) { level = l; }
 	int getLevel() { return level; }
@@ -75,8 +98,10 @@ public:
 	float* getSphereCentre() { return spherecentre; }
 	float getSphereRadius() { return sphereradius; }
 	void setInQueue(bool b) { inqueue = b; }
-	float inQueue() { return inqueue; }
-        bool canAddToQueue() { return (!loading && !isLoaded()); }
+
+    // @Taon why is this a float ?
+    bool inQueue() { return inqueue; }
+    bool canAddToQueue() { return (!loading && !isLoaded()); }
 
 	void setInfo(PCInfo* in) { info = in; }
 	PCInfo* getInfo() { return info; }
@@ -86,7 +111,7 @@ public:
 	NodeGeometry* getChild(int i) { return children[i]; }
 
 	string getName() { return name; }
-        bool isLoaded();
+    bool isLoaded()  { return loaded; }
 	void setVisible(const bool v) { visible = v; }
 	bool isVisible() { return visible; }
 
@@ -98,16 +123,20 @@ public:
 	void addPoint(float x, float y, float z);
 	void addColor(float r, float g, float b);
 	string getHierarchyPath();
-	int loadHierachy();
+    int loadHierachy(map<string, NodeGeometry*> nodes);
+
 	int loadData();
 	void printInfo();
 	int initVBO();
 	void draw(Material* material);
 
-	void freeData();
-
 	//interaction
 	void findHitPoint(const omega::Ray& r, HitPoint* point);
+
+    void freeData(bool keepupdatecache=false);
+
+    void Update();
+
 };
 
 }; //namespace gigapoint

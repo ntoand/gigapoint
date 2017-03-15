@@ -1,0 +1,8 @@
+some design decisions about the onlineupdate
+
+changing a few boolean variables like loaded, isloading etc to enum NodeState see file XY
+
+
+in case a node is dirty (checked via filesize), I create some kind of a shallow copy of the node in node->updatecache
+  - add the updatecache to the loaderQueue
+  - during updateVisibility I check if I can swap the data of the node with its updatecache and then delete the cache

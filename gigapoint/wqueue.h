@@ -28,7 +28,14 @@ public:
 
 	void add(T item) {
 	    pthread_mutex_lock(&m_mutex);
-	    m_queue.push_back(item);
+        typename std::list<T>::const_iterator iterator;
+        for (iterator = m_queue.begin(); iterator != m_queue.end(); ++iterator) {
+            if (*iterator == item)
+            {
+                int i =1 ;
+            }
+        }
+	    m_queue.push_back(item);        
 	    pthread_cond_signal(&m_condv);
 	    pthread_mutex_unlock(&m_mutex);
 	}

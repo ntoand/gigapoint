@@ -54,6 +54,7 @@ typedef struct Option_t {
 	int sizeType;
 	int quality;
 	int numReadThread;
+    bool onlineUpdate;
 	int preloadToLevel;
 	int maxNodeInMem;
 	int maxLoadSize;
@@ -105,11 +106,13 @@ public:
 	// PC loader
 	static Option* loadOption(const string cfgfile);
 	static void printOption(const Option* option);
-	static PCInfo* loadPCInfo(const string data_dir);
+    static PCInfo* loadPCInfo(const string data_dir);
+    static bool updatePCInfo(const string data_dir, PCInfo* pcinfo);
 	static void printPCInfo(const PCInfo* info);
 	static void addVectors(const float v1[3], const float v2[3], float v[3]);
 	static void addVectors(const float v1[3], const float v2[3], const float v3[3], float v[3]);
 	static int createChildAABB(const float pbbox[6], const int childIndex, float cbbox[6]);
+
 };
 
 }; //namespace gigapoint
