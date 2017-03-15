@@ -1,10 +1,9 @@
 {
-	"dataDir": "/data/fast/toand/potree/moonlite10",
-	"shaderDir": "moonlite_shaders",
-	"visiblePointTarget": 20000000,
+	"dataDir": "/data/fast/toand/potree/moonlite",
+	"visiblePointTarget": 10000000,
 	"minNodePixelSize": 100,
 	"material": "rgb",
-	"pointScale": [0.15,0.01,0.5],
+	"pointScale": [0.01,0.01,0.5],
 	"pointSizeRange": [2, 400],
 	"sizeType": "adaptive",
 	"quality": "circle",
@@ -14,6 +13,5 @@
 	"maxLoadSize": 300,
 	"cameraSpeed": 10,
 	"cameraPosition": [-90.478,-18.9424,466],
-	"cameraOrientation": [0.63, 0.52,-0.34,-0.45]
-
+	"cameraOrientation": [0.63, 0.52,-0.34,-0.45],
 }
