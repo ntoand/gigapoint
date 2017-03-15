@@ -1,6 +1,6 @@
 # Gigapoint
 
-Version: 0.9.0
+Version: 1.0.0
 
 Gigapoint is an Omegalib module that can visualize potree data. Gigapoint can be built as an Omegalib module (default) or a standalone omegalib app.
 

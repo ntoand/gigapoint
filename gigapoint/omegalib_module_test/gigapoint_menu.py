@@ -152,7 +152,7 @@ b42 = menu.addButton("edl", "updateFilter('edl')")
 b41.getButton().setCheckable(True)
 b42.getButton().setCheckable(True)
 if "filter" in config:
-	updateFilter(config["filter"])
+	updateFilter(str(config["filter"]))
 else:
 	updateFilter("none")
 
