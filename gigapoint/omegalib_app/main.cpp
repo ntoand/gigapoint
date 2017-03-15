@@ -264,7 +264,7 @@ void GigapointApplication::handleEvent(const Event& evt) {
         }
         else if (evt.isKeyDown('k')) {
         	menuAction(2);
-        }wwwwd
+        }
         else if (evt.isKeyDown('i')) {
         	menuAction(3);
         }
@@ -358,6 +358,19 @@ void GigapointApplication::handleEvent(const Event& evt) {
 		else if (evt.isButtonDown(Event::Button5)) {  // L1
 			pointcloud->findHitPoint();
 		}
+	else if (evt.isButtonDown(Event::Button3)) { // cross
+		resetCamera();
+	}
+	else if (evt.isButtonDown(Event::Button2)) { // circle
+		printInfo();
+	}
+        //else if (evt.isButtonDown(Event::Button4)) { // X
+        //
+	}
+        else if (evt.isButtonDown(Event::Button4)) {
+		cout << "got Event Button 4" << endl;
+                pointcloud->setReloading(true);
+	}
 
     }
 }
