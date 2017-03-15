@@ -17,7 +17,7 @@ NodeGeometry::NodeGeometry(string _name): numpoints(0), level(-1), parent(NULL),
 										  loaded(false), initvbo(false), haschildren(false),
                                           hierachyloaded(false), inqueue(false), index(-1),
                                           vertexbuffer(-1), colorbuffer(-1), loading(false),
-                                          dirty(false),isupdating(false),
+                                          dirty(false),isupdating(false),datafile("unset"),
                                           filesize(-1),hrcfilesize(-1){
 	name = _name;
 	//tightbbox[0] = tightbbox[1] = tightbbox[2] = FLT_MAX;
@@ -29,7 +29,8 @@ NodeGeometry::NodeGeometry(string _name): numpoints(0), level(-1), parent(NULL),
 		bbox[i] = -1;
 }
 
-NodeGeometry::~NodeGeometry() {    
+NodeGeometry::~NodeGeometry() {
+    freeData();
 }
 
 void NodeGeometry::checkForUpdate() {
@@ -39,6 +40,10 @@ void NodeGeometry::checkForUpdate() {
     {        
         dirty = true;        
         cout << datafile << " marked dirty" <<endl;
+    }
+    if (hrcfilesize != getFilesize(hrc_filename.c_str())) {
+        cout << hrc_filename << " changed its size " <<endl;
+        hierachyloaded=false;
     }
 }
 
@@ -85,26 +90,29 @@ string NodeGeometry::getHierarchyPath() {
 	return path;
 }
 
-int NodeGeometry::loadHierachy(map<string, NodeGeometry *> nodes) {
-
+int NodeGeometry::loadHierachy(map<string, NodeGeometry *>* nodes, bool force) {
 	if(level % info->hierarchyStepSize != 0)
 		return 0;
 
-    string hrc_filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".hrc";
-    //cout << "Load hierachy file: " << hrc_filename << endl;
+    hrc_filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".hrc";
+
 
     //if(hierachyloaded && (hrcfilesize == getFilesize(hrc_filename.c_str())) )
-    if(hierachyloaded && !isDirty() )
+    if(hierachyloaded && !force)
         return 0;
 
 	assert(info);
 
+    cout << "Load hierachy file: " << hrc_filename << endl;
+    /*
     NodeGeometry* n=NULL;
     if (isDirty()) {
         n=this->updateCache;
     } else {
         n=this;
     }
+    */
+    NodeGeometry* n = this;
 
 	if(level == 0) { // root
 		setBBox(info->boundingBox);
@@ -164,8 +172,11 @@ int NodeGeometry::loadHierachy(map<string, NodeGeometry *> nodes) {
 
     //map<string, NodeGeometry*> nodes;
 
-    if ( nodes.find(name) == nodes.end() )
-        nodes[name] = this;
+    if ( nodes->find(name) == nodes->end() ) {
+        (*nodes)[name] = this;
+        cout << "added " << name << " to global nodes " << endl;
+    }
+
 
 	for(list<HRC_Item>::iterator it = decoded.begin(); it != decoded.end(); it++) {
 		HRC_Item item = *it;
@@ -176,12 +187,13 @@ int NodeGeometry::loadHierachy(map<string, NodeGeometry *> nodes) {
 		//cout << "index str: " << str_ind << endl;
 
 		string parentname = item.name.substr(0, item.name.length()-1);
-		NodeGeometry* pnode = nodes[parentname];
+        NodeGeometry* pnode = (*nodes)[parentname];
 		assert(pnode);
 
         //TODO check if childnode already exists or if its new!
         NodeGeometry* cnode = NULL;
-        if ( nodes.find(item.name) == nodes.end() ) {
+        if ( nodes->find(item.name) == nodes->end() ) {
+            cout << "creating new node " << item.name << endl;
             cnode = new NodeGeometry(item.name);
             assert(cnode);
             int cindex = atoi(str_ind.c_str());
@@ -194,13 +206,14 @@ int NodeGeometry::loadHierachy(map<string, NodeGeometry *> nodes) {
             Utils::createChildAABB(pnode->getTightBBox(), cindex, tightcbbox);
             cnode->setBBox(cbbox);
             cnode->setInfo(pnode->getInfo());
-            cnode->setTightBBox(tightcbbox);
+            cnode->setTightBBox(tightcbbox);            
             //cnode->printInfo();
-
             pnode->addChild(cnode);
-            nodes[item.name] = cnode;
+            pnode->setHasChildren(true);
+            cnode->loadHierachy(nodes);
+            (*nodes)[item.name] = cnode;
         } else {
-            cnode = nodes[item.name];
+            cnode = (*nodes)[item.name];
             if ( (cnode->getNumPoints() != item.numpoints) || ( cnode->hasChildren() != (item.children >0) ) )
             {
                 cnode->checkForUpdate();
@@ -209,7 +222,7 @@ int NodeGeometry::loadHierachy(map<string, NodeGeometry *> nodes) {
 	}
 
 	hierachyloaded = true;
-    //hrcfilesize = getFilesize(hrc_filename.c_str());
+    hrcfilesize = getFilesize(hrc_filename.c_str());
 	return 0;
 }
 
@@ -230,9 +243,9 @@ int NodeGeometry::loadData() {
 	loading = true;
 
 	string filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".bin";
-	//cout << "Load file: " << filename << endl;
+    cout << "Load file: " << filename << endl;
 	datafile = filename;
-        cout << "start reading " << datafile <<  std::endl;
+    //cout << "start reading " << datafile <<  std::endl;
 
 	ifstream reader;
 	reader.open (filename.c_str(), ifstream::in | ifstream::binary);
@@ -293,7 +306,7 @@ int NodeGeometry::loadData() {
 	}
 
 	reader.close();
-        cout << "done reading " << filename.c_str() << std::endl;
+    //cout << "done reading " << filename.c_str() << std::endl;
 	loading = false;
 	if(vertices.size() > 0)
 		loaded = true;
@@ -303,8 +316,12 @@ int NodeGeometry::loadData() {
 
 void NodeGeometry::printInfo() {
 	cout << endl << "Node: " << name << " level: " << level << " index: " << index << endl;
-	cout << "# points: " << numpoints << endl;
+    cout << "# points: " << numpoints << " loaded " << loaded << " filesize " << this->filesize <<endl;
 	cout << "data file: " << datafile << endl;
+    cout << "children: ";
+    for(int i=0; i < 8; i++)
+        cout << (children[i] != NULL);
+    cout << endl;\
 	cout << "bbox: ";
 	for(int i=0; i < 6; i++)
 		cout << bbox[i] << " ";
@@ -330,6 +347,8 @@ void NodeGeometry::printInfo() {
 
 	if(initvbo)
 		cout << "vertexbuffer: " << vertexbuffer << " colorbuffer: " << colorbuffer << endl;
+    cout << "dirty: " << dirty << endl;
+    cout << "updatecache: " << (updateCache!=NULL) << endl;
 }
 
 int NodeGeometry::initVBO() {
@@ -435,7 +454,8 @@ void NodeGeometry::freeData(bool keepupdatecache) {
 	if(loaded) {
 		vertices.clear();
 		colors.clear();
-		loaded = false;
+        if (!keepupdatecache) // to prevent this node from landing in the loadingqueue  again
+            loaded = false;
 	}
     if (keepupdatecache)
         return;
@@ -453,12 +473,13 @@ void NodeGeometry::freeData(bool keepupdatecache) {
 }
 
 void NodeGeometry::Update() {
+
     if (!dirty || updateCache == NULL)
         return;
 
     if (!updateCache->isLoaded())
         return;
-
+    cout << "finished updating " << name << endl;
     freeData(true); //keep updateCache=true
 
     //update data
@@ -470,8 +491,10 @@ void NodeGeometry::Update() {
             children[i]=updateCache->children[i];
         }
     }
-    setBBox(updateCache->getBBox());
-    cout << "updated " << name << " filesize old/new "<< filesize<<" " <<updateCache->filesize << endl;
+
+    //setBBox(updateCache->getBBox());
+    cout << "updated " << name << " filesize old/new "<< filesize<<" " <<updateCache->filesize <<
+            " numPoins: old/new " << numpoints << " " << updateCache->numpoints << endl;
     filesize=updateCache->filesize;
 
     haschildren=updateCache->hasChildren();
@@ -481,9 +504,9 @@ void NodeGeometry::Update() {
     updateCache->freeData();
     delete updateCache;
     updateCache = NULL;
-    hierachyloaded = false;
     dirty = false;
-
+    isupdating=false;
+    hierachyloaded = false;
 
 }
 
@@ -515,8 +538,15 @@ void NodeGeometry::findHitPoint(const omega::Ray& r, HitPoint* point) {
 
 void NodeGeometry::initUpdateCache()
 {
+    isupdating=true;
     updateCache = new NodeGeometry(name);
     updateCache->setInfo(info);
+    updateCache->setBBox(getBBox());
+
+    updateCache->setIndex(index);
+    updateCache->setLevel(level);
+    updateCache->setNumPoints(numpoints);
+
 }
 
 }; //namespace gigapoint

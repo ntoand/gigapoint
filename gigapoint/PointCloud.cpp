@@ -8,16 +8,18 @@ using namespace omicron;
 
 namespace gigapoint {
 
-PointCloud::PointCloud(Option* opt, bool mas): option(opt), master(mas), 
-												needReloadShader(false), printInfo(false), 
-												interactMode(INTERACT_NONE), material(0) {
+PointCloud::PointCloud(Option* opt, bool mas): option(opt), master(mas), pauseUpdate(false),fullReload(false),
+                                                material(NULL),lrucache(NULL),_unload(false),render(true),
+                                                needReloadShader(false), interactMode(INTERACT_NONE),printInfo(false) {
+    nodes = new std::map<string,NodeGeometry* >();
 
 }
 
 PointCloud::~PointCloud() {
-	// desktroy tree
+    // destroy tree
 	if(pcinfo)
 		delete pcinfo;
+    delete nodes;
 }
 
 int PointCloud::initPointCloud() {
@@ -39,6 +41,10 @@ int PointCloud::initPointCloud() {
 	if(master)
 		Utils::printPCInfo(pcinfo);
 
+	// Material
+    if (!material)
+        material = new Material(option);
+
 	// root node
 	string name = "r";
 	root = new NodeGeometry(name);
@@ -52,7 +58,7 @@ int PointCloud::initPointCloud() {
 		return -1;
 	}
 
-	preDisplayListSize = 0;
+    //preDisplayListSize = 0;
 
 	numLoaderThread = option->numReadThread;
 	// reading threads
@@ -64,7 +70,8 @@ int PointCloud::initPointCloud() {
 	    }
 	
     }
-    lrucache = new LRUCache(option->maxNodeInMem);
+    if (!lrucache)
+        lrucache = new LRUCache(option->maxNodeInMem);
 
     preloadUpToLevel(option->preloadToLevel);
 
@@ -110,6 +117,8 @@ int PointCloud::preloadUpToLevel(const int level) {
 }
 
 int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
+    if (pauseUpdate)
+        return 0;
 	float V[6][4];
     Utils::getFrustum(V, MVP);
 	    
@@ -118,12 +127,17 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
     numVisiblePoints = 0;
 
     unsigned int start_time = Utils::getTime();
+    if (!root)
+        return 0;
+    root->loadHierachy(nodes);
 
     if (option->onlineUpdate) {
-        Utils::updatePCInfo(option->dataDir,root->getInfo());
+        //Utils::updatePCInfo(option->dataDir,root->getInfo());
+
+        root->checkForUpdate();
+        root->Update();
     }
 
-    root->Update();
 
     priority_queue<NodeWeight> priority_queue;
     priority_queue.push(NodeWeight(root, 1));
@@ -133,7 +147,8 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
     	priority_queue.pop();
     	bool visible = false;
 
-        node->Update();
+        if (option->onlineUpdate)
+            node->Update();
 
     	if(Utils::testFrustum(V, node->getBBox()) >= 0 && numVisiblePoints + node->getNumPoints() < option->visiblePointTarget)
     		visible = true;
@@ -145,19 +160,29 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 		numVisiblePoints += node->getNumPoints();
 
         node->loadHierachy(nodes);
-        node->checkForUpdate();
+
+        if (option->onlineUpdate) {
+            node->checkForUpdate();
+        }
 
 
-		// add to load queue
-        if(!node->inQueue() && ( node->canAddToQueue() || node->isDirty() ) ) {
+        // add to load queue
+        /* debugging code:
+        bool niq=node->inQueue();
+        bool ncaq=node->canAddToQueue();
+        bool nd=node->isDirty();
+        bool nU=node->isUpdating();
+        */
+        if(!node->inQueue() && node->canAddToQueue() ) {
 			node->setInQueue(true);
+            //cout << "adding " << node->getName() << " to queue" << niq << ncaq << endl;
 			nodeQueue.add(node);
-            //TODO REMOVE
-            if (node->getUpdateCache() != NULL)
-                int remove = 1;
-                cout << "This should not happen fix it ! " << endl;
 		}
-		
+        else if (node->isDirty() && !node->isUpdating() ) {
+            node->setInQueue(true);
+            //cout << "adding " << node->getName() << " to queue because its dirty" << endl;
+            nodeQueue.add(node);
+        }		
 		displayList.push_back(node);
 		lrucache->insert(node->getName(), node);
 
@@ -191,27 +216,86 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
     return 0;
 }
 
+void PointCloud::unload() {
+    cout << "unloading everything" << endl;
+    lrucache->clear();
+    //unload all the nodes
+    nodes->erase(nodes->begin(),nodes->end());
+    root = NULL;
+    displayList.clear();
+    _unload=false;
+}
+
+void PointCloud::resetRootHierarchy() {
+    root->loadHierachy(nodes,true);
+}
+
+void PointCloud::reload() {
+    render = false;
+    pauseUpdate=true;
+    //empty loading queue
+    if (0!=nodeQueue.size())
+    {
+        cout << "waiting for loading queue to empty" << endl;
+        return;
+    }
+    //empty lru
+    lrucache->clear();
+    //unload all the nodes
+    nodes->erase(nodes->begin(),nodes->end());
+    displayList.clear();
+    //redo init
+    initPointCloud();
+    needReloadShader = true;
+    pauseUpdate=false;
+    fullReload = false;
+    render = true;
+}
+
+void PointCloud::debug() {
+    Utils::printPCInfo(root->getInfo());
+    cout << "numVisibleNodes: " << numVisibleNodes << " numVisiblePoints: " << numVisiblePoints <<
+            " nodeQueue size: " << nodeQueue.size() << " lrucache size: " << lrucache->size() <<
+         "total number of nodes: " << nodes->size() << endl;
+
+    for(map<string, NodeGeometry*>::iterator it = nodes->begin(); it != nodes->end(); it++) {
+        NodeGeometry* node=(*it).second;
+        //cout << "Node: " << (*it).first << endl;
+        node->printInfo();
+    }
+    printInfo = false;
+}
+
 void PointCloud::draw() {
 
 	if(!material) {
 		material = new Material(option);
 		if(oglError) return;
 	}
+
+    if (_unload)
+        unload();
+
+    if (fullReload)
+        reload();
+
 	if(needReloadShader) {
 		material->reloadShader(); 
 		needReloadShader = false;
 		if(oglError) return;
 	}
-
 	if(printInfo) {
-		cout << "numVisibleNodes: " << numVisibleNodes << " numVisiblePoints: " << numVisiblePoints << 
-				" nodeQueue size: " << nodeQueue.size() << " lrucache size: " << lrucache->size() << endl;
-		printInfo = false;
+        debug();
 	}
 
+
 #ifdef OMEGALIB_APP
+
+    if (!render)
+        return;
+
 	glAlphaFunc(GL_GREATER, 0.1);
-    	glEnable(GL_ALPHA_TEST);
+    glEnable(GL_ALPHA_TEST);
 #endif
 	for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
 		NodeGeometry* node = *it;

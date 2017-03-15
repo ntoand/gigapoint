@@ -92,7 +92,7 @@ void GigapointRenderPass::initialize()
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void GigapointRenderPass::render(Renderer* client, const DrawContext& context)
 {
-	if(context.task == DrawContext::SceneDrawTask)
+    if(context.task == DrawContext::SceneDrawTask)
 	{
 		client->getRenderer()->beginDraw3D(context);
 		if(oglError) return;
@@ -110,7 +110,7 @@ void GigapointRenderPass::render(Renderer* client, const DrawContext& context)
 		float campos[3] = {cp[0], cp[1], cp[2]};
 
 		float* MVP = (context.projection*context.modelview).cast<float>().data();
-		pointcloud->updateVisibility(MVP, campos);
+        pointcloud->updateVisibility(MVP, campos);
 		pointcloud->draw();
 		
 		/*
@@ -223,6 +223,7 @@ void GigapointApplication::printInfo() {
 }
 
 void GigapointApplication::handleEvent(const Event& evt) {
+
     if(evt.getServiceType() == Service::Keyboard) {
         if (evt.isKeyDown('j')) {
         	menuAction(0);
@@ -236,18 +237,39 @@ void GigapointApplication::handleEvent(const Event& evt) {
         else if (evt.isKeyDown('i')) {
         	menuAction(3);
         }
-		else if (evt.isKeyDown('r')) {
-			resetCamera();
-		}
-		else if (evt.isKeyDown('d')) {
+        else if (evt.isKeyDown('r')) {
+                resetCamera();
+        }
+        else if (evt.isKeyDown('p')) {
 			printInfo();
-		}
-		else if (evt.isKeyDown('p')) {
+            cout << "#####################################" << endl;
+            cout << "#####################################" << endl;
+            cout << "#####################################" << endl;
+        }
+
+        else if (evt.isKeyDown('m')) {
 			if(pointcloud->getInteractMode() == INTERACT_NONE)
 				pointcloud->setInteractMode(INTERACT_POINT);
 			else
 				pointcloud->setInteractMode(INTERACT_NONE);
-		}
+        }
+
+        else if (evt.isKeyDown('e')) {
+            cout << "reloading everything" << endl;
+            cout << "TODO print before after in reloading" << endl;
+            pointcloud->setReloading(true);
+            cout << "TODO implement reloading" << endl;
+        }
+        else if (evt.isKeyDown('u')) {
+            pointcloud->togglePauseUpdate();
+        }
+        else if (evt.isKeyDown('g')) {
+            pointcloud->setUnloading(true);
+        }
+        else if (evt.isKeyDown('h')) {
+            pointcloud->resetRootHierarchy();
+        }
+
 
     }
     

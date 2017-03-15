@@ -58,12 +58,15 @@ public:
 class PointCloud {
 private:
 	bool master;
-	
+    bool pauseUpdate; //if true do not updateVisibility
+    bool fullReload; // prevents updates and rendering while reloading
+    bool _unload;
+    bool render;
 	PCInfo* pcinfo;
 	Material* material;
 	NodeGeometry* root;
 	std::list<NodeGeometry*> displayList;
-	int preDisplayListSize;
+    //int preDisplayListSize;
 	bool needReloadShader;
 	bool printInfo;
 
@@ -84,7 +87,11 @@ private:
 	omega::Ray ray;
 	vector<HitPoint*> hitPoints; 
 
-    map<string, NodeGeometry*> nodes;
+    map<string, NodeGeometry*> *nodes;
+    void debug();
+    void reload();
+    void unload();
+
 
 
 public:
@@ -98,11 +105,18 @@ public:
 	int updateVisibility(const float MVP[16], const float campos[3]);
 	void draw();
 
+
 	// interaction
 	void setInteractMode(int v) { interactMode = v; }
 	int getInteractMode() { return interactMode; }
 	void updateRay(const omega::Ray& r);
 	void findHitPoint();
+
+    void setReloading(bool b) {fullReload=b;}
+    void setUnloading(bool b) {_unload=b;}
+    void togglePauseUpdate() {pauseUpdate = !pauseUpdate;}
+    void resetRootHierarchy();
+
 };
 
 }; //namespace gigapoint

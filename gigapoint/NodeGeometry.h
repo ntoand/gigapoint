@@ -37,7 +37,7 @@ private:
 	int numpoints;
 	int level;
     bool initvbo;
-    bool visible;
+    //bool visible;
 	bool hierachyloaded;
 	bool inqueue;
 	bool loading;
@@ -50,6 +50,7 @@ private:
 
     ifstream::pos_type filesize;
     ifstream::pos_type hrcfilesize;
+    string hrc_filename;
 	PCInfo* info;
     ifstream::pos_type getFilesize(const char* filename);
 
@@ -80,10 +81,11 @@ public:
     // indicates that the current data is out of date
     void checkForUpdate();
     // true if new data is loaded, but not active
-    bool canSwapUpdate(){return !isupdating && dirty && updateFinished();}
+    //bool canSwapUpdate(){return !isupdating && dirty && updateFinished();}
     // swap between old and new data, and free old data
     void swapUpdate();
     bool isDirty() {return dirty;}
+    bool isUpdating() {return isupdating;}
     void initUpdateCache();
     NodeGeometry* getUpdateCache() {return updateCache;}
 
@@ -112,8 +114,8 @@ public:
 
 	string getName() { return name; }
     bool isLoaded()  { return loaded; }
-	void setVisible(const bool v) { visible = v; }
-	bool isVisible() { return visible; }
+    //void setVisible(const bool v) {visible = v; }
+    //bool isVisible() { return visible; }
 
 	void setBBox(const float* bbox);
 	float* getBBox() { return bbox; }
@@ -123,8 +125,8 @@ public:
 	void addPoint(float x, float y, float z);
 	void addColor(float r, float g, float b);
 	string getHierarchyPath();
-    int loadHierachy(map<string, NodeGeometry*> nodes);
 
+    int loadHierachy(map<string, NodeGeometry*> *nodes,bool force=false);
 	int loadData();
 	void printInfo();
 	int initVBO();

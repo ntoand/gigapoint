@@ -422,7 +422,7 @@ PCInfo* Utils::loadPCInfo(const string data_dir) {
                 return NULL;
             }
         }
-        cout << endl;
+        //cout << endl;
 
         info->spacing = cJSON_GetObjectItem(json, "spacing")->valuedouble;
         info->scale = cJSON_GetObjectItem(json, "scale")->valuedouble;
@@ -456,9 +456,10 @@ bool Utils::updatePCInfo(const string data_dir, PCInfo *t)
     }*/
     t->spacing=s->spacing;
     t->scale=s->scale;
+    if (t->hierarchyStepSize!=s->hierarchyStepSize)
+        cout << "hierarchy stepsize changed from / to " << t->hierarchyStepSize << " " << s->hierarchyStepSize <<endl;
     t->hierarchyStepSize=s->hierarchyStepSize;
     t->pointByteSize=s->pointByteSize;
-
     delete s;
 }
 
