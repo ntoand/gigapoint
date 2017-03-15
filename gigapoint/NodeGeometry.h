@@ -46,10 +46,6 @@ private:
     bool isupdating; // currently updating similar to isloading
     bool dirty; // marked for update, similar to inqueue
 
-
-
-    ifstream::pos_type filesize;
-    ifstream::pos_type hrcfilesize;
     string hrc_filename;
 	PCInfo* info;
     ifstream::pos_type getFilesize(const char* filename);
@@ -126,8 +122,8 @@ public:
 	void addPoint(float x, float y, float z);
 	void addColor(float r, float g, float b);
 	string getHierarchyPath();
-
     int loadHierachy(map<string, NodeGeometry*> *nodes,bool force=false);
+    bool canLoadHierarchy() {return (level % info->hierarchyStepSize) == 0;}
 	int loadData();
 	void printInfo();
 	int initVBO();

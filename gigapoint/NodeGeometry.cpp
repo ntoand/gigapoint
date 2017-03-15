@@ -17,8 +17,8 @@ NodeGeometry::NodeGeometry(string _name): numpoints(0), level(-1), parent(NULL),
 										  loaded(false), initvbo(false), haschildren(false),
                                           hierachyloaded(false), inqueue(false), index(-1),
                                           vertexbuffer(-1), colorbuffer(-1), loading(false),
-                                          dirty(false),isupdating(false),datafile("unset"),
-                                          filesize(-1),hrcfilesize(-1){
+                                          dirty(false),isupdating(false),datafile("unset")
+                                          {
 	name = _name;
 	//tightbbox[0] = tightbbox[1] = tightbbox[2] = FLT_MAX;
 	//tightbbox[3] = tightbbox[4] = tightbbox[5] = FLT_MIN;
@@ -33,6 +33,7 @@ NodeGeometry::~NodeGeometry() {
     freeData();
 }
 
+/*
 void NodeGeometry::checkForUpdate() {
     if (dirty)
         return;
@@ -46,7 +47,7 @@ void NodeGeometry::checkForUpdate() {
         hierachyloaded=false;
     }
 }
-
+*/
 
 void NodeGeometry::addPoint(float x, float y, float z) {
 	vertices.push_back(x); 
@@ -91,7 +92,7 @@ string NodeGeometry::getHierarchyPath() {
 }
 
 int NodeGeometry::loadHierachy(map<string, NodeGeometry *>* nodes, bool force) {
-	if(level % info->hierarchyStepSize != 0)
+    if (!canLoadHierarchy())
 		return 0;
 
     hrc_filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".hrc";
@@ -213,16 +214,11 @@ int NodeGeometry::loadHierachy(map<string, NodeGeometry *>* nodes, bool force) {
             cnode->loadHierachy(nodes);
             (*nodes)[item.name] = cnode;
         } else {
-            cnode = (*nodes)[item.name];
-            if ( (cnode->getNumPoints() != item.numpoints) || ( cnode->hasChildren() != (item.children >0) ) )
-            {
-                cnode->checkForUpdate();
-            }
+            cnode = (*nodes)[item.name];            
         }
 	}
 
-	hierachyloaded = true;
-    hrcfilesize = getFilesize(hrc_filename.c_str());
+	hierachyloaded = true;    
 	return 0;
 }
 
@@ -309,14 +305,13 @@ int NodeGeometry::loadData() {
     //cout << "done reading " << filename.c_str() << std::endl;
 	loading = false;
 	if(vertices.size() > 0)
-		loaded = true;
-        filesize=getFilesize(datafile.c_str());
+		loaded = true;        
 	return 0;
 }
 
 void NodeGeometry::printInfo() {
 	cout << endl << "Node: " << name << " level: " << level << " index: " << index << endl;
-    cout << "# points: " << numpoints << " loaded " << loaded << " filesize " << this->filesize <<endl;
+    cout << "# points: " << numpoints << " loaded " << loaded << endl;
 	cout << "data file: " << datafile << endl;
     cout << "children: ";
     for(int i=0; i < 8; i++)
@@ -493,9 +488,8 @@ void NodeGeometry::Update() {
     }
 
     //setBBox(updateCache->getBBox());
-    cout << "updated " << name << " filesize old/new "<< filesize<<" " <<updateCache->filesize <<
-            " numPoins: old/new " << numpoints << " " << updateCache->numpoints << endl;
-    filesize=updateCache->filesize;
+    cout << "updated " << name << " filesize old/new "<<
+            " numPoins: old/new " << numpoints << " " << updateCache->numpoints << endl;    
 
     haschildren=updateCache->hasChildren();
     numpoints=updateCache->numpoints;

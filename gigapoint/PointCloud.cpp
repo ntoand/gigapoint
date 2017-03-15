@@ -230,10 +230,27 @@ void PointCloud::resetRootHierarchy() {
     root->loadHierachy(nodes,true);
 }
 
-void PointCloud::flagNodeAsDirty(const std::string &text)
+void PointCloud::flagNodeAsDirty(const std::string &nodename)
 {
-    NodeGeometry * node =(*nodes)[text];
-    node->setDirty();
+    NodeGeometry * node=NULL;
+    if (nodes->find(nodename) != nodes->end())
+    {
+        node =(*nodes)[nodename];
+        node->setDirty();
+    } else {
+        //we have to find the next hierarchy node and mark that as dirty
+        bool foundHierarchyNode = false;
+        string parentname = nodename;
+        while (!foundHierarchyNode) {
+             parentname = parentname.substr(0,parentname.size()-1);
+             node =(*nodes)[parentname];
+             if (node->canLoadHierarchy())
+             {
+                 foundHierarchyNode=true;
+                 node->loadHierachy(nodes,false,true);
+             }
+        }
+    }
 }
 
 void PointCloud::reload() {
