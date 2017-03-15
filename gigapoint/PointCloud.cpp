@@ -229,10 +229,6 @@ void PointCloud::draw() {
 		frameBuffer->clear();
 	}
 
-#ifdef OMEGALIB_APP
-	glAlphaFunc(GL_GREATER, 0.1);
-    glEnable(GL_ALPHA_TEST);
-#endif
 	for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
 		NodeGeometry* node = *it;
 		node->draw(materialPoint, height);

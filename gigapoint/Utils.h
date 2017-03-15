@@ -64,7 +64,6 @@ typedef struct Option_t {
 	bool cameraUpdatePosOri;
 	float cameraPosition[3];
 	float cameraOrientation[4];
-	float menuOption[3];
 	int filter;
 	float filterEdl[2];			//[strength radius]
 } Option;

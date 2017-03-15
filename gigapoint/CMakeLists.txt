@@ -24,8 +24,6 @@ add_library(${MODULE_NAME} MODULE
 	PointCloud.cpp 
 	Thread.h
 	Thread.cpp 
-	Menu.h
-	Menu.cpp
 	ColorTexture.h 
 	ColorTexture.cpp 
 	Material.h

@@ -46,10 +46,6 @@ MaterialPoint::MaterialPoint(Option* option) : Material(option), texture(0) {
 	shader = new Shader(name);
 	shaderstr.append("point");
 
-#ifdef OMEGALIB_APP
-	shaderstr.append("_app");
-#endif
-
 	cout << "shaderstr: " << shaderstr << endl;
 	shader->load(shaderstr, attributes, uniforms, option);
 }

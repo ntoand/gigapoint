@@ -308,18 +308,6 @@ Option* Utils::loadOption(const string filename) {
             
         }
 
-        cJSON* menuopt = cJSON_GetObjectItem(json, "menuOption");
-        if(menuopt) {
-            option->menuOption[0] = cJSON_GetArrayItem(menuopt, 0)->valuedouble;
-            option->menuOption[1] = cJSON_GetArrayItem(menuopt, 1)->valuedouble;
-            option->menuOption[2] = cJSON_GetArrayItem(menuopt, 2)->valuedouble;
-        }
-        else {
-            option->menuOption[0] = 30;
-	        option->menuOption[1] = 10;
-	        option->menuOption[2] = 30;
-        }
-
         //filter
         tmp = getJsonItemString(json, "filter", "none");
         if(tmp.compare("edl") == 0)
@@ -373,13 +361,11 @@ void Utils::printOption(const Option* option) {
             cout << option->cameraOrientation[i] << " ";
         cout << endl;
     }
-    cout << "menuOption:";
-    for(int i=0; i < 3; i ++)
-        cout << option->menuOption[i] << " ";
-    cout << endl;
-
+    
     if(option->filter == FILTER_EDL)
         cout << "EDL: ON, strength: " << option->filterEdl[0] << ", radius: " << option->filterEdl[1] << endl;
+    else
+        cout << "Filter: NONE" << endl;
 }
 
 // PC Loader
