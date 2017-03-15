@@ -21,6 +21,10 @@
 #include "PointCloud.h"
 #include "iostream"
 
+namespace gigapoint {
+
+
+
 FractureTracer::FractureTracer(PointCloud* cloud)
 {	
     m_cloud = cloud; //store pointer ourselves also
@@ -753,3 +757,5 @@ void FractureTracer::drawMeOnly(CC_DRAW_CONTEXT& context)
 	}
 }
 */
+
+}; // namespace gigapoint

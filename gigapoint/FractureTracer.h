@@ -35,8 +35,8 @@
 #include <ccScalarField.h>
 */
 
-class PointCloud;
-class NodeGeometry;
+
+//class gigapoint::NodeGeometry;
 
 #include <vector>
 #include <algorithm>
@@ -44,6 +44,9 @@ class NodeGeometry;
 #include <deque>
 #include "Utils.h"
 
+namespace gigapoint {
+
+class PointCloud;
 
 /*
 A ccTrace object is essentially a ccPolyline that is controlled/created by "waypoints" and a least-cost path algorithm
@@ -216,5 +219,5 @@ private:
 	*/
     //bool inCircle(const CCVector3* segStart, const CCVector3* segEnd, const CCVector3* query);
 };
-
+}; // namespave gigapoint
 #endif
