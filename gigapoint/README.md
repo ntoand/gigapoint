@@ -45,7 +45,7 @@ Input parematers are stored in a json file. A sample configuration file (other c
 <pre>
 {
 	<b>"dataDir": "/path/to/potree_data",</b>
-    "shaderDir": "/path/to/custom/shaders",
+	"shaderDir": "/path/to/custom/shaders",
 	"visiblePointTarget": 5000000,
 	"minNodePixelSize": 100,
 	"material": "rgb",
