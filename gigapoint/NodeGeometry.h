@@ -85,6 +85,7 @@ public:
     // swap between old and new data, and free old data
     void swapUpdate();
     bool isDirty() {return dirty;}
+    void setDirty() {dirty=true;}
     bool isUpdating() {return isupdating;}
     void initUpdateCache();
     NodeGeometry* getUpdateCache() {return updateCache;}

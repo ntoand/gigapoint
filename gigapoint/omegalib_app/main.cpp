@@ -15,7 +15,12 @@ using namespace omegaToolkit::ui;
 using namespace std;
 using namespace gigapoint;
 
+<<<<<<< HEAD:gigapoint/omegalib_app/main.cpp
 class GigapointRenderPass: public RenderPass
+=======
+
+class OPotreeRenderPass: public RenderPass
+>>>>>>> need to avoid too many filesystem reads, recieving MC commands to flag nodes as dirty:opotree/main.cpp
 {
 public:
 	GigapointRenderPass(Renderer* client, Option* opt, PointCloud* pc): 
@@ -54,6 +59,7 @@ public:
 	void resetCamera();
 	void printInfo();
 	virtual void handleEvent(const Event& evt);
+<<<<<<< HEAD:gigapoint/omegalib_app/main.cpp
 	virtual void dispose()
 	{
 		if(pointcloud)
@@ -63,10 +69,15 @@ public:
 		if(option)
 			delete option;
 	}
+=======
+    virtual bool handleCommand(const String& cmd);
+
+>>>>>>> need to avoid too many filesystem reads, recieving MC commands to flag nodes as dirty:opotree/main.cpp
 };
 
 
 int main(int argc, char** argv)
+<<<<<<< HEAD:gigapoint/omegalib_app/main.cpp
 {
 
     Application<GigapointApplication> app("OPotree");
@@ -76,12 +87,20 @@ int main(int argc, char** argv)
 
 //========== GigapointRenderPass ==========
 void GigapointRenderPass::initialize()
+=======
+{    
+    Application<OPotreeApplication> app("OPotree");
+    return omain(app, argc, argv);
+}
+
+//========== OPotreeRenderPass ==========
+void OPotreeRenderPass::initialize()
+>>>>>>> need to avoid too many filesystem reads, recieving MC commands to flag nodes as dirty:opotree/main.cpp
 {
 	RenderPass::initialize();
 
 	// Initialize
 	pointcloud->initPointCloud();
-	
 	//graphics
 	glEnable(GL_POINT_SPRITE);
 	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
@@ -135,8 +154,8 @@ void GigapointRenderPass::render(Renderer* client, const DrawContext& context)
 //========== GigapointApplication ==========
 void GigapointApplication::initialize() {
 
-	option = Utils::loadOption("gigapoint.json");
 
+	option = Utils::loadOption("gigapoint.json");
 	//UI
 	//Create a label for text info
 	DisplaySystem* ds = SystemManager::instance()->getDisplaySystem();
@@ -151,7 +170,10 @@ void GigapointApplication::initialize() {
 	menuLabel->setHorizontalAlign(Label::AlignLeft);
 	menuLabel->setPosition(Vector2f(option->menuOption[0],option->menuOption[1]));
 
-	//PointCloud
+
+    if (SystemManager::instance()->isMaster())
+        cout << "TODO update PCINFO" << endl;
+    //PointCloud
 	pointcloud = new PointCloud(option, SystemManager::instance()->isMaster());
 	menu = new PCMenu(option);
 	cout << "menu: " << menu->getString() << endl;
@@ -212,18 +234,27 @@ void GigapointApplication::resetCamera() {
 }
 
 void GigapointApplication::printInfo() {
-	pointcloud->setPrintInfo(true);
-	if(!SystemManager::instance()->isMaster())
-		return;
-       	Camera* cam = getEngine()->getDefaultCamera();
-        Vector3f cp = cam->getPosition();
-        Quaternion q = cam->getOrientation();
-        cout << "pos: " << cp[0] << "," << cp[1] << "," << cp[2] << " ";
-        cout << "orientation: " << q.w() << "," << q.x() << "," << q.y() << "," << q.z() << endl;
+    if(!SystemManager::instance()->isMaster())
+        return;
+    pointcloud->setPrintInfo(true);
+    Camera* cam = getEngine()->getDefaultCamera();
+    Vector3f cp = cam->getPosition();
+    Quaternion q = cam->getOrientation();
+    cout << "pos: " << cp[0] << "," << cp[1] << "," << cp[2] << " ";
+    cout << "orientation: " << q.w() << "," << q.x() << "," << q.y() << "," << q.z() << endl;
+}
+
+bool GigapointApplication::handleCommand(const String& cmd) {
+    cout <<  "got Command: " << cmd.substr(0,5) << endl;
+    if (0==cmd.substr(0,5).compare("dirty"))
+    {
+        cout << "got dirty" << cmd.substr(6,cmd.size()) << endl;
+        pointcloud->flagNodeAsDirty(cmd.substr(6,cmd.size()));
+    }
+    return true;
 }
 
 void GigapointApplication::handleEvent(const Event& evt) {
-
     if(evt.getServiceType() == Service::Keyboard) {
         if (evt.isKeyDown('j')) {
         	menuAction(0);
@@ -233,7 +264,7 @@ void GigapointApplication::handleEvent(const Event& evt) {
         }
         else if (evt.isKeyDown('k')) {
         	menuAction(2);
-        }
+        }wwwwd
         else if (evt.isKeyDown('i')) {
         	menuAction(3);
         }
@@ -248,17 +279,21 @@ void GigapointApplication::handleEvent(const Event& evt) {
         }
 
         else if (evt.isKeyDown('m')) {
-			if(pointcloud->getInteractMode() == INTERACT_NONE)
-				pointcloud->setInteractMode(INTERACT_POINT);
-			else
-				pointcloud->setInteractMode(INTERACT_NONE);
+            if(pointcloud->getInteractMode() == INTERACT_NONE)
+                pointcloud->setInteractMode(INTERACT_POINT);
+            else
+                pointcloud->setInteractMode(INTERACT_NONE);
         }
 
         else if (evt.isKeyDown('e')) {
             cout << "reloading everything" << endl;
             cout << "TODO print before after in reloading" << endl;
             pointcloud->setReloading(true);
-            cout << "TODO implement reloading" << endl;
+                printInfo();
+        }
+        else if (evt.isKeyDown('e')) {            
+            pointcloud->setReloading(true);            
+
         }
         else if (evt.isKeyDown('u')) {
             pointcloud->togglePauseUpdate();
@@ -268,6 +303,7 @@ void GigapointApplication::handleEvent(const Event& evt) {
         }
         else if (evt.isKeyDown('h')) {
             pointcloud->resetRootHierarchy();
+
         }
 
 

@@ -116,6 +116,7 @@ public:
     void setUnloading(bool b) {_unload=b;}
     void togglePauseUpdate() {pauseUpdate = !pauseUpdate;}
     void resetRootHierarchy();
+    void flagNodeAsDirty(const std::string& text);
 
 };
 

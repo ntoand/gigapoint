@@ -134,7 +134,7 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
     if (option->onlineUpdate) {
         //Utils::updatePCInfo(option->dataDir,root->getInfo());
 
-        root->checkForUpdate();
+        //root->checkForUpdate();
         root->Update();
     }
 
@@ -161,9 +161,9 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 
         node->loadHierachy(nodes);
 
-        if (option->onlineUpdate) {
-            node->checkForUpdate();
-        }
+       // if (option->onlineUpdate) {
+       //     node->checkForUpdate();
+       // }
 
 
         // add to load queue
@@ -228,6 +228,12 @@ void PointCloud::unload() {
 
 void PointCloud::resetRootHierarchy() {
     root->loadHierachy(nodes,true);
+}
+
+void PointCloud::flagNodeAsDirty(const std::string &text)
+{
+    NodeGeometry * node =(*nodes)[text];
+    node->setDirty();
 }
 
 void PointCloud::reload() {
@@ -360,3 +366,4 @@ void PointCloud::findHitPoint() {
 }
 
 }; //namespace gigapoint
+
