@@ -347,7 +347,12 @@ void NodeGeometry::printInfo() {
 }
 
 int NodeGeometry::initVBO() {
-
+    if(initvbo) {
+        std::cout << "reinitializing VBO of Node " << name << std::endl;
+        glDeleteBuffers(1, &vertexbuffer);
+        glDeleteBuffers(1, &colorbuffer);
+        initvbo = false;
+    }
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(float), &vertices[0], GL_STATIC_DRAW);
@@ -504,6 +509,101 @@ void NodeGeometry::Update() {
 
 }
 
+void NodeGeometry::initUpdateCache()
+{
+    isupdating=true;
+    updateCache = new NodeGeometry(name);
+    updateCache->setInfo(info);
+    updateCache->setBBox(getBBox());
+
+    updateCache->setIndex(index);
+    updateCache->setLevel(level);
+    updateCache->setNumPoints(numpoints);
+
+}
+
+std::vector< Point > NodeGeometry::getPointsInSphericalNeighbourhood(Point current, float search_r){
+    std::vector< Point > points;
+    std::vector<NodeGeometry *> nodesInRange;
+    nodesInRange.push_back(this);
+    NodeGeometry *node;
+    NodeGeometry *c=NULL;
+    float pos[3];
+    float dist;
+
+    while(!nodesInRange.empty())
+    {
+        node=nodesInRange.back();
+        nodesInRange.pop_back();
+
+        int numpoints = node->vertices.size() / 3;
+        for(int i=0; i < numpoints; i++) {
+            pos[0] = node->vertices[3*i];
+            pos[1] = node->vertices[3*i+1];
+            pos[2] = node->vertices[3*i+2];
+            if (DIST3(pos,current.position) < search_r)
+            {
+                Point p(this,i);
+                p.color[0]=node->colors[3*i];
+                p.color[1]=node->colors[3*i+1];
+                p.color[2]=node->colors[3*i+2];
+                p.position[0]=node->vertices[3*i];
+                p.position[1]=node->vertices[3*i+1];
+                p.position[2]=node->vertices[3*i+2];
+                //p.index.nodename=node->name;
+                points.push_back(p);
+            }
+        }
+
+
+        // stop at certain treedepth. treenodes might not be present on other cave nodes
+        if (node->level > MIN_TREE_DEPTH)
+            continue;
+
+        //check all children if they are close enough
+        for (int i=0;i<8;++i)
+        {
+            c=node->getChild(i);
+            if (c!=NULL)
+            {
+                float dist=DIST3(node->getSphereCentre(),c->getSphereCentre());
+                dist=dist - node->getSphereRadius()- c->getSphereRadius();
+                if (dist <0 || dist < search_r)
+                    nodesInRange.push_back(c);
+            }
+        }
+    }
+    return points;
+}
+
+
+
+void NodeGeometry::getPointData(Point &point)
+{
+    int idx = point.index.index;
+    point.position[0] = vertices[0+idx*3];
+    point.position[1] = vertices[1+idx*3];
+    point.position[2] = vertices[2+idx*3];
+    point.color[0]    = colors[0+idx*3];
+    point.color[1]    = colors[1+idx*3];
+    point.color[2]    = colors[2+idx*3];
+}
+
+void NodeGeometry::setPointColor(Point &point, int r, int g, int b)
+{
+    /*
+    int numpoints = vertices.size() / 3;
+    for(int i=0; i < numpoints; i++) {
+        colors[3*i+0]=(unsigned char)r;
+        colors[3*i+1]=(unsigned char)g;
+        colors[3*i+2]=(unsigned char)b;
+    }
+    */
+    colors[3*point.index.index+0]=(unsigned char)r;
+    colors[3*point.index.index+1]=(unsigned char)g;
+    colors[3*point.index.index+2]=(unsigned char)b;
+}
+
 
 // interaction
 void NodeGeometry::findHitPoint(const omega::Ray& r, HitPoint* point) {
@@ -525,23 +625,13 @@ void NodeGeometry::findHitPoint(const omega::Ray& r, HitPoint* point) {
 				point->position[0] = pos[0];
 				point->position[1] = pos[1];
 				point->position[2] = pos[2];
+                //std::cout << "hitpoint index is " << i <<std::endl;du an
 			}
 		}
-	}
+    }
 }
 
-void NodeGeometry::initUpdateCache()
-{
-    isupdating=true;
-    updateCache = new NodeGeometry(name);
-    updateCache->setInfo(info);
-    updateCache->setBBox(getBBox());
-
-    updateCache->setIndex(index);
-    updateCache->setLevel(level);
-    updateCache->setNumPoints(numpoints);
-
-}
 
 }; //namespace gigapoint
+
 

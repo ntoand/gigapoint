@@ -32,6 +32,9 @@ add_library(${MODULE_NAME} MODULE
 	ColorTexture.cpp 
 	Material.h
 	Material.cpp
+  FractureTracer.cpp
+  FractureTracer.h
+
         )
 
 # Set the module library dependencies here

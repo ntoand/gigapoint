@@ -1,5 +1,6 @@
 #include "PointCloud.h"
 #include "Utils.h"
+#include "FractureTracer.h"
 
 #include <iostream>
 
@@ -9,8 +10,8 @@ using namespace omicron;
 namespace gigapoint {
 
 PointCloud::PointCloud(Option* opt, bool mas): option(opt), master(mas), pauseUpdate(false),fullReload(false),
-                                                material(NULL),lrucache(NULL),_unload(false),render(true),
-                                                needReloadShader(false),printInfo(false) {
+                                               material(NULL),lrucache(NULL),_unload(false),render(true),
+                                               needReloadShader(false), printInfo(false),tracer(NULL) {
     nodes = new std::map<string,NodeGeometry* >();
 }
 
@@ -19,6 +20,8 @@ PointCloud::~PointCloud() {
 	if(pcinfo)
 		delete pcinfo;
     delete nodes;
+    if(tracer)
+        delete tracer;
 }
 
 int PointCloud::initPointCloud() {
@@ -76,6 +79,8 @@ int PointCloud::initPointCloud() {
 
 	return 1;
 }
+
+
 
 int PointCloud::preloadUpToLevel(const int level) {
 	priority_queue<NodeWeight> priority_queue;
@@ -354,6 +359,36 @@ void PointCloud::updateRay(const omega::Ray& r) {
 	ray = r;
 }
 
+void PointCloud::traceFracture()
+{
+    if (tracer==NULL)
+    {
+        tracer= new FractureTracer(this);
+    }
+    Point p1(root,4807);
+    Point p2(root,5795);
+    p1.index.node->getPointData(p1);
+    root->getPointData(p1);
+    root->getPointData(p2);
+    tracer->insertWaypoint(p1);
+    tracer->insertWaypoint(p2);
+    tracer->optimizePath();
+    std::vector < std::deque<Point > > trace=tracer->getTraceRef();
+    for (const auto &dqp : trace) {
+        for (Point p : dqp) {
+            p.index.node->setPointColor(p,1,254,1);
+        }
+    }
+    root->initVBO();
+}
+
+Point PointCloud::getPointFromIndex(const PointIndex_ &index)
+{
+    Point p(index);
+    p.index.node->getPointData(p);
+    return p;
+}
+
 void PointCloud::findHitPoint() {
     if (option->interactMode == INTERACT_NONE)
 		return;
@@ -361,11 +396,12 @@ void PointCloud::findHitPoint() {
     if (option->interactMode == INTERACT_POINT) {
 		unsigned int start_time = Utils::getTime();
 		hitPoints.clear();
-		HitPoint* point = new HitPoint();
+        HitPoint* point = new HitPoint();
 
 		for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
 			NodeGeometry* node = *it;
 			node->findHitPoint(ray, point);
+            hitPoints.push_back(point);
 		}
 
 		if(point->distance != -1) {
@@ -374,6 +410,10 @@ void PointCloud::findHitPoint() {
 				<< " dis: " << hitPoints[0]->distance
 			 	<< " pos: " << hitPoints[0]->position[0] << " " << hitPoints[0]->position[1] << " " 
 			 	<< hitPoints[0]->position[2] << endl;
+            if (hitPoints.size() >=2 ) {
+                float dis=Utils::distance(hitPoints[0]->position,hitPoints[1]->position);
+                cout << "distance between first and second point is: " << dis << endl;
+            }
 		}
 		else {
 			cout << "MISS" << endl;

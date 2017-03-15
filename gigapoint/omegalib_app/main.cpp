@@ -72,8 +72,6 @@ public:
 };
 
 
-int main(int argc, char** argv)
-<<<<<<< HEAD:gigapoint/omegalib_app/main.cpp
 {
 
     Application<GigapointApplication> app("OPotree");
@@ -82,16 +80,8 @@ int main(int argc, char** argv)
 
 
 //========== GigapointRenderPass ==========
-void GigapointRenderPass::initialize()
-=======
-{    
-    Application<OPotreeApplication> app("OPotree");
-    return omain(app, argc, argv);
-}
 
-//========== OPotreeRenderPass ==========
-void OPotreeRenderPass::initialize()
->>>>>>> need to avoid too many filesystem reads, recieving MC commands to flag nodes as dirty:opotree/main.cpp
+void GigapointRenderPass::initialize()
 {
 	RenderPass::initialize();
 
@@ -300,7 +290,9 @@ void GigapointApplication::handleEvent(const Event& evt) {
         }
         else if (evt.isKeyDown('h')) {
             pointcloud->resetRootHierarchy();
-
+        }
+        else if (evt.isKeyDown('t')) {
+            pointcloud->traceFracture();
         }
 <<<<<<< HEAD:gigapoint/omegalib_app/main.cpp
 

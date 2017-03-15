@@ -1,17 +1,19 @@
 #ifndef _POINTCLOUD_H_
 #define _POINTCLOUD_H_
 
-#include <vector>
-#include <list>
-
 #include "NodeGeometry.h"
 #include "Material.h"
 #include "LRU.h"
 #include "Thread.h"
 #include "wqueue.h"
 
+
 namespace gigapoint {
 
+#include <vector>
+#include <list>
+
+class FractureTracer;
 using namespace tthread;
 
 struct NodeWeight {
@@ -93,6 +95,8 @@ private:
 
 
 
+    //fracture tracing
+    FractureTracer* tracer;
 
 public:
 	PointCloud(Option* option, bool master = false);
@@ -106,17 +110,23 @@ public:
 	void draw();
 
 
-	// interaction
-    //void setInteractMode(int v) { interactMode = v; }
-    //int getInteractMode() { return interactMode; }
-	void updateRay(const omega::Ray& r);
-	void findHitPoint();
-
     void setReloading(bool b) {fullReload=b;}
     void setUnloading(bool b) {_unload=b;}
     void togglePauseUpdate() {pauseUpdate = !pauseUpdate;}
     void resetRootHierarchy();
     void flagNodeAsDirty(const std::string& text);
+
+    PCInfo* getPCInfo(){return pcinfo;}
+
+	// interaction    
+	void updateRay(const omega::Ray& r);
+	void findHitPoint();
+    void traceFracture();
+    Point getPointFromIndex(const PointIndex_ &index);
+    std::vector< Point > getPointsInSphericalNeighbourhood(Point current, float search_r)
+    {
+        return root->getPointsInSphericalNeighbourhood(current,search_r);
+    }
 
 };
 

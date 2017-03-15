@@ -8,7 +8,7 @@
 #include <vector>
 #include <fstream>
 
-using namespace std;
+//using namespace std;
 
 namespace gigapoint {
 
@@ -135,6 +135,15 @@ public:
     void freeData(bool keepupdatecache=false);
 
     void Update();
+
+	//interaction
+
+    Point getPoint(PointIndex ind);
+    std::vector< Point > getPointsInSphericalNeighbourhood(Point current, float search_r);
+    //Point getPointFromIndex(int i);
+
+    void getPointData(Point &point);
+    void setPointColor(Point &point,int r,int g,int b);
 
 };
 

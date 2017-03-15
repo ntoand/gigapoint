@@ -19,6 +19,36 @@ unsigned int Utils::getTime() {
     return (tp.tv_sec * 1000 + tp.tv_usec / 1000);
 }
 
+bool Utils::inCircle(const float segStart[3], const float segEnd[3], const float query[3])
+{
+    float qs[3],qe[3];
+    //calculate vector Query->Start and Query->End
+    //CCVector3 QS(segStart->x - query->x, segStart->y - query->y, segStart->z - query->z);
+    qs[0]=segStart[0] - query[0];
+    qs[1]=segStart[1] - query[1];
+    qs[2]=segStart[2] - query[2];
+    //CCVector3 QE(segEnd->x - query->x, segEnd->y - query->y, segEnd->z - query->z);
+    qe[0]=segEnd[0] - query[0];
+    qe[1]=segEnd[1] - query[1];
+    qe[2]=segEnd[2] - query[2];
+
+
+    //QS.normalize();QE.normalize();
+    float k = (float) sqrt(qs[0]*qs[0]+qs[1]*qs[1]+qs[2]*qs[2]);
+    qs[0] /= k;
+    qs[1] /= k;
+    qs[2] /= k;
+
+    k = (float) sqrt(qe[0]*qe[0]+qe[1]*qe[1]+qe[2]*qe[2]);
+    qe[0] /= k;
+    qe[1] /= k;
+    qe[2] /= k;
+
+    //is angle between these vectors obtuce (i.e. QS dot QE) < 0)? If so we are inside a circle between start&end, otherwise we are not
+    //float dot = QS.dot(QE);
+    //return QS.dot(QE) < 0;
+    return DOT3(qs, qe) < 0;
+}
 
 int Utils::testPlane( const float V[4], const float b[6])
 {
