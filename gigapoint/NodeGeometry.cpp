@@ -194,7 +194,8 @@ int NodeGeometry::loadHierachy(map<string, NodeGeometry *>* nodes, bool force) {
         //TODO check if childnode already exists or if its new!
         NodeGeometry* cnode = NULL;
         if ( nodes->find(item.name) == nodes->end() ) {
-            cout << "creating new node " << item.name << endl;
+            if (dirty)
+                cout << "creating new node " << item.name << endl;
             cnode = new NodeGeometry(item.name);
             assert(cnode);
             int cindex = atoi(str_ind.c_str());
