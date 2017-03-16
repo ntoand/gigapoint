@@ -9,6 +9,14 @@ SET(MODULE_NAME gigapoint)
 
 include_directories(${OMEGA_INCLUDE_DIRS})
 
+set( FEATURE_ONLINEUPDATE_ENABLED FALSE CACHE BOOL "Enable modifications of the Pointcloud files at runtime." )
+if( FEATURE_ONLINEUPDATE_ENABLED )
+  add_definitions(-DONLINEUPDATE)
+endif()
+
+
+
+
 # Set module name and source files here
 add_library(${MODULE_NAME} MODULE 
 	gigapoint.cpp

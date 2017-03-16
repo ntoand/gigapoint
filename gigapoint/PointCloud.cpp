@@ -166,13 +166,14 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3], con
         return 0;
     root->loadHierachy(nodes);
 
+#ifdef ONLINEUPDATE
     if (option->onlineUpdate) {
         //Utils::updatePCInfo(option->dataDir,root->getInfo());
 
         //root->checkForUpdate();
         root->Update();
     }
-
+#endif
 
     priority_queue<NodeWeight> priority_queue;
     priority_queue.push(NodeWeight(root, 1));
@@ -182,8 +183,10 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3], con
     	priority_queue.pop();
     	bool visible = false;
 
+#ifdef ONLINEUPDATE
         if (option->onlineUpdate)
             node->Update();
+#endif
 
     	if(Utils::testFrustum(V, node->getBBox()) >= 0 && numVisiblePoints + node->getNumPoints() < option->visiblePointTarget)
     		visible = true;
