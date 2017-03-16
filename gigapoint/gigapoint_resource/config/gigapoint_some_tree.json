@@ -1,6 +1,6 @@
 {
-	"dataDir": "century_hres",
-	"visiblePointTarget": 10000000,
+	"dataDir": "/data/big/handreas/droneslam/temp/EuReC_MH05/resources/pointclouds/index/",
+	"visiblePointTarget": 5000000,
 	"minNodePixelSize": 100,
 	"material": "rgb",
 	"pointScale": [0.2,0.01,0.5],
@@ -12,7 +12,7 @@
 	"maxNodeInMem": 50000,
 	"maxLoadSize": 100,
 	"cameraSpeed": 100,
-	"cameraUpdatePosOri": 0,
-	"cameraPosition": [500,300,200],
-	"cameraOrientation": [0.878953, 0.467479, 0.0833162, -0.0443124]
+	"cameraUpdatePosOri": 1,
+	"cameraPosition": [196.64, 21.32, 269.73],
+	"cameraOrientation": [0.96, 0.03, 0.26, -0.01]
 }
