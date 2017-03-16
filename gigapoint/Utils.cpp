@@ -244,8 +244,7 @@ Option* Utils::loadOption(const string filename) {
 
         option->visiblePointTarget = getJsonItemDouble(json, "visiblePointTarget", 1000000);
         option->minNodePixelSize = getJsonItemDouble(json, "minNodePixelSize", 100);
-        option->screenHeight = getJsonItemDouble(json, "screenHeight", 600);
-
+        
         string tmp = getJsonItemString(json, "material", "rgb");
         if (tmp.compare("rgb") == 0)
             option->material = MATERIAL_RGB;
@@ -257,6 +256,23 @@ Option* Utils::loadOption(const string filename) {
             option->material = MATERIAL_RGB;
 
 
+        cJSON* er = cJSON_GetObjectItem(json, "elevationRange");
+        if(er) {
+            option->elevationRange[0] = cJSON_GetArrayItem(er, 0)->valuedouble;
+            option->elevationRange[1] = cJSON_GetArrayItem(er, 1)->valuedouble;
+            option->elevationRange[0] = (option->elevationRange[0] < 0) ? 0 : option->elevationRange[0];
+            option->elevationRange[1] = (option->elevationRange[1] > 1) ? 1 : option->elevationRange[1];
+            if(option->elevationRange[0] >= option->elevationRange[1]) {
+                option->elevationRange[0] = 0;
+                option->elevationRange[1] = 1;
+            }
+        }
+        else {
+            option->elevationRange[0] = 0;
+            option->elevationRange[1] = 1;
+        }
+
+
 	    cJSON* ps = cJSON_GetObjectItem(json, "pointScale");
         if(ps) {
             option->pointScale[0] = cJSON_GetArrayItem(ps, 0)->valuedouble;
@@ -264,7 +280,9 @@ Option* Utils::loadOption(const string filename) {
             option->pointScale[2] = cJSON_GetArrayItem(ps, 2)->valuedouble;
         }
         else {
-            option->pointScale[0] = option->pointScale[1] = option->pointScale[2] = 1;
+            option->pointScale[0] = 0.1;
+            option->pointScale[1] = 0.01;
+            option->pointScale[2] = 1;
         }
         
 	    cJSON* range = cJSON_GetObjectItem(json, "pointSizeRange");
@@ -293,13 +311,6 @@ Option* Utils::loadOption(const string filename) {
         else
             option->quality = QUALITY_SQUARE;
 
-        tmp = getJsonItemString(json, "interactMode", "None");
-        if (tmp.compare("None") == 0)
-            option->interactMode = INTERACT_NONE;
-        else if (tmp.compare("Point") == 0)
-            option->interactMode = INTERACT_POINT;
-        else
-            option->interactMode = INTERACT_NONE;
 
         option->numReadThread = getJsonItemInt(json, "numReadThread", 2);
         option->preloadToLevel = getJsonItemInt(json, "preloadToLevel", 5);
@@ -333,16 +344,21 @@ Option* Utils::loadOption(const string filename) {
             
         }
 
-        cJSON* menuopt = cJSON_GetObjectItem(json, "menuOption");
-        if(menuopt) {
-            option->menuOption[0] = cJSON_GetArrayItem(menuopt, 0)->valuedouble;
-            option->menuOption[1] = cJSON_GetArrayItem(menuopt, 1)->valuedouble;
-            option->menuOption[2] = cJSON_GetArrayItem(menuopt, 2)->valuedouble;
+        //filter
+        tmp = getJsonItemString(json, "filter", "none");
+        if(tmp.compare("edl") == 0)
+            option->filter = FILTER_EDL;
+        else 
+            option->filter = FILTER_NONE;
+
+        cJSON* edl = cJSON_GetObjectItem(json, "filterEdl");
+        if(edl) {
+            option->filterEdl[0] = cJSON_GetArrayItem(edl, 0)->valuedouble;
+            option->filterEdl[1] = cJSON_GetArrayItem(edl, 1)->valuedouble;
         }
         else {
-            option->menuOption[0] = 30;
-	    option->menuOption[1] = 10;
-	    option->menuOption[2] = 30;
+            option->filterEdl[0] = 1.0;
+            option->filterEdl[1] = 1.4;
         }
         
     }
@@ -358,8 +374,9 @@ void Utils::printOption(const Option* option) {
     cout << "shader dir: " << option->shaderDir << endl;
     cout << "visiblePointTarget: " << option->visiblePointTarget << endl;
     cout << "minNodePixelSize: " << option->minNodePixelSize << endl;
-    cout << "screenHeight: " << option->screenHeight << endl;
     cout << "material: " << option->material << endl;
+    if(option->material == MATERIAL_ELEVATION)
+        cout << "elevation range: " << option->elevationRange[0] << " " << option->elevationRange[1] << endl;
     cout << "pointScale: " << option->pointScale[0] << " " << option->pointScale[1] << " " << option->pointScale[2] << endl;
     cout << "pointSizeRange: " << option->pointSizeRange[0] << " " << option->pointSizeRange[1] << endl;
     cout << "sizeType: " << option->sizeType << endl;
@@ -370,7 +387,6 @@ void Utils::printOption(const Option* option) {
     cout << "maxNodeInMem: " << option->maxNodeInMem << endl;
     cout << "maxLoadSize: " << option->maxLoadSize << endl;
     cout << "onlineUpdate: " << option->onlineUpdate << endl;
-    cout << "interactMode: " << option->interactMode << endl;
     cout << "cameraUpdatePosOri: " << option->cameraUpdatePosOri << endl;
 
     if(option->cameraUpdatePosOri) {
@@ -383,10 +399,11 @@ void Utils::printOption(const Option* option) {
             cout << option->cameraOrientation[i] << " ";
         cout << endl;
     }
-    cout << "menuOption:";
-    for(int i=0; i < 3; i ++)
-        cout << option->menuOption[i] << " ";
-    cout << endl;
+    
+    if(option->filter == FILTER_EDL)
+        cout << "EDL: ON, strength: " << option->filterEdl[0] << ", radius: " << option->filterEdl[1] << endl;
+    else
+        cout << "Filter: NONE" << endl;
 }
 
 // PC Loader

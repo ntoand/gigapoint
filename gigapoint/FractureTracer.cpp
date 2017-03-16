@@ -241,13 +241,13 @@ std::deque<Point> FractureTracer::optimizeSegment(Point start, Point end, float 
 
 		//get node from openSet with smallest cost
 		smallest_cost = 999999;
-		for (const auto &myPair : openSet)
-		{
-			cost = dist[myPair.first];
+        for (std::map<PointIndex, PointIndex>::iterator it=openSet.begin();it!=openSet.end();++it){
+        //for (const auto &myPair : openSet) {
+            cost = dist[(*it).first];
 			if (cost < smallest_cost)
 			{
 				smallest_cost = cost;
-                current =m_cloud->getPointFromIndex(myPair.first);
+                current =m_cloud->getPointFromIndex((*it).first);
 			}
 		}
 

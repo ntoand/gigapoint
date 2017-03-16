@@ -366,30 +366,18 @@ int NodeGeometry::initVBO() {
     return 0;
 }
 
-void NodeGeometry::draw(Material* material) {
+void NodeGeometry::draw(Material* material, const int height) {
 	if(loading || !loaded)
 		return;
 	if(!initvbo)
 		initVBO();
 	Shader* shader = material->getShader();
 	Option* option = material->getOption();
-	ColorTexture* texture = material->getColorTexture();
+	ColorTexture* texture = ((MaterialPoint*)material)->getColorTexture();
 	shader->bind();
 	texture->bind();
 	if(oglError) return;
 
-#ifdef OMEGALIB_APP
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    glVertexPointer(3, GL_FLOAT, 3*sizeof(float), (GLvoid*)0);
-	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-    glColorPointer(3, GL_UNSIGNED_BYTE, 3*sizeof(unsigned char), (GLvoid*)0);
-	if(oglError) return;
-
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_COLOR_ARRAY);
-	if(oglError) return;
-
-#else
 	unsigned int attribute_vertex_pos = shader->attribute("VertexPosition");
     //cout << "Vertex Position: " << attribute_vertex_pos << endl;
     glEnableVertexAttribArray(attribute_vertex_pos);  // Vertex position
@@ -420,25 +408,23 @@ void NodeGeometry::draw(Material* material) {
     );
     if(oglError) return;
     }
-#endif
 	
 	shader->transmitUniform("uColorTexture", (int)0);
-	shader->transmitUniform("uHeightMinMax", (float)info->tightBoundingBox[2], (float)info->tightBoundingBox[5]);
-	shader->transmitUniform("uScreenHeight", (float)option->screenHeight);
+	float range = info->tightBoundingBox[5] - info->tightBoundingBox[2];
+	float range_min = info->tightBoundingBox[2] + option->elevationRange[0] * range;
+	float range_max = info->tightBoundingBox[2] + option->elevationRange[1] * range;
+	shader->transmitUniform("uHeightMinMax", range_min, range_max);
+	shader->transmitUniform("uScreenHeight", (float)height);
     shader->transmitUniform("uPointScale", (float)option->pointScale[0]);
     shader->transmitUniform("uPointSizeRange", (float)option->pointSizeRange[0], (float)option->pointSizeRange[1]);
 
 	glDrawArrays(GL_POINTS, 0, vertices.size()/3);
 	if(oglError) return;
 	   
-#ifdef OMEGALIB_APP
-	glDisableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_COLOR_ARRAY);
-#else
     glDisableVertexAttribArray(attribute_vertex_pos);
     if(option->material == MATERIAL_RGB)
     	glDisableVertexAttribArray(attribute_color_pos);
-#endif
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     shader->unbind();
     texture->unbind();

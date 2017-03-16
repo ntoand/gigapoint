@@ -1,10 +1,8 @@
-#module_version(0.9)
+#module_version(1.0.0)
 #declare_native_module(gigapoint)
 
 cmake_minimum_required(VERSION 2.8.1) 
 find_package(Omegalib)
-
-set (CMAKE_CXX_STANDARD 11)
 
 # Set the module name here
 SET(MODULE_NAME gigapoint)
@@ -26,21 +24,21 @@ add_library(${MODULE_NAME} MODULE
 	PointCloud.cpp 
 	Thread.h
 	Thread.cpp 
-	Menu.h
-	Menu.cpp
 	ColorTexture.h 
 	ColorTexture.cpp 
 	Material.h
 	Material.cpp
-  FractureTracer.cpp
-  FractureTracer.h
-
+        FractureTracer.cpp
+        FractureTracer.h
+	FrameBuffer.h
+	FrameBuffer.cpp
         )
 
 # Set the module library dependencies here
 target_link_libraries(${MODULE_NAME}
         stdc++
         ${OMEGA_LIB}
+        python2.7
         )
 
 #------------------------------------------------------------------------------

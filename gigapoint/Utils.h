@@ -50,20 +50,25 @@ namespace gigapoint {
 #define QUALITY_SQUARE 0
 #define QUALITY_CIRCLE 1
 
+
 // interaction
-#define INTERACT_NONE		0
-#define INTERACT_POINT 		1
-//#define INTERACT_DISTANCE	1
+#define INTERACT_NONE		-1
+#define INTERACT_POINT 		0
+#define INTERACT_DISTANCE	1
 
 #define MIN_TREE_DEPTH 6
+
+#define FILTER_NONE 0
+#define FILTER_EDL 1
+
 
 typedef struct Option_t {
 	string dataDir;
 	string shaderDir;
 	unsigned int visiblePointTarget;
 	float minNodePixelSize;
-	float screenHeight;
 	int material;
+	float elevationRange[2];	//min, max in [0, 1]
 	float pointScale[3];
 	float pointSizeRange[2];
 	int sizeType;
@@ -77,8 +82,9 @@ typedef struct Option_t {
 	bool cameraUpdatePosOri;
 	float cameraPosition[3];
 	float cameraOrientation[4];
-	float menuOption[3];
-    int interactMode;
+	int filter;
+	float filterEdl[2];			//[strength radius]
+
 } Option;
 
 typedef struct PCInfo_t {

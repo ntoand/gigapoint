@@ -127,7 +127,7 @@ public:
 	int loadData();
 	void printInfo();
 	int initVBO();
-	void draw(Material* material);
+	void draw(Material* material, const int height);
 
 	//interaction
 	void findHitPoint(const omega::Ray& r, HitPoint* point);

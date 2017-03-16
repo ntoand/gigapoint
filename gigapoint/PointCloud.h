@@ -6,6 +6,7 @@
 #include "LRU.h"
 #include "Thread.h"
 #include "wqueue.h"
+#include "FrameBuffer.h"
 
 
 namespace gigapoint {
@@ -60,12 +61,20 @@ public:
 class PointCloud {
 private:
 	bool master;
+
     bool pauseUpdate; //if true do not updateVisibility
     bool fullReload; // prevents updates and rendering while reloading
     bool _unload;
     bool render;
+
+
+	int width, height;
+	
+
 	PCInfo* pcinfo;
-	Material* material;
+	Material* materialPoint;
+	Material* materialEdl;
+	FrameBuffer* frameBuffer;
 	NodeGeometry* root;
 	std::list<NodeGeometry*> displayList;
     //int preDisplayListSize;
@@ -87,16 +96,24 @@ private:
 	// interaction
 	omega::Ray ray;
 	vector<HitPoint*> hitPoints; 
+    int interactMode;
+
 
     map<string, NodeGeometry*> *nodes;
     void debug();
     void reload();
     void unload();
 
-
-
     //fracture tracing
     FractureTracer* tracer;
+
+	// draw quad
+	unsigned int quadVao;
+	unsigned int quadVbo;
+
+private:
+	void initMaterials();
+
 
 public:
 	PointCloud(Option* option, bool master = false);
@@ -106,8 +123,9 @@ public:
 	void setPrintInfo(bool b) { printInfo = b; }
 
 	int preloadUpToLevel(const int level=0);
-	int updateVisibility(const float MVP[16], const float campos[3]);
+	int updateVisibility(const float MVP[16], const float campos[3], const int width, const int height);
 	void draw();
+	void drawViewQuad();
 
 
     void setReloading(bool b) {fullReload=b;}

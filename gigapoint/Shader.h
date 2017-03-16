@@ -38,6 +38,7 @@ public:
     void transmitUniform(string name, float f1, float f2);
     void transmitUniform(string name, float f1, float f2, float f3);
     void transmitUniform(string name, const float mat[16]);
+    void transmitUniform2fv(string name, const float arr[8]);
 
 private:
     string name;

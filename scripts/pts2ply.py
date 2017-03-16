@@ -3,13 +3,15 @@ import os
 import sys
 
 print sys.argv
-if len(sys.argv) != 3:
-	sys.exit('Error: not enough inputs. usage: pts2ply in_pts_file out_ply_file')
+if len(sys.argv) != 4:
+	sys.exit('Error: not enough inputs. usage: pts2ply in_pts_file out_ply_file num_points')
 
 in_filename = sys.argv[1]
 out_filename = sys.argv[2]
+num_points = int(sys.argv[3]) 
 print 'in_filename: ' + in_filename
 print 'out_filename: ' + out_filename
+print 'num_points: ' + str(num_points)
 
 # run getstats.py first to get information of the pointcloud
 
@@ -19,7 +21,7 @@ with open(in_filename, 'rt') as fin, open(out_filename, 'wt') as fout:
 	fout.write('ply\n')
 	fout.write('format ascii 1.0\n')
 	fout.write('comment Author: Toan Nguyen\n')
-	fout.write('element vertex 44508165\n')
+	fout.write('element vertex ' + str(num_points) + '\n')
 	fout.write('property float x\n')
 	fout.write('property float y\n')
 	fout.write('property float z\n')

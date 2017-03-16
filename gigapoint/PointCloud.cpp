@@ -9,19 +9,52 @@ using namespace omicron;
 
 namespace gigapoint {
 
+
 PointCloud::PointCloud(Option* opt, bool mas): option(opt), master(mas), pauseUpdate(false),fullReload(false),
-                                               material(NULL),lrucache(NULL),_unload(false),render(true),
+                                               width(0), height(0),interactMode(INTERACT_NONE), frameBuffer(0),
+                                               lrucache(NULL),_unload(false),render(true),
+                                               materialPoint(0), materialEdl(0),quadVao(0), quadVbo(0),
                                                needReloadShader(false), printInfo(false),tracer(NULL) {
+
     nodes = new std::map<string,NodeGeometry* >();
+
 }
 
 PointCloud::~PointCloud() {
     // destroy tree
 	if(pcinfo)
 		delete pcinfo;
+
     delete nodes;
     if(tracer)
         delete tracer;
+
+	if(materialPoint)
+		delete materialPoint;
+	if(materialEdl)
+		delete materialEdl;
+	if(frameBuffer)
+		delete frameBuffer;
+
+	if (glIsBuffer(quadVbo))
+		glDeleteBuffers(1, &quadVbo);
+	if (glIsVertexArray(quadVao))
+		glDeleteVertexArrays(1, &quadVao);
+}
+
+void PointCloud::initMaterials() {
+	if(!materialPoint)
+		materialPoint = new MaterialPoint(option);
+	if(!materialEdl)
+		materialEdl = new MaterialEdl(option);
+	if(!frameBuffer) {
+		vector<string> targets;
+		targets.push_back("tex0");
+		frameBuffer = new FrameBuffer(targets, width, height, true);
+		frameBuffer->init();
+		if(oglError) return;
+	}
+
 }
 
 int PointCloud::initPointCloud() {
@@ -43,11 +76,7 @@ int PointCloud::initPointCloud() {
 	if(master)
 		Utils::printPCInfo(pcinfo);
 
-	// Material
-    if (!material)
-        material = new Material(option);
-
-	// root node
+    // root node
 	string name = "r";
 	root = new NodeGeometry(name);
 	root->setInfo(pcinfo);
@@ -120,9 +149,14 @@ int PointCloud::preloadUpToLevel(const int level) {
 	return 0;
 }
 
-int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
+
+int PointCloud::updateVisibility(const float MVP[16], const float campos[3], const int width, const int height) {
     if (pauseUpdate)
         return 0;
+
+	this->width = width;
+	this->height = height;
+
 	float V[6][4];
     Utils::getFrustum(V, MVP);
 	    
@@ -207,7 +241,7 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3]) {
 			if(distance - radius < 0)
 				weight = FLT_MAX;
 
-			float screenpixelradius = option->screenHeight * pr;
+			float screenpixelradius = height * pr;
 			if(screenpixelradius < option->minNodePixelSize)
 				continue;
 
@@ -295,19 +329,17 @@ void PointCloud::debug() {
 
 void PointCloud::draw() {
 
-	if(!material) {
-		material = new Material(option);
-		if(oglError) return;
-	}
-
     if (_unload)
         unload();
 
     if (fullReload)
         reload();
 
+	initMaterials();
+
+
 	if(needReloadShader) {
-		material->reloadShader(); 
+		materialPoint->reloadShader(); 
 		needReloadShader = false;
 		if(oglError) return;
 	}
@@ -315,43 +347,96 @@ void PointCloud::draw() {
         debug();
 	}
 
-
-#ifdef OMEGALIB_APP
-
     if (!render)
         return;
 
-	glAlphaFunc(GL_GREATER, 0.1);
-    glEnable(GL_ALPHA_TEST);
-#endif
+	//draw to bufferframe
+	if(option->filter != FILTER_NONE) {
+		frameBuffer->bind();
+		frameBuffer->clear();
+	}
+
+
 	for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
 		NodeGeometry* node = *it;
-		node->draw(material);
+		node->draw(materialPoint, height);
 	}
 
 	// draw interaction
-    if(option->interactMode == INTERACT_NONE)
-		return;
-	glDisable(GL_LIGHTING);
-	glDisable(GL_BLEND);
-	//draw ray line
-	Vector3f spos = ray.getOrigin(); //- 1*ray.getDirection();
-	Vector3f epos = ray.getOrigin() + 100*ray.getDirection();
-	glLineWidth(4.0); 
-	glColor3f(1.0, 1.0, 1.0);
-	glBegin(GL_LINES);
-	glVertex3f(spos[0], spos[1], spos[2]);
-	glVertex3f(epos[0], epos[1], epos[2]);
-	glEnd();
 
-	glEnable(GL_PROGRAM_POINT_SIZE_EXT);
-    glPointSize(40);
-    glColor3f(0.0, 1.0, 0.0);
-    glBegin(GL_POINTS);
-    for(int i=0; i < hitPoints.size(); i++) {
-    	glVertex3f(hitPoints[i]->position[0], hitPoints[i]->position[1], hitPoints[i]->position[2]);
-    }
-    glEnd();
+	if(interactMode != INTERACT_NONE) {
+		glDisable(GL_LIGHTING);
+		glDisable(GL_BLEND);
+		//draw ray line
+		Vector3f spos = ray.getOrigin(); //- 1*ray.getDirection();
+		Vector3f epos = ray.getOrigin() + 100*ray.getDirection();
+		glLineWidth(4.0); 
+		glColor3f(1.0, 1.0, 1.0);
+		glBegin(GL_LINES);
+		glVertex3f(spos[0], spos[1], spos[2]);
+		glVertex3f(epos[0], epos[1], epos[2]);
+		glEnd();
+
+		glEnable(GL_PROGRAM_POINT_SIZE_EXT);
+	    glPointSize(40);
+	    glColor3f(0.0, 1.0, 0.0);
+	    glBegin(GL_POINTS);
+	    for(int i=0; i < hitPoints.size(); i++) {
+	    	glVertex3f(hitPoints[i]->position[0], hitPoints[i]->position[1], hitPoints[i]->position[2]);
+	    }
+	    glEnd();
+	}
+
+	if(option->filter != FILTER_NONE) {
+
+		frameBuffer->unbind();
+		Shader* edlShader = materialEdl->getShader();
+		edlShader->bind();
+		edlShader->transmitUniform("uColorTexture", (int)0);
+		edlShader->transmitUniform("uScreenWidth", (float)width);
+		edlShader->transmitUniform("uScreenHeight", (float)height);
+		edlShader->transmitUniform("uEdlStrength", option->filterEdl[0]);
+		edlShader->transmitUniform("uRadius", option->filterEdl[1]);
+		edlShader->transmitUniform("uOpacity", 1.0f);
+		edlShader->transmitUniform2fv("uNeighbours", ((MaterialEdl*)materialEdl)->getNeighbours());
+
+		frameBuffer->getTexture("tex0")->bind();
+		
+		drawViewQuad();
+
+		frameBuffer->getTexture("tex0")->unbind();
+		materialEdl->getShader()->unbind();
+	}
+}
+
+void PointCloud::drawViewQuad()
+{
+	if (!quadVbo)
+	{
+		float points[] = {
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+			1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+			-1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+			1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f};
+
+		glGenBuffers(1, &quadVbo);
+
+		glBindBuffer(GL_ARRAY_BUFFER, quadVbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float)*24, points, GL_STATIC_DRAW);
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, quadVbo);
+	Shader* shader = materialEdl->getShader();
+	unsigned int attribute_vertex_pos = shader->attribute("VertexPosition");
+	glEnableVertexAttribArray(attribute_vertex_pos);
+	glVertexAttribPointer(attribute_vertex_pos, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (const GLvoid*)0);
+
+	unsigned int attribute_vertex_tex_coor = shader->attribute("VertexTexCoord");
+	glEnableVertexAttribArray(attribute_vertex_tex_coor);
+	glVertexAttribPointer(attribute_vertex_tex_coor, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (const GLvoid*)12);
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 // interaction
@@ -374,11 +459,18 @@ void PointCloud::traceFracture()
     tracer->insertWaypoint(p2);
     tracer->optimizePath();
     std::vector < std::deque<Point > > trace=tracer->getTraceRef();
-    for (const auto &dqp : trace) {
-        for (Point p : dqp) {
-            p.index.node->setPointColor(p,1,254,1);
+    for (std::vector < std::deque<Point > >::iterator it1 = trace.begin() ; it1 != trace.end(); ++it1)
+    {
+        for (std::deque<Point >::iterator it2 = (*it1).begin() ; it2 != (*it1).end(); ++it2)
+        {
+            (*it2).index.node->setPointColor((*it2),1,254,1);
         }
     }
+    //for (std::deque<Point > &dqp : trace) {
+    //    for (Point p : dqp) {
+    //        p.index.node->setPointColor(p,1,254,1);
+    //    }
+    //}
     root->initVBO();
 }
 
@@ -390,10 +482,8 @@ Point PointCloud::getPointFromIndex(const PointIndex_ &index)
 }
 
 void PointCloud::findHitPoint() {
-    if (option->interactMode == INTERACT_NONE)
-		return;
 
-    if (option->interactMode == INTERACT_POINT) {
+    if (interactMode == INTERACT_POINT) {
 		unsigned int start_time = Utils::getTime();
 		hitPoints.clear();
         HitPoint* point = new HitPoint();
