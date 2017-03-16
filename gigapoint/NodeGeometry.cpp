@@ -33,22 +33,6 @@ NodeGeometry::~NodeGeometry() {
     freeData();
 }
 
-/*
-void NodeGeometry::checkForUpdate() {
-    if (dirty)
-        return;
-    if (filesize != getFilesize(datafile.c_str()))
-    {        
-        dirty = true;        
-        cout << datafile << " marked dirty" <<endl;
-    }
-    if (hrcfilesize != getFilesize(hrc_filename.c_str())) {
-        cout << hrc_filename << " changed its size " <<endl;
-        hierachyloaded=false;
-    }
-}
-*/
-
 void NodeGeometry::addPoint(float x, float y, float z) {
 	vertices.push_back(x); 
 	vertices.push_back(y);
@@ -97,22 +81,12 @@ int NodeGeometry::loadHierachy(map<string, NodeGeometry *>* nodes, bool force) {
 
     hrc_filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".hrc";
 
-
-    //if(hierachyloaded && (hrcfilesize == getFilesize(hrc_filename.c_str())) )
     if(hierachyloaded && !force)
         return 0;
 
 	assert(info);
 
-    cout << "Load hierachy file: " << hrc_filename << endl;
-    /*
-    NodeGeometry* n=NULL;
-    if (isDirty()) {
-        n=this->updateCache;
-    } else {
-        n=this;
-    }
-    */
+    cout << "Load hierachy file: " << hrc_filename << endl;   
     NodeGeometry* n = this;
 
 	if(level == 0) { // root
@@ -135,7 +109,7 @@ int NodeGeometry::loadHierachy(map<string, NodeGeometry *>* nodes, bool force) {
 	// root of subtree
 	int offset = 0;
 	unsigned char children = data[offset];
-    //TODO if isDirty then updatecache else node
+
     n->numpoints = (data[offset+4] << 24) | (data[offset+3] << 16) | (data[offset+2] << 8) | data[offset+1]; // little andian
 	offset += 5;
 
@@ -170,8 +144,6 @@ int NodeGeometry::loadHierachy(map<string, NodeGeometry *>* nodes, bool force) {
 		if(offset == len)
 			break;
 	}
-
-    //map<string, NodeGeometry*> nodes;
 
     if ( nodes->find(name) == nodes->end() ) {
         (*nodes)[name] = this;
@@ -466,7 +438,7 @@ void NodeGeometry::Update() {
 
     if (!updateCache->isLoaded())
         return;
-    cout << "finished updating " << name << endl;
+
     freeData(true); //keep updateCache=true
 
     //update data
@@ -480,7 +452,7 @@ void NodeGeometry::Update() {
     }
 
     //setBBox(updateCache->getBBox());
-    cout << "updated " << name << " filesize old/new "<<
+    cout << "updated " << name <<
             " numPoins: old/new " << numpoints << " " << updateCache->numpoints << endl;    
 
     haschildren=updateCache->hasChildren();
@@ -578,14 +550,6 @@ void NodeGeometry::getPointData(Point &point)
 
 void NodeGeometry::setPointColor(Point &point, int r, int g, int b)
 {
-    /*
-    int numpoints = vertices.size() / 3;
-    for(int i=0; i < numpoints; i++) {
-        colors[3*i+0]=(unsigned char)r;
-        colors[3*i+1]=(unsigned char)g;
-        colors[3*i+2]=(unsigned char)b;
-    }
-    */
     colors[3*point.index.index+0]=(unsigned char)r;
     colors[3*point.index.index+1]=(unsigned char)g;
     colors[3*point.index.index+2]=(unsigned char)b;

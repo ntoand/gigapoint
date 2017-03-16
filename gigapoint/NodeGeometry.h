@@ -74,18 +74,6 @@ public:
 	NodeGeometry(string name);
 	~NodeGeometry();
 
-    // indicates that the current data is out of date
-    void checkForUpdate();
-    // true if new data is loaded, but not active
-    //bool canSwapUpdate(){return !isupdating && dirty && updateFinished();}
-    // swap between old and new data, and free old data
-    void swapUpdate();
-    bool isDirty() {return dirty;}
-    void setDirty() {dirty=true;}
-    bool isUpdating() {return isupdating;}
-    void initUpdateCache();
-    NodeGeometry* getUpdateCache() {return updateCache;}
-
     void setIndex(int ind) { index = ind; }
 	int getIndex() { return index; }
 	void setLevel(int l) { level = l; }
@@ -98,7 +86,6 @@ public:
 	float getSphereRadius() { return sphereradius; }
 	void setInQueue(bool b) { inqueue = b; }
 
-    // @Taon why is this a float ?
     bool inQueue() { return inqueue; }
     bool canAddToQueue() { return (!loading && !isLoaded()); }
 
@@ -128,22 +115,24 @@ public:
 	void printInfo();
 	int initVBO();
 	void draw(Material* material, const int height);
+    void freeData(bool keepupdatecache=false);
 
 	//interaction
 	void findHitPoint(const omega::Ray& r, HitPoint* point);
 
-    void freeData(bool keepupdatecache=false);
-
-    void Update();
-
-	//interaction
-
+    //tracer
     Point getPoint(PointIndex ind);
     std::vector< Point > getPointsInSphericalNeighbourhood(Point current, float search_r);
-    //Point getPointFromIndex(int i);
-
     void getPointData(Point &point);
     void setPointColor(Point &point,int r,int g,int b);
+
+    //onlineUpdate
+    bool isDirty() {return dirty;}
+    void setDirty() {dirty=true;}
+    bool isUpdating() {return isupdating;}
+    void initUpdateCache();
+    NodeGeometry* getUpdateCache() {return updateCache;}
+    void Update();
 
 };
 

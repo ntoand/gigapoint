@@ -14,9 +14,7 @@ PointCloud::PointCloud(Option* opt, bool mas): option(opt), master(mas), pauseUp
                                                width(0), height(0),interactMode(INTERACT_NONE), frameBuffer(0),
                                                lrucache(NULL),_unload(false),render(true),
                                                materialPoint(0), materialEdl(0),quadVao(0), quadVbo(0),
-                                               needReloadShader(false), printInfo(false),tracer(NULL) {
-
-    nodes = new std::map<string,NodeGeometry* >();
+                                               needReloadShader(false), printInfo(false),tracer(NULL),nodes(NULL) {
 
 }
 
@@ -24,18 +22,16 @@ PointCloud::~PointCloud() {
     // destroy tree
 	if(pcinfo)
 		delete pcinfo;
-
-    delete nodes;
+    if (nodes)
+        delete nodes;
     if(tracer)
         delete tracer;
-
 	if(materialPoint)
 		delete materialPoint;
 	if(materialEdl)
 		delete materialEdl;
 	if(frameBuffer)
 		delete frameBuffer;
-
 	if (glIsBuffer(quadVbo))
 		glDeleteBuffers(1, &quadVbo);
 	if (glIsVertexArray(quadVao))
@@ -54,7 +50,6 @@ void PointCloud::initMaterials() {
 		frameBuffer->init();
 		if(oglError) return;
 	}
-
 }
 
 int PointCloud::initPointCloud() {
@@ -75,6 +70,8 @@ int PointCloud::initPointCloud() {
 	}
 	if(master)
 		Utils::printPCInfo(pcinfo);
+
+    nodes = new std::map<string,NodeGeometry* >();
 
     // root node
 	string name = "r";
@@ -197,20 +194,8 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3], con
 	    numVisibleNodes++;
 		numVisiblePoints += node->getNumPoints();
 
-        node->loadHierachy(nodes);
+        node->loadHierachy(nodes);      
 
-       // if (option->onlineUpdate) {
-       //     node->checkForUpdate();
-       // }
-
-
-        // add to load queue
-        /* debugging code:
-        bool niq=node->inQueue();
-        bool ncaq=node->canAddToQueue();
-        bool nd=node->isDirty();
-        bool nU=node->isUpdating();
-        */
         if(!node->inQueue() && node->canAddToQueue() ) {
 			node->setInQueue(true);
             //cout << "adding " << node->getName() << " to queue" << niq << ncaq << endl;
@@ -363,7 +348,6 @@ void PointCloud::draw() {
 	}
 
 	// draw interaction
-
 	if(interactMode != INTERACT_NONE) {
 		glDisable(GL_LIGHTING);
 		glDisable(GL_BLEND);
@@ -466,11 +450,6 @@ void PointCloud::traceFracture()
             (*it2).index.node->setPointColor((*it2),1,254,1);
         }
     }
-    //for (std::deque<Point > &dqp : trace) {
-    //    for (Point p : dqp) {
-    //        p.index.node->setPointColor(p,1,254,1);
-    //    }
-    //}
     root->initVBO();
 }
 
