@@ -25,8 +25,7 @@ namespace gigapoint {
 
 
 
-FractureTracer::FractureTracer(PointCloud* cloud)
-{	
+FractureTracer::FractureTracer(PointCloud* cloud) : m_relMarkerScale(5.0f),m_cloud(NULL),m_previous(-1) {
     m_cloud = cloud; //store pointer ourselves also
     //m_search_r = calculateOptimumSearchRadius(); //estimate the search radius we want to use    
     m_search_r = m_cloud->getPCInfo()->spacing*32; //should corespond to hierarchy level 4

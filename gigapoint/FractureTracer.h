@@ -196,13 +196,13 @@ protected:
     //float calculateOptimumSearchRadius();
 
 	//ccTrace variables
-	float m_relMarkerScale = 5.0f;
+    float m_relMarkerScale;
     //ccPointCloud* m_cloud=0; //pointer to ccPointCloud object this is linked to (slightly different to polylines as we know this data is sampled from a real cloud)
-    PointCloud* m_cloud=0;
+    PointCloud* m_cloud;
 
     std::vector< std::deque< Point > > m_trace; //contains an ordered list of indices which define this trace. Note that indices representing nodes MAY be inserted twice.
     std::vector<Point> m_waypoints; //list of waypoint indices
-	int m_previous=-1; //for undoing waypoints
+    int m_previous; //for undoing waypoints
 
 
 private:
