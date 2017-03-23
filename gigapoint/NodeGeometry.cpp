@@ -1,5 +1,6 @@
 #include "Utils.h"
 #include "NodeGeometry.h"
+#include "LRU.h"
 
 #include <iostream>
 #include <fstream>
@@ -7,6 +8,7 @@
 #include <float.h>
 #include <bitset>
 #include <map>
+
 
 using namespace std;
 using namespace omega;
@@ -75,7 +77,7 @@ string NodeGeometry::getHierarchyPath() {
 	return path;
 }
 
-int NodeGeometry::loadHierachy(map<string, NodeGeometry *>* nodes, bool force) {
+int NodeGeometry::loadHierachy(LRUCache *nodecache, bool force) {
     if (!canLoadHierarchy())
 		return 0;
 
@@ -145,11 +147,8 @@ int NodeGeometry::loadHierachy(map<string, NodeGeometry *>* nodes, bool force) {
 			break;
 	}
 
-    if ( nodes->find(name) == nodes->end() ) {
-        (*nodes)[name] = this;
-        cout << "added " << name << " to global nodes " << endl;
-    }
-
+    if (!nodecache->contains(name))
+        nodecache->insert(name,this);
 
 	for(list<HRC_Item>::iterator it = decoded.begin(); it != decoded.end(); it++) {
 		HRC_Item item = *it;
@@ -159,13 +158,13 @@ int NodeGeometry::loadHierachy(map<string, NodeGeometry *>* nodes, bool force) {
 		string str_ind = item.name.substr(item.name.length()-1, 1);
 		//cout << "index str: " << str_ind << endl;
 
-		string parentname = item.name.substr(0, item.name.length()-1);
-        NodeGeometry* pnode = (*nodes)[parentname];
+        string parentname = item.name.substr(0, item.name.length()-1);
+        NodeGeometry* pnode = NULL;
+        nodecache->tryGet(parentname,pnode);
 		assert(pnode);
 
-        //TODO check if childnode already exists or if its new!
         NodeGeometry* cnode = NULL;
-        if ( nodes->find(item.name) == nodes->end() ) {
+        if (!nodecache->tryGet(item.name,cnode)) {
             cout << "creating new node " << item.name << endl;
             cnode = new NodeGeometry(item.name);
             assert(cnode);
@@ -183,10 +182,8 @@ int NodeGeometry::loadHierachy(map<string, NodeGeometry *>* nodes, bool force) {
             //cnode->printInfo();
             pnode->addChild(cnode);
             pnode->setHasChildren(true);
-            cnode->loadHierachy(nodes);
-            (*nodes)[item.name] = cnode;
-        } else {
-            cnode = (*nodes)[item.name];            
+            cnode->loadHierachy(nodecache);
+            nodecache->insert(item.name,cnode);
         }
 	}
 
@@ -480,6 +477,24 @@ void NodeGeometry::initUpdateCache()
 
 }
 
+void NodeGeometry::getPointData(Point &point)
+{
+    int idx = point.index.index;
+    point.position[0] = vertices[0+idx*3];
+    point.position[1] = vertices[1+idx*3];
+    point.position[2] = vertices[2+idx*3];
+    point.color[0]    = colors[0+idx*3];
+    point.color[1]    = colors[1+idx*3];
+    point.color[2]    = colors[2+idx*3];
+}
+
+void NodeGeometry::setPointColor(Point &point, int r, int g, int b)
+{
+    colors[3*point.index.index+0]=(unsigned char)r;
+    colors[3*point.index.index+1]=(unsigned char)g;
+    colors[3*point.index.index+2]=(unsigned char)b;
+}
+
 std::vector< Point > NodeGeometry::getPointsInSphericalNeighbourhood(Point current, float search_r){
     std::vector< Point > points;
     std::vector<NodeGeometry *> nodesInRange;
@@ -532,26 +547,6 @@ std::vector< Point > NodeGeometry::getPointsInSphericalNeighbourhood(Point curre
         }
     }
     return points;
-}
-
-
-
-void NodeGeometry::getPointData(Point &point)
-{
-    int idx = point.index.index;
-    point.position[0] = vertices[0+idx*3];
-    point.position[1] = vertices[1+idx*3];
-    point.position[2] = vertices[2+idx*3];
-    point.color[0]    = colors[0+idx*3];
-    point.color[1]    = colors[1+idx*3];
-    point.color[2]    = colors[2+idx*3];
-}
-
-void NodeGeometry::setPointColor(Point &point, int r, int g, int b)
-{
-    colors[3*point.index.index+0]=(unsigned char)r;
-    colors[3*point.index.index+1]=(unsigned char)g;
-    colors[3*point.index.index+2]=(unsigned char)b;
 }
 
 

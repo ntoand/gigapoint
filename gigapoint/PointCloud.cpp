@@ -1,6 +1,6 @@
 #include "PointCloud.h"
 #include "Utils.h"
-#include "FractureTracer.h"
+
 
 #include <iostream>
 
@@ -11,21 +11,16 @@ namespace gigapoint {
 
 
 PointCloud::PointCloud(Option* opt, bool mas): option(opt), master(mas), pauseUpdate(false),fullReload(false),
-                                               width(0), height(0),interactMode(INTERACT_NONE), frameBuffer(0),
+                                               width(0), height(0), frameBuffer(0),
                                                lrucache(NULL),_unload(false),render(true),
                                                materialPoint(0), materialEdl(0),quadVao(0), quadVbo(0),
-                                               needReloadShader(false), printInfo(false),tracer(NULL),nodes(NULL) {
-
+                                               needReloadShader(false), printInfo(false) {
 }
 
 PointCloud::~PointCloud() {
     // destroy tree
 	if(pcinfo)
-		delete pcinfo;
-    if (nodes)
-        delete nodes;
-    if(tracer)
-        delete tracer;
+		delete pcinfo;      
 	if(materialPoint)
 		delete materialPoint;
 	if(materialEdl)
@@ -71,13 +66,12 @@ int PointCloud::initPointCloud() {
 	if(master)
 		Utils::printPCInfo(pcinfo);
 
-    nodes = new std::map<string,NodeGeometry* >();
 
     // root node
 	string name = "r";
 	root = new NodeGeometry(name);
-	root->setInfo(pcinfo);
-    if(root->loadHierachy(nodes)) {
+	root->setInfo(pcinfo);    
+    if(root->loadHierachy(lrucache)) {
 		cout << "fail to load root hierachy" << endl;
 		return -1;
 	}
@@ -128,7 +122,7 @@ int PointCloud::preloadUpToLevel(const int level) {
     	if(!canload)
     		continue;
 
-        node->loadHierachy(nodes);
+        node->loadHierachy(lrucache);
 		node->loadData();
 		lrucache->insert(node->getName(), node);
 
@@ -164,7 +158,7 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3], con
     unsigned int start_time = Utils::getTime();
     if (!root)
         return 0;
-    root->loadHierachy(nodes);
+    root->loadHierachy(lrucache);
 
 #ifdef ONLINEUPDATE
     if (option->onlineUpdate) {
@@ -197,7 +191,7 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3], con
 	    numVisibleNodes++;
 		numVisiblePoints += node->getNumPoints();
 
-        node->loadHierachy(nodes);      
+        node->loadHierachy(lrucache);
 
         if(!node->inQueue() && node->canAddToQueue() ) {
 			node->setInQueue(true);
@@ -242,26 +236,26 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3], con
     return 0;
 }
 
+// TODO retest if it still works
 void PointCloud::unload() {
     cout << "unloading everything" << endl;
     lrucache->clear();
-    //unload all the nodes
-    nodes->erase(nodes->begin(),nodes->end());
+    //unload all the nodes    
+    //nodes->erase(nodes->begin(),nodes->end());
     root = NULL;
     displayList.clear();
     _unload=false;
 }
 
 void PointCloud::resetRootHierarchy() {
-    root->loadHierachy(nodes,true);
+    root->loadHierachy(lrucache,true);
 }
 
 void PointCloud::flagNodeAsDirty(const std::string &nodename)
 {
-    NodeGeometry * node=NULL;
-    if (nodes->find(nodename) != nodes->end())
+    NodeGeometry* node=NULL;
+    if (lrucache->tryGet(nodename,node))
     {
-        node =(*nodes)[nodename];
         node->setDirty();
     } else {
         //we have to find the next hierarchy node and mark that as dirty
@@ -269,11 +263,11 @@ void PointCloud::flagNodeAsDirty(const std::string &nodename)
         string parentname = nodename;
         while (!foundHierarchyNode) {
              parentname = parentname.substr(0,parentname.size()-1);
-             node =(*nodes)[parentname];
+             lrucache->tryGet(parentname,node);
              if (node->canLoadHierarchy())
              {
                  foundHierarchyNode=true;
-                 node->loadHierachy(nodes,true);
+                 node->loadHierachy(lrucache,true);
              }
         }
     }
@@ -291,7 +285,7 @@ void PointCloud::reload() {
     //empty lru
     lrucache->clear();
     //unload all the nodes
-    nodes->erase(nodes->begin(),nodes->end());
+    //nodes->erase(nodes->begin(),nodes->end());
     displayList.clear();
     //redo init
     initPointCloud();
@@ -304,14 +298,15 @@ void PointCloud::reload() {
 void PointCloud::debug() {
     Utils::printPCInfo(root->getInfo());
     cout << "numVisibleNodes: " << numVisibleNodes << " numVisiblePoints: " << numVisiblePoints <<
-            " nodeQueue size: " << nodeQueue.size() << " lrucache size: " << lrucache->size() <<
-         "total number of nodes: " << nodes->size() << endl;
+            " nodeQueue size: " << nodeQueue.size() << " lrucache size: " << lrucache->size() << endl;
 
+    /*
     for(map<string, NodeGeometry*>::iterator it = nodes->begin(); it != nodes->end(); it++) {
         NodeGeometry* node=(*it).second;
         //cout << "Node: " << (*it).first << endl;
         node->printInfo();
     }
+    */
     printInfo = false;
 }
 
@@ -350,30 +345,6 @@ void PointCloud::draw() {
 		node->draw(materialPoint, height);
 	}
 
-	// draw interaction
-	if(interactMode != INTERACT_NONE) {
-		glDisable(GL_LIGHTING);
-		glDisable(GL_BLEND);
-		//draw ray line
-		Vector3f spos = ray.getOrigin(); //- 1*ray.getDirection();
-		Vector3f epos = ray.getOrigin() + 100*ray.getDirection();
-		glLineWidth(4.0); 
-		glColor3f(1.0, 1.0, 1.0);
-		glBegin(GL_LINES);
-		glVertex3f(spos[0], spos[1], spos[2]);
-		glVertex3f(epos[0], epos[1], epos[2]);
-		glEnd();
-
-		glEnable(GL_PROGRAM_POINT_SIZE_EXT);
-	    glPointSize(40);
-	    glColor3f(0.0, 1.0, 0.0);
-	    glBegin(GL_POINTS);
-	    for(int i=0; i < hitPoints.size(); i++) {
-	    	glVertex3f(hitPoints[i]->position[0], hitPoints[i]->position[1], hitPoints[i]->position[2]);
-	    }
-	    glEnd();
-	}
-
 	if(option->filter != FILTER_NONE) {
 
 		frameBuffer->unbind();
@@ -393,7 +364,8 @@ void PointCloud::draw() {
 
 		frameBuffer->getTexture("tex0")->unbind();
 		materialEdl->getShader()->unbind();
-	}
+    }
+
 }
 
 void PointCloud::drawViewQuad()
@@ -426,35 +398,7 @@ void PointCloud::drawViewQuad()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-// interaction
-void PointCloud::updateRay(const omega::Ray& r) {
-	ray = r;
-}
 
-void PointCloud::traceFracture()
-{
-    if (tracer==NULL)
-    {
-        tracer= new FractureTracer(this);
-    }
-    Point p1(root,4807);
-    Point p2(root,5795);
-    p1.index.node->getPointData(p1);
-    root->getPointData(p1);
-    root->getPointData(p2);
-    tracer->insertWaypoint(p1);
-    tracer->insertWaypoint(p2);
-    tracer->optimizePath();
-    std::vector < std::deque<Point > > trace=tracer->getTraceRef();
-    for (std::vector < std::deque<Point > >::iterator it1 = trace.begin() ; it1 != trace.end(); ++it1)
-    {
-        for (std::deque<Point >::iterator it2 = (*it1).begin() ; it2 != (*it1).end(); ++it2)
-        {
-            (*it2).index.node->setPointColor((*it2),1,254,1);
-        }
-    }
-    root->initVBO();
-}
 
 Point PointCloud::getPointFromIndex(const PointIndex_ &index)
 {
@@ -463,35 +407,7 @@ Point PointCloud::getPointFromIndex(const PointIndex_ &index)
     return p;
 }
 
-void PointCloud::findHitPoint() {
 
-    if (interactMode == INTERACT_POINT) {
-		unsigned int start_time = Utils::getTime();
-		hitPoints.clear();
-        HitPoint* point = new HitPoint();
-
-		for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
-			NodeGeometry* node = *it;
-			node->findHitPoint(ray, point);
-            hitPoints.push_back(point);
-		}
-
-		if(point->distance != -1) {
-			hitPoints.push_back(point);
-			cout << "find time: " << Utils::getTime() - start_time << " size: " << hitPoints.size()
-				<< " dis: " << hitPoints[0]->distance
-			 	<< " pos: " << hitPoints[0]->position[0] << " " << hitPoints[0]->position[1] << " " 
-			 	<< hitPoints[0]->position[2] << endl;
-            if (hitPoints.size() >=2 ) {
-                float dis=Utils::distance(hitPoints[0]->position,hitPoints[1]->position);
-                cout << "distance between first and second point is: " << dis << endl;
-            }
-		}
-		else {
-			cout << "MISS" << endl;
-		}
-	}
-}
 
 }; //namespace gigapoint
 

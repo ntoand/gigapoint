@@ -52,9 +52,9 @@ namespace gigapoint {
 
 
 // interaction
-#define INTERACT_NONE		-1
-#define INTERACT_POINT 		0
-#define INTERACT_DISTANCE	1
+#define INTERACT_NONE	-1
+#define INTERACT_POINT 	0
+#define INTERACT_MULTIFRACTURE	1
 
 #define MIN_TREE_DEPTH 6
 

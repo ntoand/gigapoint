@@ -23,6 +23,8 @@ struct HRC_Item {
 	}
 };
 
+class LRUCache;
+
 class NodeGeometry {
 
 private:
@@ -109,7 +111,7 @@ public:
 	void addPoint(float x, float y, float z);
 	void addColor(float r, float g, float b);
 	string getHierarchyPath();
-    int loadHierachy(map<string, NodeGeometry*> *nodes,bool force=false);
+    int loadHierachy(LRUCache* nodecache,bool force=false);
     bool canLoadHierarchy() {return (level % info->hierarchyStepSize) == 0;}
 	int loadData();
 	void printInfo();

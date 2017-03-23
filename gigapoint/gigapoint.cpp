@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "PointCloud.h"
+#include "Interaction.h"
 
 using namespace std;
 using namespace omega;
@@ -12,7 +13,7 @@ class GigapointRenderModule : public EngineModule
 {
 public:
     GigapointRenderModule() :
-        EngineModule("GigapointRenderModule"), pointcloud(0), option(0), visible(true)
+        EngineModule("GigapointRenderModule"), pointcloud(0), option(0), interaction(0), visible(true)
     {
     	
     }
@@ -32,6 +33,8 @@ public:
             delete pointcloud;
         if(option)
             delete option;
+        if (interaction)
+            delete interaction;
     }
 
     void initPotree(const string& option_file)
@@ -52,7 +55,10 @@ public:
 			cam->setPosition(Vector3f(option->cameraPosition[0], option->cameraPosition[1], option->cameraPosition[2]));
 			cam->setOrientation(Quaternion(option->cameraOrientation[0], option->cameraOrientation[1], 
 											option->cameraOrientation[2], option->cameraOrientation[3]));
-		}	
+        }
+#ifdef INTERACTION
+        interaction = new gigapoint::Interaction(pointcloud);
+#endif
     }
 
     void updateMaterial(const string& material)
@@ -64,6 +70,11 @@ public:
         else
             return;
         pointcloud->setReloadShader(true);
+    }
+
+    void updateInteractionMode(const string& mode)
+    {
+        interaction->updateInteractionMode(mode);
     }
 
     void updateQuality(const string& quality)
@@ -122,6 +133,7 @@ public:
     }
 
     gigapoint::PointCloud* pointcloud;
+    gigapoint::Interaction* interaction;
     gigapoint::Option* option; 
     bool visible;
 };
@@ -162,7 +174,11 @@ public:
                     module->pointcloud->updateVisibility(MVP, campos, context.viewport.width(), context.viewport.height());
             	}
 
-		module->pointcloud->draw();
+        module->pointcloud->draw();
+#ifdef INTERACTION
+        module->interaction->draw();
+#endif
+
 		if(oglError) return;
 	    }
             client->getRenderer()->endDraw();
@@ -204,6 +220,7 @@ BOOST_PYTHON_MODULE(gigapoint)
         PYAPI_METHOD(GigapointRenderModule, updateSizeType)
         PYAPI_METHOD(GigapointRenderModule, updatePointScale)
         PYAPI_METHOD(GigapointRenderModule, updateVisible)
+        PYAPI_METHOD(GigapointRenderModule, updateInteractionMode)
         PYAPI_METHOD(GigapointRenderModule, printInfo)
         PYAPI_METHOD(GigapointRenderModule, updateFilter)
         PYAPI_METHOD(GigapointRenderModule, updateEdl)

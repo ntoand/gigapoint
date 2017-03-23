@@ -8,13 +8,12 @@
 #include "wqueue.h"
 #include "FrameBuffer.h"
 
-
 namespace gigapoint {
 
 #include <vector>
 #include <list>
 
-class FractureTracer;
+
 using namespace tthread;
 
 struct NodeWeight {
@@ -66,10 +65,7 @@ private:
     bool fullReload; // prevents updates and rendering while reloading
     bool _unload;
     bool render;
-
-
-	int width, height;
-	
+	int width, height;	
 
 	PCInfo* pcinfo;
 	Material* materialPoint;
@@ -93,19 +89,10 @@ private:
 	// cache 
 	LRUCache* lrucache;
 
-	// interaction
-	omega::Ray ray;
-	vector<HitPoint*> hitPoints; 
-    int interactMode;
-
-
-    map<string, NodeGeometry*> *nodes;
+    //map<string, NodeGeometry*> *nodes;
     void debug();
     void reload();
     void unload();
-
-    //fracture tracing
-    FractureTracer* tracer;
 
 	// draw quad
 	unsigned int quadVao;
@@ -127,7 +114,6 @@ public:
 	void draw();
 	void drawViewQuad();
 
-
     void setReloading(bool b) {fullReload=b;}
     void setUnloading(bool b) {_unload=b;}
     void togglePauseUpdate() {pauseUpdate = !pauseUpdate;}
@@ -136,18 +122,18 @@ public:
 
     PCInfo* getPCInfo(){return pcinfo;}
 
-	// interaction    
-	void updateRay(const omega::Ray& r);
-	void findHitPoint();
-    void traceFracture();
     Point getPointFromIndex(const PointIndex_ &index);
     std::vector< Point > getPointsInSphericalNeighbourhood(Point current, float search_r)
     {
         return root->getPointsInSphericalNeighbourhood(current,search_r);
     }
 
-};
+    //interface facade
+    bool tryGetNode(const string &name,NodeGeometry * node) {return lrucache->tryGet(name,node);}
+    NodeGeometry* getRoot(){ return root;}
+    std::list<NodeGeometry*> & getListOfVisibleNodesRef() {return displayList;}
 
+}; //class PointCloud
 }; //namespace gigapoint
 
 #endif

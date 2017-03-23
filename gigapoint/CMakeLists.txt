@@ -14,7 +14,10 @@ if( FEATURE_ONLINEUPDATE_ENABLED )
   add_definitions(-DONLINEUPDATE)
 endif()
 
-
+set( INTERACTION_ENABLED TRUE CACHE BOOL "Enable Interaction with the Pointcloud." )
+if( INTERACTION_ENABLED )
+  add_definitions(-DINTERACTION)
+endif()
 
 
 # Set module name and source files here
@@ -40,6 +43,9 @@ add_library(${MODULE_NAME} MODULE
         FractureTracer.h
 	FrameBuffer.h
 	FrameBuffer.cpp
+        Interaction.h
+        Interaction.cpp
+        LRU.h
         )
 
 # Set the module library dependencies here
