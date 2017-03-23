@@ -165,7 +165,8 @@ int NodeGeometry::loadHierachy(LRUCache *nodecache, bool force) {
 
         NodeGeometry* cnode = NULL;
         if (!nodecache->tryGet(item.name,cnode)) {
-            cout << "creating new node " << item.name << endl;
+            if (dirty)
+                cout << "creating new node " << item.name << endl;
             cnode = new NodeGeometry(item.name);
             assert(cnode);
             int cindex = atoi(str_ind.c_str());
