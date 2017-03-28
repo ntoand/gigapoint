@@ -14,5 +14,6 @@
 	"cameraSpeed": 100,
 	"cameraUpdatePosOri": 1,
 	"cameraPosition": [196.64, 21.32, 269.73],
+        "onlineUpdate": 1,
 	"cameraOrientation": [0.96, 0.03, 0.26, -0.01]
 }

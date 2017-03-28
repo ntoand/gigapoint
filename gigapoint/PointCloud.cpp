@@ -66,6 +66,8 @@ int PointCloud::initPointCloud() {
 	if(master)
 		Utils::printPCInfo(pcinfo);
 
+    if (!lrucache)
+        lrucache = new LRUCache(option->maxNodeInMem);
 
     // root node
 	string name = "r";
@@ -92,8 +94,7 @@ int PointCloud::initPointCloud() {
 	    }
 	
     }
-    if (!lrucache)
-        lrucache = new LRUCache(option->maxNodeInMem);
+
 
     preloadUpToLevel(option->preloadToLevel);
 
@@ -251,13 +252,13 @@ void PointCloud::resetRootHierarchy() {
     root->loadHierachy(lrucache,true);
 }
 
-void PointCloud::flagNodeAsDirty(const std::string &nodename)
+bool PointCloud::flagNodeAsDirty(const std::string &nodename)
 {
     NodeGeometry* node=NULL;
     if (lrucache->tryGet(nodename,node))
     {
         node->setDirty();
-    } else {
+    } else {  // we are updating a node that doesn't exist yet in the current tree.
         //we have to find the next hierarchy node and mark that as dirty
         bool foundHierarchyNode = false;
         string parentname = nodename;
@@ -271,6 +272,7 @@ void PointCloud::flagNodeAsDirty(const std::string &nodename)
              }
         }
     }
+    return true;
 }
 
 void PointCloud::reload() {

@@ -1,5 +1,13 @@
-import gigapoint
+#import gigapoint
 
-gp = gigapoint.initialize()
--gp.initPotree("gigapoint_resource/config/gigapoint_century_local.json")
-#gp.initPotree("gigapoint_resource/config/gigapoint_some_tree.json")
+import socket
+host =socket.gethostname()
+
+#gp = gigapoint.initialize()
+
+print host
+
+#if host == "Francium":
+#    gp.initPotree("gigapoint_resource/config/gigapoint_some_tree.json")
+#else:
+#    gp.initPotree("gigapoint_resource/config/gigapoint_century_local.json")

@@ -18,6 +18,21 @@ public:
     	
     }
 
+#ifdef ONLINEUPDATE
+    virtual bool handleCommand(const String& cmd) { // ":dirty NODENAME eg: ':dirty r0012' "
+        if (!option->onlineUpdate) {
+            cout <<  "recieving dirty command while onlineupdate is disabled. nothing will happen" << endl;
+        }
+        cout <<  "got Command: " << cmd.substr(0,5) << endl;
+        if (0==cmd.substr(0,5).compare("dirty"))
+        {
+            cout << "testing substring" << cmd.substr(6,cmd.size()-1);
+            return pointcloud->flagNodeAsDirty(cmd.substr(6,cmd.size()));
+        }
+        return false;
+    }
+#endif
+
     virtual void initializeRenderer(Renderer* r);
 
     virtual void update(const UpdateContext& context)
@@ -132,6 +147,7 @@ public:
 		pointcloud->setPrintInfo(true);
     }
 
+
     gigapoint::PointCloud* pointcloud;
     gigapoint::Interaction* interaction;
     gigapoint::Option* option; 
@@ -201,6 +217,20 @@ void GigapointRenderModule::initializeRenderer(Renderer* r)
 ///////////////////////////////////////////////////////////////////////////////
 GigapointRenderModule* initialize()
 {
+
+    string RED="\033[0;31m";
+    string NOCOLOR="\033[0m";
+    string INDENT1="\t";
+    cout << RED
+         << "Andreas TODO List" << endl
+         << " 3 controllers and tracers \n"
+         << INDENT1 << "Python events \n"
+         << INDENT1 << "3 tracer objects \n"
+         << INDENT1 << "3 colors for drawing traces and interaction \n"
+         << INDENT1 << " implement fixed nodelevel in memory and for search to keep all nodes euqal\n"
+         << "onlineupdate demo using a lasfile ordered by scantime \n"
+         << NOCOLOR << endl;
+
     GigapointRenderModule* prm = new GigapointRenderModule();
     ModuleServices::addModule(prm);
     prm->doInitialize(Engine::instance());
@@ -222,6 +252,7 @@ BOOST_PYTHON_MODULE(gigapoint)
         PYAPI_METHOD(GigapointRenderModule, updateVisible)
         PYAPI_METHOD(GigapointRenderModule, updateInteractionMode)
         PYAPI_METHOD(GigapointRenderModule, printInfo)
+        PYAPI_METHOD(GigapointRenderModule, handleCommand)
         PYAPI_METHOD(GigapointRenderModule, updateFilter)
         PYAPI_METHOD(GigapointRenderModule, updateEdl)
         ;

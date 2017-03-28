@@ -8,5 +8,5 @@ echo "copy lib gigapoint.so"
 cp build/gigapoint.so dist
 echo "copy resource"
 cp -r gigapoint_resource dist
-#cp omegalib_module_test/gigapoint.py ./dist/
+cp omegalib_module_test/gigapoint_menu.py ./dist/
 echo "Done"

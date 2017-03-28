@@ -6,7 +6,7 @@ from cyclops import *
 from omegaToolkit import *
 import json
 
-config_filename = "gigapoint_resource/config/gigapoint_century_local.json"
+config_filename = "gigapoint_resource/config/gigapoint_some_tree.json"
 
 ### REMEMBER TO CHECK IF A KEY IS EXIST IN CONFIG FILE BEFORE USING ###
 # using: if 'key' in config: 
