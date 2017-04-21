@@ -15,7 +15,6 @@ namespace gigapoint {
 #include <list>
 
 class FractureTracer;
-using namespace tthread;
 
 struct NodeWeight {
 	NodeGeometry* node;
@@ -94,10 +93,11 @@ private:
 	LRUCache* lrucache;
 
 	// interaction
+#ifndef STANDALONE_APP
 	omega::Ray ray;
+#endif
 	vector<HitPoint*> hitPoints; 
     int interactMode;
-
 
     map<string, NodeGeometry*> *nodes;
     void debug();
@@ -124,7 +124,11 @@ public:
 
 	int preloadUpToLevel(const int level=0);
 	int updateVisibility(const float MVP[16], const float campos[3], const int width, const int height);
-	void draw();
+#ifdef STANDALONE_APP
+	void draw(const float MV[16], const float MVP[16]);
+#else
+    void draw();
+#endif
 	void drawViewQuad();
 
 
@@ -136,9 +140,11 @@ public:
 
     PCInfo* getPCInfo(){return pcinfo;}
 
-	// interaction    
+	// interaction
+#ifndef STANDALONE_APP
 	void updateRay(const omega::Ray& r);
 	void findHitPoint();
+#endif
     void traceFracture();
     Point getPointFromIndex(const PointIndex_ &index);
     std::vector< Point > getPointsInSphericalNeighbourhood(Point current, float search_r)

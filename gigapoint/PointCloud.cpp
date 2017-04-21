@@ -5,7 +5,13 @@
 #include <iostream>
 
 using namespace std;
+#ifndef STANDALONE_APP
 using namespace omicron;
+#else
+#include <math.h>
+#include <float.h>
+#include <queue>
+#endif
 
 namespace gigapoint {
 
@@ -48,7 +54,9 @@ void PointCloud::initMaterials() {
 		targets.push_back("tex0");
 		frameBuffer = new FrameBuffer(targets, width, height, true);
 		frameBuffer->init();
+#ifndef STANDALONE_APP
 		if(oglError) return;
+#endif
 	}
 }
 
@@ -163,7 +171,7 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3], con
 
     unsigned int start_time = Utils::getTime();
     if (!root)
-        return 0;
+        return 1;
     root->loadHierachy(nodes);
 
     if (option->onlineUpdate) {
@@ -304,15 +312,21 @@ void PointCloud::debug() {
             " nodeQueue size: " << nodeQueue.size() << " lrucache size: " << lrucache->size() <<
          "total number of nodes: " << nodes->size() << endl;
 
+    /*
     for(map<string, NodeGeometry*>::iterator it = nodes->begin(); it != nodes->end(); it++) {
         NodeGeometry* node=(*it).second;
         //cout << "Node: " << (*it).first << endl;
         node->printInfo();
     }
+    */
     printInfo = false;
 }
 
+#ifdef STANDALONE_APP
+void PointCloud::draw(const float MV[16], const float MVP[16]) {
+#else
 void PointCloud::draw() {
+#endif
 
     if (_unload)
         unload();
@@ -326,8 +340,11 @@ void PointCloud::draw() {
 	if(needReloadShader) {
 		materialPoint->reloadShader(); 
 		needReloadShader = false;
+#ifndef STANDALONE_APP
 		if(oglError) return;
+#endif
 	}
+    
 	if(printInfo) {
         debug();
 	}
@@ -341,12 +358,37 @@ void PointCloud::draw() {
 		frameBuffer->clear();
 	}
 
-
 	for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
 		NodeGeometry* node = *it;
-		node->draw(materialPoint, height);
+#ifdef STANDALONE_APP
+		node->draw(MV, MVP, materialPoint, height);
+#else
+        node->draw(materialPoint, height);
+#endif
 	}
 
+	if(option->filter != FILTER_NONE) {
+
+		frameBuffer->unbind();
+		Shader* edlShader = materialEdl->getShader();
+		edlShader->bind();
+		edlShader->transmitUniform("uColorTexture", (int)0);
+		edlShader->transmitUniform("uScreenWidth", (float)width);
+		edlShader->transmitUniform("uScreenHeight", (float)height);
+		edlShader->transmitUniform("uEdlStrength", option->filterEdl[0]);
+		edlShader->transmitUniform("uRadius", option->filterEdl[1]);
+		edlShader->transmitUniform("uOpacity", 1.0f);
+		edlShader->transmitUniform2fv("uNeighbours", ((MaterialEdl*)materialEdl)->getNeighbours());
+
+		frameBuffer->getTexture("tex0")->bind();
+		
+		drawViewQuad();
+
+		frameBuffer->getTexture("tex0")->unbind();
+		materialEdl->getShader()->unbind();
+	}
+
+#ifndef STANDALONE_APP
 	// draw interaction
 	if(interactMode != INTERACT_NONE) {
 		glDisable(GL_LIGHTING);
@@ -370,27 +412,7 @@ void PointCloud::draw() {
 	    }
 	    glEnd();
 	}
-
-	if(option->filter != FILTER_NONE) {
-
-		frameBuffer->unbind();
-		Shader* edlShader = materialEdl->getShader();
-		edlShader->bind();
-		edlShader->transmitUniform("uColorTexture", (int)0);
-		edlShader->transmitUniform("uScreenWidth", (float)width);
-		edlShader->transmitUniform("uScreenHeight", (float)height);
-		edlShader->transmitUniform("uEdlStrength", option->filterEdl[0]);
-		edlShader->transmitUniform("uRadius", option->filterEdl[1]);
-		edlShader->transmitUniform("uOpacity", 1.0f);
-		edlShader->transmitUniform2fv("uNeighbours", ((MaterialEdl*)materialEdl)->getNeighbours());
-
-		frameBuffer->getTexture("tex0")->bind();
-		
-		drawViewQuad();
-
-		frameBuffer->getTexture("tex0")->unbind();
-		materialEdl->getShader()->unbind();
-	}
+#endif
 }
 
 void PointCloud::drawViewQuad()
@@ -424,9 +446,11 @@ void PointCloud::drawViewQuad()
 }
 
 // interaction
+#ifndef STANDALONE_APP
 void PointCloud::updateRay(const omega::Ray& r) {
 	ray = r;
 }
+#endif
 
 void PointCloud::traceFracture()
 {
@@ -460,6 +484,7 @@ Point PointCloud::getPointFromIndex(const PointIndex_ &index)
     return p;
 }
 
+#ifndef STANDALONE_APP
 void PointCloud::findHitPoint() {
 
     if (interactMode == INTERACT_POINT) {
@@ -489,6 +514,7 @@ void PointCloud::findHitPoint() {
 		}
 	}
 }
+#endif
 
 }; //namespace gigapoint
 

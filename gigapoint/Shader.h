@@ -3,7 +3,12 @@
 
 #include "Utils.h"
 
+#ifdef STANDALONE_APP
+#include "app/GLInclude.h"
+#include <map>
+#else
 #include <omegaGl.h>
+#endif
 
 #include <list>
 #include <string>

@@ -28,7 +28,7 @@ public:
 };
 
 
-
+//====================================
 class MaterialPoint : public Material {
 
 protected:
@@ -39,6 +39,8 @@ public:
     ColorTexture* getColorTexture() { return texture; }
 };
 
+
+//====================================
 #define NUM_NEIGHBOURS 4
 class MaterialEdl : public Material {
 

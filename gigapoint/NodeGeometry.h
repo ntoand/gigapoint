@@ -114,12 +114,17 @@ public:
 	int loadData();
 	void printInfo();
 	int initVBO();
-	void draw(Material* material, const int height);
+#ifdef STANDALONE_APP
+	void draw(const float MV[16], const float MVP[16], Material* material, const int height);
+#else
+    void draw(Material* material, const int height);
+#endif
     void freeData(bool keepupdatecache=false);
 
 	//interaction
+#ifndef STANDALONE_APP
 	void findHitPoint(const omega::Ray& r, HitPoint* point);
-
+#endif
     //tracer
     Point getPoint(PointIndex ind);
     std::vector< Point > getPointsInSphericalNeighbourhood(Point current, float search_r);

@@ -5,7 +5,11 @@
 
 #include <string>
 
+#ifdef STANDALONE_APP
+#include "app/GLInclude.h"
+#else
 #include <omegaGl.h>
+#endif
 
 using namespace std;
 

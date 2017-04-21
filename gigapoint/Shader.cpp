@@ -29,6 +29,9 @@ Shader& Shader::load(string shaderPrefix, list<string> attributes, list<string> 
     string fra = "#version 120\n";
 
     if(name.compare("point") == 0) {
+#ifdef STANDALONE_APP
+        ver.append("#define STANDALONE_APP\n");
+#endif
         if(option->sizeType == SIZE_FIXED)
             ver.append("#define FIXED_POINT_SIZE\n");
     

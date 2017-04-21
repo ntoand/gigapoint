@@ -150,10 +150,10 @@ public:
             glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT | GL_CURRENT_BIT);
             client->getRenderer()->beginDraw3D(context);
 
-	    if(module->visible)
-	    { 
-			// Test and draw
-			// get camera location in world coordinate
+    	    if(module->visible)
+    	    { 
+    			// Test and draw
+    			// get camera location in world coordinate
             	//if(context.eye == DrawContext::EyeLeft || context.eye == DrawContext::EyeCyclop)
             	{
                 	Vector3f cp = context.camera->getPosition();
@@ -162,9 +162,10 @@ public:
                     module->pointcloud->updateVisibility(MVP, campos, context.viewport.width(), context.viewport.height());
             	}
 
-		module->pointcloud->draw();
-		if(oglError) return;
-	    }
+    		    module->pointcloud->draw();
+    		    if(oglError) return;
+    	    }
+            
             client->getRenderer()->endDraw();
             glPopAttrib();
         }
@@ -198,16 +199,16 @@ BOOST_PYTHON_MODULE(gigapoint)
 {
     //
     PYAPI_REF_BASE_CLASS(GigapointRenderModule)
-        PYAPI_METHOD(GigapointRenderModule, initPotree)
-        PYAPI_METHOD(GigapointRenderModule, updateMaterial)
-        PYAPI_METHOD(GigapointRenderModule, updateQuality)
-        PYAPI_METHOD(GigapointRenderModule, updateSizeType)
-        PYAPI_METHOD(GigapointRenderModule, updatePointScale)
-        PYAPI_METHOD(GigapointRenderModule, updateVisible)
-        PYAPI_METHOD(GigapointRenderModule, printInfo)
-        PYAPI_METHOD(GigapointRenderModule, updateFilter)
-        PYAPI_METHOD(GigapointRenderModule, updateEdl)
-        ;
+    PYAPI_METHOD(GigapointRenderModule, initPotree)
+    PYAPI_METHOD(GigapointRenderModule, updateMaterial)
+    PYAPI_METHOD(GigapointRenderModule, updateQuality)
+    PYAPI_METHOD(GigapointRenderModule, updateSizeType)
+    PYAPI_METHOD(GigapointRenderModule, updatePointScale)
+    PYAPI_METHOD(GigapointRenderModule, updateVisible)
+    PYAPI_METHOD(GigapointRenderModule, printInfo)
+    PYAPI_METHOD(GigapointRenderModule, updateFilter)
+    PYAPI_METHOD(GigapointRenderModule, updateEdl)
+    ;
 
     def("initialize", initialize, PYAPI_RETURN_REF);
 }

@@ -15,7 +15,12 @@
 //#                                                                        #
 //##########################################################################
 
-#include "omega.h"
+#ifdef STANDALONE_APP
+#include "app/GLInclude.h"
+#include <math.h>
+#else
+#include <omegaGl.h>
+#endif
 
 #include "FractureTracer.h"
 #include "PointCloud.h"

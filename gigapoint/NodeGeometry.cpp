@@ -7,9 +7,13 @@
 #include <float.h>
 #include <bitset>
 #include <map>
+#include <math.h>
+#include <sstream>
 
 using namespace std;
+#ifndef STANDALONE_APP
 using namespace omega;
+#endif
 
 namespace gigapoint {
 
@@ -114,11 +118,11 @@ int NodeGeometry::loadHierachy(map<string, NodeGeometry *>* nodes, bool force) {
 	offset += 5;
 
 	std::bitset<8> x(children);
-        cout << "Root children: " << x << endl;
-        cout << "Root numpoints: " << n->numpoints << endl;
+    //cout << "Root children: " << x << endl;
+    //cout << "Root numpoints: " << n->numpoints << endl;
 
     stack.push_back(HRC_Item(name, children, n->numpoints));
-        cout << "Root name: " << name << endl;
+    //cout << "Root name: " << name << endl;
 	while(stack.size() > 0){
 
 		HRC_Item snode = stack.front();
@@ -147,7 +151,7 @@ int NodeGeometry::loadHierachy(map<string, NodeGeometry *>* nodes, bool force) {
 
     if ( nodes->find(name) == nodes->end() ) {
         (*nodes)[name] = this;
-        cout << "added " << name << " to global nodes " << endl;
+        //cout << "added " << name << " to global nodes " << endl;
     }
 
 
@@ -339,19 +343,28 @@ int NodeGeometry::initVBO() {
     return 0;
 }
 
+#ifdef STANDALONE_APP
+void NodeGeometry::draw(const float MV[16], const float MVP[16], Material* material, const int height) {
+#else
 void NodeGeometry::draw(Material* material, const int height) {
+#endif
+    
 	if(loading || !loaded)
 		return;
+    
 	if(!initvbo)
 		initVBO();
-	Shader* shader = material->getShader();
+	
+    Shader* shader = material->getShader();
 	Option* option = material->getOption();
 	ColorTexture* texture = ((MaterialPoint*)material)->getColorTexture();
 	shader->bind();
 	texture->bind();
+#ifndef STANDALONE_APP
 	if(oglError) return;
-
-	unsigned int attribute_vertex_pos = shader->attribute("VertexPosition");
+#endif
+	
+    unsigned int attribute_vertex_pos = shader->attribute("VertexPosition");
     //cout << "Vertex Position: " << attribute_vertex_pos << endl;
     glEnableVertexAttribArray(attribute_vertex_pos);  // Vertex position
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -363,7 +376,9 @@ void NodeGeometry::draw(Material* material, const int height) {
         0,                 // no extra data between each position
         0                  // offset of first element
     );
+#ifndef STANDALONE_APP
     if(oglError) return;
+#endif
 
     unsigned int attribute_color_pos;
     if(option->material == MATERIAL_RGB) {
@@ -379,7 +394,9 @@ void NodeGeometry::draw(Material* material, const int height) {
         0,                 // no extra data between each position
         0                  // offset of first element
     );
+#ifndef STANDALONE_APP
     if(oglError) return;
+#endif
     }
 	
 	shader->transmitUniform("uColorTexture", (int)0);
@@ -390,9 +407,15 @@ void NodeGeometry::draw(Material* material, const int height) {
 	shader->transmitUniform("uScreenHeight", (float)height);
     shader->transmitUniform("uPointScale", (float)option->pointScale[0]);
     shader->transmitUniform("uPointSizeRange", (float)option->pointSizeRange[0], (float)option->pointSizeRange[1]);
+#ifdef STANDALONE_APP
+    shader->transmitUniform("uMV", MV);
+    shader->transmitUniform("uMVP", MVP);
+#endif
 
 	glDrawArrays(GL_POINTS, 0, vertices.size()/3);
+#ifndef STANDALONE_APP
 	if(oglError) return;
+#endif
 	   
     glDisableVertexAttribArray(attribute_vertex_pos);
     if(option->material == MATERIAL_RGB)
@@ -442,7 +465,7 @@ void NodeGeometry::Update() {
     freeData(true); //keep updateCache=true
 
     //update data
-    vertices=updateCache->vertices;
+    vertices=updateCache->vertices; //slow copy reference not values
     colors=updateCache->colors;
     for(int i=0; i < 8; i++) {
         if ( (children[i] == NULL) && (updateCache->children[i] != NULL) ) {
@@ -556,6 +579,7 @@ void NodeGeometry::setPointColor(Point &point, int r, int g, int b)
 }
 
 
+#ifndef STANDALONE_APP
 // interaction
 void NodeGeometry::findHitPoint(const omega::Ray& r, HitPoint* point) {
 	// check with the whole node first
@@ -581,6 +605,7 @@ void NodeGeometry::findHitPoint(const omega::Ray& r, HitPoint* point) {
 		}
     }
 }
+#endif
 
 
 }; //namespace gigapoint

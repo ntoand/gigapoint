@@ -8,6 +8,8 @@ uniform vec2 uHeightMinMax;
 uniform float uScreenHeight;
 uniform float uPointScale;
 uniform vec2 uPointSizeRange;
+uniform mat4 uMV;
+uniform mat4 uMVP;
 
 varying vec3 vColor;
 #if defined FILTER_EDL
@@ -17,8 +19,14 @@ varying float vDepth;
 void main()
 {
 	//position
+#if defined STANDALONE_APP
+    gl_Position = uMVP * vec4(VertexPosition,1.0);
+    vec3 mvPosition = (uMV * vec4(VertexPosition,1.0)).xyz;
+#else
     gl_Position = gl_ModelViewProjectionMatrix * vec4(VertexPosition,1.0);
     vec3 mvPosition = (gl_ModelViewMatrix * vec4(VertexPosition,1.0)).xyz;
+#endif
+
 #if defined FILTER_EDL
     vDepth = log2(gl_Position.w);
 #endif
