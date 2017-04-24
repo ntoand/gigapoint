@@ -60,6 +60,7 @@ SET( srcs
 		../FrameBuffer.cpp
 		../FractureTracer.cpp
 		GLUtils.cpp
+		Camera.cpp
 		main.cpp 
 		)
 
@@ -77,6 +78,8 @@ SET( headers
 		../FractureTracer.h
 		GLUtils.h
 		Camera.h
+		nuklear.h
+		nuklear_glfw_gl2.h
 		)
 
 add_definitions(-DCMAKE_BUILD_TYPE=Debug -DPRINT_DEBUG)
@@ -87,4 +90,4 @@ add_executable(gigapoint ${srcs} ${headers})
 # create the program
 target_link_libraries(gigapoint ${ALL_LIBS} )
 
-source_group("app" FILES Camera.h GLInlcude.h GLUtils.h GLUtils.cpp Mesh.h Mesh.cpp main.cpp)
+source_group("app" FILES Camera.h Camera.cpp GLInlcude.h nuklear.h nuklear_glfw_gl2.h GLUtils.h GLUtils.cpp Mesh.h Mesh.cpp main.cpp)

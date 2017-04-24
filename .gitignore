@@ -6,3 +6,6 @@ potree
 testdata
 build*
 gigapoint/dist
+gigapoint/omegalib_module_test/century
+gigapoint/omegalib_module_test/gigapoint_resource
+nuklear/

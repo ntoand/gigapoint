@@ -13,6 +13,25 @@ using std::endl;
 
 #include <glm/gtc/type_ptr.hpp>
 
+
+#define NK_INCLUDE_FIXED_TYPES
+#define NK_INCLUDE_STANDARD_IO
+#define NK_INCLUDE_STANDARD_VARARGS
+#define NK_INCLUDE_DEFAULT_ALLOCATOR
+#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+#define NK_INCLUDE_FONT_BAKING
+#define NK_INCLUDE_DEFAULT_FONT
+#define NK_IMPLEMENTATION
+#define NK_GLFW_GL2_IMPLEMENTATION
+#include "nuklear.h"
+#include "nuklear_glfw_gl2.h"
+
+#define UNUSED(a) (void)a
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+#define MAX(a,b) ((a) < (b) ? (b) : (a))
+#define LEN(a) (sizeof(a)/sizeof(a)[0])
+
+
 using namespace gigapoint;
 
 GLFWwindow* window;
@@ -40,6 +59,10 @@ bool usemouse = false;
 
 void doMovement();
 
+// GUI
+struct nk_context *ctx;
+
+
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     //cout << key << endl;
@@ -66,31 +89,20 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 
 
 static void mouse_scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-    camera->processMouseScroll(yoffset);
+    //camera->processMouseScroll(yoffset);
 }
 
 static void mouse_position_callback(GLFWwindow* window, double xpos, double ypos) {
     
-    if(!usemouse) {
-        lastX = xpos;
-        lastY = ypos;
+    if(firstmouse) {
+        camera->move_camera = false;
+        camera->Move2D((int)xpos, (int)ypos);
+        firstmouse = false;
         return;
     }
     
-    if(firstmouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstmouse = false;
-    }
-    
-    GLfloat xoffset = xpos - lastX;
-    GLfloat yoffset = lastY - ypos;  // Reversed since y-coordinates go from bottom to left
-    
-    lastX = xpos;
-    lastY = ypos;
-    
-    camera->processMouseMovement(xoffset, yoffset);
+    camera->move_camera = usemouse;
+    camera->Move2D((int)xpos, (int)ypos);
 }
 
 static void window_size_callback(GLFWwindow* window, int width, int height) {
@@ -103,12 +115,14 @@ void init_resources(string configfile)
     height = HEIGHT;
     
     option = Utils::loadOption(configfile);
-    //Utils::printOption(option);
     
-    // Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH)
-    camera = new Camera(glm::vec3(-72.1061, -88.4513, -48.6774), glm::vec3(0.0323749, 0.340218, -0.939789), 66.8887, 59.9424);
-    camera->ratio = 1.0*WIDTH/HEIGHT;
-    camera->movementSpeed = 50;
+    camera = new Camera();
+    camera->SetPosition(glm::vec3(0.91204, 288.821, 28.971));
+    camera->SetLookAt(glm::vec3(0, 0, 0));
+    camera->camera_up = glm::vec3(0, 0, 1);
+    camera->SetViewport(0, 0, width, height);
+    camera->SetClipping(1, 1000000);
+    camera->Update();
     
     pointcloud = new PointCloud(option);
     pointcloud->initPointCloud();
@@ -127,18 +141,23 @@ void free_resources()
 void doMovement() {
     // Camera controls
     if(keys[GLFW_KEY_W])
-        camera->processKeyboard(FORWARD, dt);
+        camera->Move(FORWARD);
     if(keys[GLFW_KEY_S])
-        camera->processKeyboard(BACKWARD, dt);
+        camera->Move(BACK);
     if(keys[GLFW_KEY_A])
-        camera->processKeyboard(LEFT, dt);
+        camera->Move(LEFT);
     if(keys[GLFW_KEY_D])
-        camera->processKeyboard(RIGHT, dt);
+        camera->Move(RIGHT);
+    if(keys[GLFW_KEY_Q])
+        camera->Move(DOWN);
+    if(keys[GLFW_KEY_E])
+        camera->Move(UP);
+   
     if(keys[GLFW_KEY_I]) {
-        cout << "pos: " << camera->position[0] << ", " << camera->position[1] << ", " << camera->position[2] << endl;
-        cout << "up: " << camera->up[0] << ", " << camera->up[1] << ", " << camera->up[2] << endl;
-        cout << "front: " << camera->front[0] << ", " << camera->front[1] << ", " << camera->front[2] << endl;
-        cout << "pitch: " << camera->pitch << " yaw: " << camera->yaw << endl;
+        cout << "pos: " << camera->camera_position[0] << ", " << camera->camera_position[1] << ", " << camera->camera_position[2] << endl;
+        cout << "direction: " << camera->camera_direction[0] << ", " << camera->camera_direction[1] << ", " << camera->camera_direction[2] << endl;
+        cout << "lookat: " << camera->camera_look_at[0] << ", " << camera->camera_look_at[1] << ", " << camera->camera_look_at[2] << endl;
+        cout << "up: " << camera->camera_up[0] << ", " << camera->camera_up[1] << ", " << camera->camera_up[2] << endl;
         //pointcloud->setPrintInfo(true);
         keys[GLFW_KEY_I] = false;
     }
@@ -146,9 +165,9 @@ void doMovement() {
         keys[GLFW_KEY_T] = false;
     }
     if(keys[GLFW_KEY_N]) {
-        //tessTerrain->nextDisplayMode();
         keys[GLFW_KEY_N] = false;
     }
+    camera->Update();
 }
 
 void mainLoop()
@@ -164,6 +183,35 @@ void mainLoop()
         dt = current_time-last_time;
         
         glfwPollEvents();
+        
+        // GUI
+        nk_glfw3_new_frame();
+        if (nk_begin(ctx, "Settings", nk_rect(10, 10, 230, 130),
+                     //NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
+                     NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
+        {
+            static int colormode = MATERIAL_RGB;
+            nk_layout_row_static(ctx, 20, 200, 1);
+            //nk_label(ctx, "color mode: ", NK_TEXT_LEFT);
+            if (nk_option_label(ctx, "rgb", colormode == MATERIAL_RGB)) colormode = MATERIAL_RGB;
+            if (nk_option_label(ctx, "elevation", colormode == MATERIAL_ELEVATION)) colormode = MATERIAL_ELEVATION;
+            
+            static float pointscale = option->pointScale[0];
+            nk_layout_row_dynamic(ctx, 25, 1);
+            nk_property_float(ctx, "Pointscale:", option->pointScale[1], &pointscale, option->pointScale[2], 0.02, 1);
+            
+            // update pointcloud
+            if(option->material != colormode) {
+                option->material = colormode;
+                pointcloud->setReloadShader(true);
+            }
+            option->pointScale[0] = pointscale;
+            
+        }
+        nk_end(ctx);
+        
+        // end GUI
+        
         doMovement();
         
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -177,18 +225,21 @@ void mainLoop()
         //glClearColor(1.0f,0.5f,0.5f,1.0f);
     
         float* MVP, *MV;
-        MVP = (float*)glm::value_ptr(camera->getProjectionMatrix()*camera->getViewMatrix());
-        MV = (float*)glm::value_ptr(camera->getViewMatrix());
-        /*
-        const float *pSource = (const float*)glm::value_ptr(camera->getProjectionMatrix()*camera->getViewMatrix());
-        for (int i = 0; i < 16; ++i)
-            MVP[i] = pSource[i];
-        */
+        MVP = (float*)glm::value_ptr(camera->MVP);
+        MV = (float*)glm::value_ptr(camera->MV);
         
-        float campos[3] = {camera->position[0], camera->position[1], camera->position[2]};
+        float campos[3] = {camera->camera_position[0], camera->camera_position[1], camera->camera_position[2]};
         
         pointcloud->updateVisibility(MVP, campos, width, height);
         pointcloud->draw(MV, MVP);
+        
+        
+        // draw GUI
+        /* IMPORTANT: `nk_glfw_render` modifies some global OpenGL state
+         * with blending, scissor, face culling and depth test and defaults everything
+         * back into a default state. Make sure to either save and restore or
+         * reset your own state after drawing rendering the UI. */
+        nk_glfw3_render(NK_ANTI_ALIASING_ON);
        
 
         glfwSwapBuffers(window);
@@ -265,11 +316,31 @@ int main(int argc, char* argv[]) {
 
 	// init resources
 	init_resources(configfile);
+    
+    /* GUI */
+    ctx = nk_glfw3_init(window, NK_GLFW3_INSTALL_CALLBACKS);
+    /* Load Fonts: if none of these are loaded a default font will be used  */
+    /* Load Cursor: if you uncomment cursor loading please hide the cursor */
+    {struct nk_font_atlas *atlas;
+        nk_glfw3_font_stash_begin(&atlas);
+        /*struct nk_font *droid = nk_font_atlas_add_from_file(atlas, "../../../extra_font/DroidSans.ttf", 14, 0);*/
+        /*struct nk_font *roboto = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Roboto-Regular.ttf", 14, 0);*/
+        /*struct nk_font *future = nk_font_atlas_add_from_file(atlas, "../../../extra_font/kenvector_future_thin.ttf", 13, 0);*/
+        /*struct nk_font *clean = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyClean.ttf", 12, 0);*/
+        /*struct nk_font *tiny = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyTiny.ttf", 10, 0);*/
+        /*struct nk_font *cousine = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Cousine-Regular.ttf", 13, 0);*/
+        nk_glfw3_font_stash_end();
+        /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
+        /*nk_style_set_font(ctx, &droid->handle);*/
+    }
 
 	// Enter the main loop
 	mainLoop();
 
 	free_resources();
+    
+    //GUI
+    nk_glfw3_shutdown();
 
 	// Close window and terminate GLFW
 	glfwTerminate();
