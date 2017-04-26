@@ -28,11 +28,13 @@ add_library(${MODULE_NAME} MODULE
 	ColorTexture.cpp 
 	Material.h
 	Material.cpp
-        FractureTracer.cpp
-        FractureTracer.h
+    FractureTracer.cpp
+    FractureTracer.h
 	FrameBuffer.h
 	FrameBuffer.cpp
-        )
+	LRU.h
+	LRU.cpp
+    	)
 
 # Set the module library dependencies here
 target_link_libraries(${MODULE_NAME}
