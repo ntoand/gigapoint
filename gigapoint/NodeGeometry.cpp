@@ -79,7 +79,8 @@ string NodeGeometry::getHierarchyPath() {
 	return path;
 }
 
-int NodeGeometry::loadHierachy(map<string, NodeGeometry *>* nodes, bool force) {
+int NodeGeometry::loadHierachy(LRUCache* lrucache, bool force) {
+    
     if (!canLoadHierarchy())
 		return 0;
 
@@ -148,12 +149,13 @@ int NodeGeometry::loadHierachy(map<string, NodeGeometry *>* nodes, bool force) {
 		if(offset == len)
 			break;
 	}
+    
+    map<string, NodeGeometry*> nodes;
 
-    if ( nodes->find(name) == nodes->end() ) {
-        (*nodes)[name] = this;
+    if( !lrucache->contains(name) ) {
+        nodes[name] = this;
         //cout << "added " << name << " to global nodes " << endl;
     }
-
 
 	for(list<HRC_Item>::iterator it = decoded.begin(); it != decoded.end(); it++) {
 		HRC_Item item = *it;
@@ -164,12 +166,13 @@ int NodeGeometry::loadHierachy(map<string, NodeGeometry *>* nodes, bool force) {
 		//cout << "index str: " << str_ind << endl;
 
 		string parentname = item.name.substr(0, item.name.length()-1);
-        NodeGeometry* pnode = (*nodes)[parentname];
+        NodeGeometry* pnode = nodes[parentname];
 		assert(pnode);
 
         //TODO check if childnode already exists or if its new!
         NodeGeometry* cnode = NULL;
-        if ( nodes->find(item.name) == nodes->end() ) {
+        bool exist = lrucache->tryGet(item.name, cnode);
+        if(!exist) {
             if (dirty)
                 cout << "creating new node " << item.name << endl;
             cnode = new NodeGeometry(item.name);
@@ -184,16 +187,14 @@ int NodeGeometry::loadHierachy(map<string, NodeGeometry *>* nodes, bool force) {
             Utils::createChildAABB(pnode->getTightBBox(), cindex, tightcbbox);
             cnode->setBBox(cbbox);
             cnode->setInfo(pnode->getInfo());
-            cnode->setTightBBox(tightcbbox);            
+            cnode->setTightBBox(tightcbbox);
             //cnode->printInfo();
             pnode->addChild(cnode);
             pnode->setHasChildren(true);
-            cnode->loadHierachy(nodes);
-            (*nodes)[item.name] = cnode;
-        } else {
-            cnode = (*nodes)[item.name];            
+            cnode->loadHierachy(lrucache);
+            nodes[item.name] = cnode;
         }
-	}
+    }
 
 	hierachyloaded = true;    
 	return 0;

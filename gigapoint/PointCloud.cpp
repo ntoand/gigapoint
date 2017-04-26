@@ -20,7 +20,7 @@ PointCloud::PointCloud(Option* opt, bool mas): option(opt), master(mas), pauseUp
                                                width(0), height(0),interactMode(INTERACT_NONE), frameBuffer(0),
                                                lrucache(NULL),_unload(false),render(true),
                                                materialPoint(0), materialEdl(0),quadVao(0), quadVbo(0),
-                                               needReloadShader(false), printInfo(false),tracer(NULL),nodes(NULL) {
+                                               needReloadShader(false), printInfo(false),tracer(NULL) {
 
 }
 
@@ -28,8 +28,6 @@ PointCloud::~PointCloud() {
     // destroy tree
 	if(pcinfo)
 		delete pcinfo;
-    if (nodes)
-        delete nodes;
     if(tracer)
         delete tracer;
 	if(materialPoint)
@@ -78,14 +76,16 @@ int PointCloud::initPointCloud() {
 	}
 	if(master)
 		Utils::printPCInfo(pcinfo);
-
-    nodes = new std::map<string,NodeGeometry* >();
+    
+    // LRUCache
+    if (!lrucache)
+        lrucache = new LRUCache(option->maxNodeInMem);
 
     // root node
 	string name = "r";
 	root = new NodeGeometry(name);
 	root->setInfo(pcinfo);
-    if(root->loadHierachy(nodes)) {
+    if(root->loadHierachy(lrucache)) {
 		cout << "fail to load root hierachy" << endl;
 		return -1;
 	}
@@ -106,8 +106,6 @@ int PointCloud::initPointCloud() {
 	    }
 	
     }
-    if (!lrucache)
-        lrucache = new LRUCache(option->maxNodeInMem);
 
     preloadUpToLevel(option->preloadToLevel);
 
@@ -136,7 +134,7 @@ int PointCloud::preloadUpToLevel(const int level) {
     	if(!canload)
     		continue;
 
-        node->loadHierachy(nodes);
+        node->loadHierachy(lrucache);
 		node->loadData();
 		lrucache->insert(node->getName(), node);
 
@@ -172,7 +170,7 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3], con
     unsigned int start_time = Utils::getTime();
     if (!root)
         return 1;
-    root->loadHierachy(nodes);
+    root->loadHierachy(lrucache);
 
     if (option->onlineUpdate) {
         //Utils::updatePCInfo(option->dataDir,root->getInfo());
@@ -202,7 +200,7 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3], con
 	    numVisibleNodes++;
 		numVisiblePoints += node->getNumPoints();
 
-        node->loadHierachy(nodes);      
+        node->loadHierachy(lrucache);
 
         if(!node->inQueue() && node->canAddToQueue() ) {
 			node->setInQueue(true);
@@ -250,36 +248,36 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3], con
 void PointCloud::unload() {
     cout << "unloading everything" << endl;
     lrucache->clear();
-    //unload all the nodes
-    nodes->erase(nodes->begin(),nodes->end());
     root = NULL;
     displayList.clear();
     _unload=false;
 }
 
 void PointCloud::resetRootHierarchy() {
-    root->loadHierachy(nodes,true);
+    root->loadHierachy(lrucache, true);
 }
 
 void PointCloud::flagNodeAsDirty(const std::string &nodename)
 {
     NodeGeometry * node=NULL;
-    if (nodes->find(nodename) != nodes->end())
-    {
-        node =(*nodes)[nodename];
+    bool exist = lrucache->tryGet(nodename, node);
+    
+    if (exist) {
+        assert(node);
         node->setDirty();
+        
     } else {
         //we have to find the next hierarchy node and mark that as dirty
         bool foundHierarchyNode = false;
         string parentname = nodename;
         while (!foundHierarchyNode) {
-             parentname = parentname.substr(0,parentname.size()-1);
-             node =(*nodes)[parentname];
-             if (node->canLoadHierarchy())
-             {
-                 foundHierarchyNode=true;
-                 node->loadHierachy(nodes,true);
-             }
+            parentname = parentname.substr(0, parentname.size()-1);
+            lrucache->tryGet(parentname, node);
+            assert(node);
+            if (node->canLoadHierarchy()) {
+                foundHierarchyNode = true;
+                node->loadHierachy(lrucache, true);
+            }
         }
     }
 }
@@ -295,8 +293,6 @@ void PointCloud::reload() {
     }
     //empty lru
     lrucache->clear();
-    //unload all the nodes
-    nodes->erase(nodes->begin(),nodes->end());
     displayList.clear();
     //redo init
     initPointCloud();
@@ -309,9 +305,7 @@ void PointCloud::reload() {
 void PointCloud::debug() {
     Utils::printPCInfo(root->getInfo());
     cout << "numVisibleNodes: " << numVisibleNodes << " numVisiblePoints: " << numVisiblePoints <<
-            " nodeQueue size: " << nodeQueue.size() << " lrucache size: " << lrucache->size() <<
-         "total number of nodes: " << nodes->size() << endl;
-
+            " nodeQueue size: " << nodeQueue.size() << " lrucache size: " << lrucache->size() << endl;
     /*
     for(map<string, NodeGeometry*>::iterator it = nodes->begin(); it != nodes->end(); it++) {
         NodeGeometry* node=(*it).second;

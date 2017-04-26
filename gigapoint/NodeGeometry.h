@@ -3,6 +3,7 @@
 
 #include "Utils.h"
 #include "Material.h"
+#include "LRU.h"
 
 #include <string>
 #include <vector>
@@ -22,6 +23,8 @@ struct HRC_Item {
 		numpoints = num;
 	}
 };
+
+class LRUCache;
 
 class NodeGeometry {
 
@@ -109,7 +112,7 @@ public:
 	void addPoint(float x, float y, float z);
 	void addColor(float r, float g, float b);
 	string getHierarchyPath();
-    int loadHierachy(map<string, NodeGeometry*> *nodes,bool force=false);
+    int loadHierachy(LRUCache* lrucache, bool force=false);
     bool canLoadHierarchy() {return (level % info->hierarchyStepSize) == 0;}
 	int loadData();
 	void printInfo();

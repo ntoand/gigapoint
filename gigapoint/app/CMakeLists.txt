@@ -59,6 +59,7 @@ SET( srcs
 		../Material.cpp
 		../FrameBuffer.cpp
 		../FractureTracer.cpp
+		../LRU.cpp
 		GLUtils.cpp
 		Camera.cpp
 		main.cpp 
@@ -76,6 +77,7 @@ SET( headers
 		../Material.h
 		../FrameBuffer.h
 		../FractureTracer.h
+		../LRU.h
 		GLUtils.h
 		Camera.h
 		nuklear.h

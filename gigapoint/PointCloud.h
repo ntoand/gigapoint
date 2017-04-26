@@ -99,7 +99,6 @@ private:
 	vector<HitPoint*> hitPoints; 
     int interactMode;
 
-    map<string, NodeGeometry*> *nodes;
     void debug();
     void reload();
     void unload();
