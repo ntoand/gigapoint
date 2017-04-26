@@ -27,8 +27,6 @@ using std::endl;
 #include "nuklear_glfw_gl2.h"
 
 #define UNUSED(a) (void)a
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
-#define MAX(a,b) ((a) < (b) ? (b) : (a))
 #define LEN(a) (sizeof(a)/sizeof(a)[0])
 
 
@@ -45,7 +43,7 @@ float dt = 0;
 #define WIDTH 1024
 #define HEIGHT 768
 
-int width, height;
+int frame_width, frame_height;
 
 Option* option = NULL;
 PointCloud* pointcloud = NULL;
@@ -111,16 +109,13 @@ static void window_size_callback(GLFWwindow* window, int width, int height) {
 
 void init_resources(string configfile)
 {
-    width = WIDTH;
-    height = HEIGHT;
-    
     option = Utils::loadOption(configfile);
     
     camera = new Camera();
     camera->SetPosition(glm::vec3(0.91204, 288.821, 28.971));
     camera->SetLookAt(glm::vec3(0, 0, 0));
     camera->camera_up = glm::vec3(0, 0, 1);
-    camera->SetViewport(0, 0, width, height);
+    camera->SetViewport(0, 0, WIDTH, HEIGHT);
     camera->SetClipping(1, 1000000);
     camera->Update();
     
@@ -191,7 +186,7 @@ void mainLoop()
                      NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
         {
             static int colormode = MATERIAL_RGB;
-            nk_layout_row_static(ctx, 20, 200, 1);
+            nk_layout_row_dynamic(ctx, 25, 2);
             //nk_label(ctx, "color mode: ", NK_TEXT_LEFT);
             if (nk_option_label(ctx, "rgb", colormode == MATERIAL_RGB)) colormode = MATERIAL_RGB;
             if (nk_option_label(ctx, "elevation", colormode == MATERIAL_ELEVATION)) colormode = MATERIAL_ELEVATION;
@@ -200,12 +195,20 @@ void mainLoop()
             nk_layout_row_dynamic(ctx, 25, 1);
             nk_property_float(ctx, "Pointscale:", option->pointScale[1], &pointscale, option->pointScale[2], 0.02, 1);
             
+            static int filter = FILTER_NONE;
+            nk_layout_row_dynamic(ctx, 25, 1);
+            nk_checkbox_label(ctx, "EDL", &filter);
+            
             // update pointcloud
             if(option->material != colormode) {
                 option->material = colormode;
                 pointcloud->setReloadShader(true);
             }
             option->pointScale[0] = pointscale;
+            if(option->filter != filter) {
+                option->filter = filter;
+                pointcloud->setReloadShader(true);
+            }
             
         }
         nk_end(ctx);
@@ -230,7 +233,7 @@ void mainLoop()
         
         float campos[3] = {camera->camera_position[0], camera->camera_position[1], camera->camera_position[2]};
         
-        pointcloud->updateVisibility(MVP, campos, width, height);
+        pointcloud->updateVisibility(MVP, campos, frame_width, frame_height);
         pointcloud->draw(MV, MVP);
         
         
@@ -315,6 +318,7 @@ int main(int argc, char* argv[]) {
 	GLUtils::dumpGLInfo();
 
 	// init resources
+    glfwGetFramebufferSize(window, &frame_width, &frame_height);
 	init_resources(configfile);
     
     /* GUI */
