@@ -17,11 +17,9 @@ using namespace omega;
 
 namespace gigapoint {
 
-NodeGeometry::NodeGeometry(string _name): numpoints(0), level(-1), parent(NULL),updateCache(NULL),
-										  loaded(false), initvbo(false), haschildren(false),
-                                          hierachyloaded(false), inqueue(false), index(-1),
-                                          vertexbuffer(-1), colorbuffer(-1), loading(false),
-                                          dirty(false),isupdating(false),datafile("unset")
+NodeGeometry::NodeGeometry(string _name): index(-1), numpoints(0), level(-1), parent(NULL),updateCache(NULL),
+										  hierachyloaded(false), loadstate(STATE_NONE), initvbo(false), haschildren(false),
+                                          vertexbuffer(-1), colorbuffer(-1), dirty(false),updating(false),datafile("unset")
                                           {
 	name = _name;
 	//tightbbox[0] = tightbbox[1] = tightbbox[2] = FLT_MAX;
@@ -84,10 +82,10 @@ int NodeGeometry::loadHierachy(LRUCache* lrucache, bool force) {
     if (!canLoadHierarchy())
 		return 0;
 
-    hrc_filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".hrc";
-
-    if(hierachyloaded && !force)
+	if(hierachyloaded && !force)
         return 0;
+
+    hrc_filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".hrc";
 
 	assert(info);
 
@@ -209,12 +207,12 @@ ifstream::pos_type NodeGeometry::getFilesize(const char* filename)
 
 int NodeGeometry::loadData() {
 
-    if(loaded)
-    return 0;
+    if(isLoaded())
+        return 0;
 	
 	assert(info);
 
-	loading = true;
+    loadstate = STATE_LOADING;
 
 	string filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".bin";
     cout << "Load file: " << filename << endl;
@@ -281,15 +279,15 @@ int NodeGeometry::loadData() {
 
 	reader.close();
     //cout << "done reading " << filename.c_str() << std::endl;
-	loading = false;
-	if(vertices.size() > 0)
-		loaded = true;        
-	return 0;
+    
+    loadstate = vertices.size() > 0 ? STATE_LOADED : STATE_NONE;
+  
+    return 0;
 }
 
 void NodeGeometry::printInfo() {
 	cout << endl << "Node: " << name << " level: " << level << " index: " << index << endl;
-    cout << "# points: " << numpoints << " loaded " << loaded << endl;
+    cout << "# points: " << numpoints << " loaded " << isLoaded() << endl;
 	cout << "data file: " << datafile << endl;
     cout << "children: ";
     for(int i=0; i < 8; i++)
@@ -307,7 +305,7 @@ void NodeGeometry::printInfo() {
 	cout << endl;
 	*/
 
-	if(!loaded)
+	if(!isLoaded())
 		return;
 
 	cout << "first 5 points: " << endl;
@@ -350,7 +348,7 @@ void NodeGeometry::draw(const float MV[16], const float MVP[16], Material* mater
 void NodeGeometry::draw(Material* material, const int height) {
 #endif
     
-	if(loading || !loaded)
+	if(isLoading() || !isLoaded())
 		return;
     
 	if(!initvbo)
@@ -434,24 +432,22 @@ void NodeGeometry::freeData(bool keepupdatecache) {
 		glDeleteBuffers(1, &colorbuffer);
 		initvbo = false;
 	}
-	if(loaded) {
+	if(isLoaded()) {
 		vertices.clear();
 		colors.clear();
         if (!keepupdatecache) // to prevent this node from landing in the loadingqueue  again
-            loaded = false;
+            loadstate = STATE_NONE;
 	}
     if (keepupdatecache)
         return;
     if (updateCache != NULL)
     {
-        if ( loading || isupdating)
-        {
+        if ( isLoading() || isUpdating()) {
             cout << "node is freed while loading or updating" << std::endl;
         }
         updateCache->freeData();
         delete updateCache;
         updateCache=NULL;
-
     }
 }
 
@@ -487,14 +483,14 @@ void NodeGeometry::Update() {
     delete updateCache;
     updateCache = NULL;
     dirty = false;
-    isupdating=false;
+    updating=false;
     hierachyloaded = false;
 
 }
 
 void NodeGeometry::initUpdateCache()
 {
-    isupdating=true;
+    updating=true;
     updateCache = new NodeGeometry(name);
     updateCache->setInfo(info);
     updateCache->setBBox(getBBox());

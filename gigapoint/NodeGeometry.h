@@ -26,6 +26,13 @@ struct HRC_Item {
 
 class LRUCache;
 
+enum LoadState {
+	STATE_NONE = 0,
+	STATE_INQUEUE,
+	STATE_LOADING,
+	STATE_LOADED
+};
+
 class NodeGeometry {
 
 private:
@@ -42,11 +49,10 @@ private:
     bool initvbo;
     //bool visible;
 	bool hierachyloaded;
-	bool inqueue;
-	bool loading;
-	bool loaded;
+    
+    LoadState loadstate;
 
-    bool isupdating; // currently updating similar to isloading
+    bool updating; // currently updating similar to isloading
     bool dirty; // marked for update, similar to inqueue
 
     string hrc_filename;
@@ -87,10 +93,12 @@ public:
 	bool hasChildren() { return haschildren; }
 	float* getSphereCentre() { return spherecentre; }
 	float getSphereRadius() { return sphereradius; }
-	void setInQueue(bool b) { inqueue = b; }
-
-    bool inQueue() { return inqueue; }
-    bool canAddToQueue() { return (!loading && !isLoaded()); }
+    
+    void setInQueue(bool b) { loadstate = b ? STATE_INQUEUE : STATE_NONE; }
+    bool inQueue() { return loadstate == STATE_INQUEUE; }
+    bool canAddToQueue() { return loadstate == STATE_NONE; }
+    bool isLoading() { return loadstate == STATE_LOADING; }
+    bool isLoaded()  { return loadstate == STATE_LOADED; }
 
 	void setInfo(PCInfo* in) { info = in; }
 	PCInfo* getInfo() { return info; }
@@ -100,7 +108,7 @@ public:
 	NodeGeometry* getChild(int i) { return children[i]; }
 
 	string getName() { return name; }
-    bool isLoaded()  { return loaded; }
+    
     //void setVisible(const bool v) {visible = v; }
     //bool isVisible() { return visible; }
 
@@ -137,7 +145,7 @@ public:
     //onlineUpdate
     bool isDirty() {return dirty;}
     void setDirty() {dirty=true;}
-    bool isUpdating() {return isupdating;}
+    bool isUpdating() {return updating;}
     void initUpdateCache();
     NodeGeometry* getUpdateCache() {return updateCache;}
     void Update();
