@@ -107,14 +107,18 @@ static void window_size_callback(GLFWwindow* window, int width, int height) {
 	
 }
 
-void init_resources(string configfile)
+void init_resources(string configfile, bool zup = false)
 {
     option = Utils::loadOption(configfile);
     
     camera = new Camera();
-    camera->SetPosition(glm::vec3(0.91204, 288.821, 28.971));
+    if(option->cameraUpdatePosOri)
+        camera->SetPosition(glm::vec3(option->cameraPosition[0], option->cameraPosition[1], option->cameraPosition[1]));
+    else
+        camera->SetPosition(glm::vec3(0, 0, 2));
     camera->SetLookAt(glm::vec3(0, 0, 0));
-    camera->camera_up = glm::vec3(0, 0, 1);
+    if(zup)
+        camera->camera_up = glm::vec3(0, 0, 1);
     camera->SetViewport(0, 0, WIDTH, HEIGHT);
     camera->SetClipping(1, 1000000);
     camera->Update();
@@ -272,6 +276,8 @@ void mainLoop()
 int main(int argc, char* argv[]) {
     
     string configfile = "gigapoint_resource/config/gigapoint_century_local.json";
+    bool zup = true;
+    
     if(argc == 2)
         configfile = string(argv[1]);
 
@@ -319,7 +325,7 @@ int main(int argc, char* argv[]) {
 
 	// init resources
     glfwGetFramebufferSize(window, &frame_width, &frame_height);
-	init_resources(configfile);
+	init_resources(configfile, zup);
     
     /* GUI */
     ctx = nk_glfw3_init(window, NK_GLFW3_INSTALL_CALLBACKS);
