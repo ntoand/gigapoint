@@ -41,8 +41,9 @@ public:
 	void* run() {
         for (;;) {
             NodeGeometry* node = (NodeGeometry*)m_queue.remove();
-	    node->setInQueue(false);        
-	    if(m_queue.size() < maxLoadSize)
+            if(m_queue.size() < maxLoadSize)
+                node->setState(STATE_LOADING);
+            
             if(!node->isDirty()) {
                 node->loadData();
             } else {

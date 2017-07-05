@@ -215,7 +215,7 @@ int NodeGeometry::loadData() {
     loadstate = STATE_LOADING;
 
 	string filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".bin";
-    cout << "Load file: " << filename << endl;
+    // cout << "Load file: " << filename << endl;
 	datafile = filename;
     //cout << "start reading " << datafile <<  std::endl;
 

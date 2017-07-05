@@ -1,0 +1,18 @@
+{
+	"dataDir": "railacademy",
+	"visiblePointTarget": 5000000,
+	"minNodePixelSize": 100,
+	"material": "rgb",
+	"pointScale": [0.2,0.01,0.5],
+	"pointSizeRange": [2, 50],
+	"sizeType": "adaptive",
+	"quality": "circle",
+	"numReadThread": 2,
+	"preloadToLevel": 3,
+	"maxNodeInMem": 50000,
+	"maxLoadSize": 100,
+	"cameraSpeed": 100,
+	"cameraUpdatePosOri": 1,
+	"cameraPosition": [313739.19810486, 5809107.58764076, 19.34481239],
+	"cameraOrientation": [0.96, 0.03, 0.26, -0.01]
+}

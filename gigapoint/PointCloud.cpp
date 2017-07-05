@@ -203,12 +203,12 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3], con
         node->loadHierachy(lrucache);
 
         if(!node->inQueue() && node->canAddToQueue() ) {
-			node->setInQueue(true);
+            node->setState(STATE_INQUEUE);
             //cout << "adding " << node->getName() << " to queue" << niq << ncaq << endl;
 			nodeQueue.add(node);
 		}
         else if (node->isDirty() && !node->isUpdating() ) {
-            node->setInQueue(true);
+            node->setState(STATE_INQUEUE);
             //cout << "adding " << node->getName() << " to queue because its dirty" << endl;
             nodeQueue.add(node);
         }		

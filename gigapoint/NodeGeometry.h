@@ -94,7 +94,7 @@ public:
 	float* getSphereCentre() { return spherecentre; }
 	float getSphereRadius() { return sphereradius; }
     
-    void setInQueue(bool b) { loadstate = b ? STATE_INQUEUE : STATE_NONE; }
+    void setState(LoadState s) { loadstate = s; }
     bool inQueue() { return loadstate == STATE_INQUEUE; }
     bool canAddToQueue() { return loadstate == STATE_NONE; }
     bool isLoading() { return loadstate == STATE_LOADING; }
