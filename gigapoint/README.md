@@ -42,10 +42,11 @@ cd build
 cmake ..
 make
 ```
+output is gigapoint.so
 
 ### Run
 
-- Create a soft link or copy "gigapoint_resource" to working directory
+- Create a soft link or copy "gigapoint_resource" and gigapoint.so to working directory
 - Create a python script to run. For example: run_gigapoint.py:
 
 ```
