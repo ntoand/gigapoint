@@ -23,7 +23,7 @@ make
 
 ### Run
 
-Create a soft link or copy "gigapoint_resource" to this directory
+Create a soft link or copy "gigapoint_resource" to build/working directory and run
 
 ```
 ./gigapoint path/to/configfile.cfg
@@ -45,7 +45,7 @@ make
 
 ### Run
 
-- Create a soft link or copy "gigapoint_resource" to this directory
+- Create a soft link or copy "gigapoint_resource" to working directory
 - Create a python script to run. For example: run_gigapoint.py:
 
 ```
