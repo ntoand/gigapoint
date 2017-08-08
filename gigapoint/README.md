@@ -4,6 +4,8 @@ Version: 1.1.0
 
 Gigapoint is an Omegalib module that can visualize potree data. Gigapoint can be built as an Omegalib module (default) or a standalone  app.
 
+[Screenshots](http://www.toaninfo.com/work/2017-gigapoint.html)
+
 **Contact**: Toan Nguyen ([http://monash.edu/mivp](http://monash.edu/mivp))
 
 ## Standalone app
@@ -21,7 +23,7 @@ make
 
 ### Run
 
-Create a soft link or copy "gigapoint_resource" to this directory
+Create a soft link or copy "gigapoint_resource" to build/working directory and run
 
 ```
 ./gigapoint path/to/configfile.cfg
@@ -40,10 +42,11 @@ cd build
 cmake ..
 make
 ```
+output is gigapoint.so
 
 ### Run
 
-- Create a soft link or copy "gigapoint_resource" to this directory
+- Create a soft link or copy "gigapoint_resource" and gigapoint.so to working directory
 - Create a python script to run. For example: run_gigapoint.py:
 
 ```
