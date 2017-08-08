@@ -121,6 +121,7 @@ void init_resources(string configfile, bool zup = false)
         camera->camera_up = glm::vec3(0, 0, 1);
     camera->SetViewport(0, 0, WIDTH, HEIGHT);
     camera->SetClipping(1, 1000000);
+    camera->camera_scale = option->cameraSpeed;
     camera->Update();
     
     pointcloud = new PointCloud(option);
@@ -275,7 +276,9 @@ void mainLoop()
 
 int main(int argc, char* argv[]) {
     
-    string configfile = "gigapoint_resource/config/gigapoint_century_local.json";
+    //string configfile = "gigapoint_resource/config/gigapoint_century_local.json";
+    //string configfile = "gigapoint_resource/config/gigapoint_LaPalma_local.json";
+    string configfile = "gigapoint_resource/config/gigapoint_HoyoVerde_local.json";
     bool zup = true;
     
     if(argc == 2)

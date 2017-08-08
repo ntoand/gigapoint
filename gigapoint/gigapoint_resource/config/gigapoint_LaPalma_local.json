@@ -1,0 +1,18 @@
+{
+	"dataDir": "/Users/toand/git/data/Hawaii/LaPalma/pointclouds/LaPalma",
+	"visiblePointTarget": 5000000,
+	"minNodePixelSize": 100,
+	"material": "rgb",
+	"pointScale": [0.2,0.01,0.5],
+	"pointSizeRange": [2, 50],
+	"sizeType": "adaptive",
+	"quality": "circle",
+	"numReadThread": 2,
+	"preloadToLevel": 3,
+	"maxNodeInMem": 50000,
+	"maxLoadSize": 100,
+	"cameraSpeed": 10,
+	"cameraUpdatePosOri": 1,
+	"cameraPosition": [-6041.15, -3699.22, 6322.69],
+	"cameraOrientation": [0, 0, 0, 1]
+}
