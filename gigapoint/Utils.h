@@ -101,28 +101,15 @@ typedef struct PCInfo_t {
 } PCInfo;
 
 class NodeGeometry;
+#include <functional>
 
 typedef struct PointIndex_ {
     //int treePath[MIN_TREE_DEPTH];
     int index;
-    //int64_t key;
-    std::string nodename;
     NodeGeometry *node;
     PointIndex_(NodeGeometry *_node, int _index) {
         index = _index;
         node=_node;
-        /*
-         * std::bitset<4> p0=treePath[0];
-        std::bitset<4> p1=treePath[1];
-        std::bitset<4> p2=treePath[2];
-        std::bitset<4> p3=treePath[3];
-        std::bitset<4> p4=treePath[4];
-        std::bitset<4> p5=treePath[5];
-        std::bitset<32> bindex=index;
-        key=((t[0]&15)<<60|(t[1]&15)<<56|(t[2]&15)<<52|(t[3]&15)<<48|(t[4]&15)<<44|(t[5]&15)<<40|index);
-        */
-        //key=(temp<<32|bindex);
-        //key=(p0<<60|p1<<56|p2<<52|p3<<48|p4<<44|p5<<40|bindex);
     }
     PointIndex_(){};
     bool operator> (const PointIndex_ &pi) {
@@ -141,38 +128,17 @@ typedef struct PointIndex_ {
     bool operator== (const PointIndex_ &pi) {
         return pi.node==this->node && pi.index == this->index;
     }
-    /* based upon key as int_64
-    bool operator> (const PointIndex_ &pi) {
-        return this->key>pi.key;
+    /*
+    int ID()
+    {
+        if (id!=-1)
+            return id;
+        std::string str = node->getName()+std::to_string(index);
+        std::hash<std::string> hasher;
+        auto hashed = hasher(str); //returns std::size_t
+        return id;
     }
-    bool operator< (const PointIndex_ &pi) const {
-        return this->key<pi.key;
-    }
-    bool operator!= (const PointIndex_ &pi) {
-        return this->key!=pi.key;
-    bool operator== (const PointIndex_ &pi) {
-        return pi.key==this->key;
     */
-
-        /*if ( index != pi.index )
-            return true;
-        for (int i =0;i<MIN_TREE_DEPTH;++i)
-        {
-             if(treePath[i]!=pi.treePath[i])
-                 return true;
-        }*/
-
-
-
-       /*
-        * for (int i =0;i<MIN_TREE_DEPTH;++i)
-       {
-            if(treePath[i]!=pi.treePath[i])
-                return false;
-       }
-       return ( index == pi.index );
-       */
-
 } PointIndex;
 
 typedef struct Point_{
@@ -185,13 +151,20 @@ typedef struct Point_{
     Point_(const PointIndex &_index){index=_index;}
     Point_(){};
     bool operator== (const Point_ &p) {
-       return ( index == p.index );
+       return ( this->index == p.index );
     }
+
+    /*int ID()
+    {
+        return index.ID();
+    }*/
 } Point;
 
 typedef struct HitPoint_ {
 	float distance;
 	float position[3];
+    NodeGeometry *node;
+    int index;
 	HitPoint_() {
 		distance = -1;
 	}

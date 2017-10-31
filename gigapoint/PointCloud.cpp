@@ -125,6 +125,7 @@ int PointCloud::preloadUpToLevel(const int level) {
 
         node->loadHierachy(lrucache);
 		node->loadData();
+
 		lrucache->insert(node->getName(), node);
 
 		if(node->getLevel() >= level)
@@ -167,6 +168,11 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3], con
 
         //root->checkForUpdate();
         root->Update();
+        if (root->isDirty() && !root->isUpdating() ) {
+            root->setInQueue(true);
+            cout << "adding " << root->getName() << " to queue because its dirty" << endl;
+            nodeQueue.add(root);
+        }
     }
 #endif
 
@@ -181,6 +187,7 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3], con
 #ifdef ONLINEUPDATE
         if (option->onlineUpdate)
             node->Update();
+
 #endif
 
     	if(Utils::testFrustum(V, node->getBBox()) >= 0 && numVisiblePoints + node->getNumPoints() < option->visiblePointTarget)

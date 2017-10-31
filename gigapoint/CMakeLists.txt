@@ -9,7 +9,19 @@ SET(MODULE_NAME gigapoint)
 
 include_directories(${OMEGA_INCLUDE_DIRS})
 
-set( FEATURE_ONLINEUPDATE_ENABLED FALSE CACHE BOOL "Enable modifications of the Pointcloud files at runtime." )
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Debug" CACHE STRING
+      "Choose the type of build, options are: Debug Release
+RelWithDebInfo MinSizeRel."
+      FORCE)
+endif(NOT CMAKE_BUILD_TYPE)
+
+
+add_custom_target(cmqttest SOURCES "orun.log")
+
+
+
+set( FEATURE_ONLINEUPDATE_ENABLED TRUE CACHE BOOL "Enable modifications of the Pointcloud files at runtime." )
 if( FEATURE_ONLINEUPDATE_ENABLED )
   add_definitions(-DONLINEUPDATE)
 endif()
@@ -19,6 +31,8 @@ if( INTERACTION_ENABLED )
   add_definitions(-DINTERACTION)
 endif()
 
+
+add_custom_target("foo" SOURCES orun.log)
 
 # Set module name and source files here
 add_library(${MODULE_NAME} MODULE 
@@ -45,7 +59,7 @@ add_library(${MODULE_NAME} MODULE
 	FrameBuffer.cpp
         Interaction.h
         Interaction.cpp
-        LRU.h        
+        LRU.h
         )
 
 # Set the module library dependencies here

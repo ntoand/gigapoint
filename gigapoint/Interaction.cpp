@@ -7,15 +7,60 @@ using namespace std;
 using namespace omicron;
 
 namespace gigapoint {
-Interaction::Interaction(PointCloud *p): m_cloud(p) ,interactMode(INTERACT_NONE),tracer(NULL)
+Interaction::Interaction(PointCloud *p): m_cloud(p) ,interactMode(INTERACT_NONE),tracerRED(NULL),tracerGREEN(NULL),tracerBLUE(NULL),tracer(NULL),m_drawTrace(false)
 {
-
+    windowWidth=m_cloud->getWidth();
+    windowHeight=m_cloud->getHeight();
 }
 
 Interaction::~Interaction() {
-    if(tracer)
-        delete tracer;
+    if(tracerRED)
+        delete tracerRED;
+    if(tracerGREEN)
+        delete tracerGREEN;
+    if(tracerBLUE)
+        delete tracerBLUE;
 }
+
+void Interaction::setTracerByPlayerId(int playerid) {
+    switch (playerid) {
+            case 1: if (tracerRED==NULL) {tracerRED=new FractureTracer(m_cloud);} ;tracer=tracerRED; break;
+            case 2: if (tracerGREEN==NULL) {tracerGREEN=new FractureTracer(m_cloud);} ;tracer=tracerGREEN; break;
+            case 3: if (tracerBLUE==NULL) {tracerBLUE=new FractureTracer(m_cloud);} ;tracer=tracerBLUE; break;
+            default: std::cout << "unhandled playerid" << playerid << std::endl;
+        }
+}
+
+void Interaction::resetTracer(int playerid)
+{
+    setDrawTrace(false);
+    setTracerByPlayerId(playerid);
+    delete tracer;
+    tracer=NULL;
+    setTracerByPlayerId(playerid);
+    setDrawTrace(true);
+
+}
+
+int Interaction::test() {
+    setTracerByPlayerId(1);
+    return tracer->test();
+    /*
+    NodeGeometry *node;
+    std::cout << "intertest" << std::endl;
+    m_cloud->tryGetNode("r4",node);
+    //std::cout << b << node << std::endl;
+    PointIndex p1(node,7719);
+    PointIndex p2(node,7719);
+    // compare p1 and p2 should be different adress
+    std::map< PointIndex,int > m;
+    m[p1]=1;
+    m.erase(p2);
+    int j=7;
+    */
+}
+
+//void Interaction::next() { tracer->next(); }
 
 void Interaction::draw()
 {
@@ -34,7 +79,7 @@ void Interaction::draw()
         glEnd();
 
         glEnable(GL_PROGRAM_POINT_SIZE_EXT);
-        glPointSize(40);
+        glPointSize(20);
         glColor3f(0.0, 1.0, 0.0);
         glBegin(GL_POINTS);
         for(int i=0; i < hitPoints.size(); i++) {
@@ -42,38 +87,123 @@ void Interaction::draw()
         }
         glEnd();
     }
+    drawTrace();
 }
+
+void Interaction::drawTrace()
+{
+    if (m_drawTrace)
+        tracer->render();
+            /*
+    if (!m_drawTrace)
+        return;
+    std::vector < std::deque<Point > > trace=tracer->getTraceRef();
+    if (trace.size()==0)
+        return;
+    glDisable(GL_LIGHTING);
+    glDisable(GL_BLEND);
+
+    glEnable(GL_PROGRAM_POINT_SIZE_EXT);
+    tracer->render():
+    glPointSize(40);
+    glColor3f(0.0, 1.0, 0.0);
+    glBegin(GL_POINTS);
+        for (std::vector < std::deque<Point > >::iterator it1 = trace.begin() ; it1 != trace.end(); ++it1)
+        {
+            for (std::deque<Point >::iterator it2 = (*it1).begin() ; it2 != (*it1).end(); ++it2)
+            {
+                glVertex3f((*it2).position[0], (*it2).position[1], (*it2).position[2]);
+            }
+        }
+    glEnd();
+        */
+}
+
+void Interaction::useSelectedPointAsTracePoint()
+{
+    if (hitPoints.size()==0)
+        return;
+    cout << "Inserting new Tracepoint Node / PointIndex:" << hitPoints[0]->node->getName() << " / " << hitPoints[0]->index << std::endl;
+    Point p1(hitPoints[0]->node,hitPoints[0]->index);
+    p1.index.node->getPointData(p1);
+    tracer->insertWaypoint(p1);
+}
+
+
+void Interaction::pickPointFromRay(const omega::Vector3f &origin,const omega::Vector3f &direction,int playerid) {
+    setTracerByPlayerId(playerid);    
+    ray.setOrigin(origin);
+    ray.setDirection(direction);
+    findHitPoint();
+}
+
+
 
 // interaction
 void Interaction::updateRay(const omega::Ray& r) {
     ray = r;
 }
 
-void Interaction::traceFracture()
+
+void Interaction::traceAllFractures()
 {
+    setTracerByPlayerId(1);
+    tracer->update();
+}
+
+void Interaction::traceFracture(int playerid)
+{
+
+    setTracerByPlayerId(playerid);
+    tracer->setTracerStatus(FractureTracer::START);
+   /*
     if (tracer==NULL)
     {
         tracer= new FractureTracer(m_cloud);
     }
-    NodeGeometry* root=NULL;
-    m_cloud->tryGetNode("r",root);
-    Point p1(root,4807);
-    Point p2(m_cloud->getRoot(),5795);
-    p1.index.node->getPointData(p1);
-    p2.index.node->getPointData(p2);
+    NodeGeometry* node=NULL;
 
+    //m_cloud->tryGetNode("r423",node);
+
+    m_cloud->tryGetNode("r4",node);
+    //std::cout << b << node << std::endl;
+    Point p1(node,7719);
+    //m_cloud->tryGetNode("r60431",node);
+    //m_cloud->tryGetNode("r423",node);
+
+    //std::cout << b << node->getName() << std::endl;
+    Point p2(node,7778);
+    //node->setPointColor(p1,255,1,1);
+    //node->setPointColor(p2,255,1,1);
+    //node->initVBO();
+
+
+    p1.index.node->getPointData(p1);
+    p2.index.node->getPointData(p2);    
     tracer->insertWaypoint(p1);
     tracer->insertWaypoint(p2);
-    tracer->optimizePath();
+    */    
+    bool success = true;//tracer->optimizePath(1000000);
+    if (success)
+        cout << "Tracing was sucessfull #Tracepoints:" << tracer->getTraceRef().size() << endl;
+    else
+        cout << "Tracing was not sucessfull" << endl;
+
+    /*
     std::vector < std::deque<Point > > trace=tracer->getTraceRef();
+
     for (std::vector < std::deque<Point > >::iterator it1 = trace.begin() ; it1 != trace.end(); ++it1)
     {
         for (std::deque<Point >::iterator it2 = (*it1).begin() ; it2 != (*it1).end(); ++it2)
         {
-            (*it2).index.node->setPointColor((*it2),1,254,1);
+            (*it2).index.node->setPointColor((*it2),255,1,1);
+            (*it2).index.node->initVBO();
+            std::cout << "changing point color of node " << (*it2).index.node->getName() << std::endl;
         }
     }
-    root->initVBO();
+    */
+    //root->initVBO();
+
 }
 
 
@@ -89,6 +219,8 @@ void Interaction::updateInteractionMode(const string& mode)
         std::cerr << "Unable to set pointcloud::interact mode to "<< mode << " Supported modes are [None | Point | MultiFracture]" << std::endl;
 }
 
+bool hitpointcomparator (HitPoint* i,HitPoint* j) { return (i->distance<j->distance); }
+
 void Interaction::findHitPoint() {
 
     if (interactMode == INTERACT_POINT) {
@@ -98,10 +230,13 @@ void Interaction::findHitPoint() {
         std::list<NodeGeometry*> displayList = m_cloud->getListOfVisibleNodesRef();
         for(list<NodeGeometry*>::iterator it = displayList.begin(); it != displayList.end(); it++) {
             NodeGeometry* node = *it;
-            node->findHitPoint(ray, point);
-            hitPoints.push_back(point);
+            node->findHitPoint(ray, point);            
+            //cout << point->distance << " " << displayList.size() << std::endl;
+            //cout << " pos: " << point->position[0] << " " << point->position[1] << " "
+            //<< point->position[2] << endl;
         }
-
+        hitPoints.push_back(point);
+        std::sort (hitPoints.begin(), hitPoints.end(), hitpointcomparator);
         if(point->distance != -1) {
             hitPoints.push_back(point);
             cout << "find time: " << Utils::getTime() - start_time << " size: " << hitPoints.size()
@@ -111,10 +246,13 @@ void Interaction::findHitPoint() {
             if (hitPoints.size() >=2 ) {
                 float dis=Utils::distance(hitPoints[0]->position,hitPoints[1]->position);
                 cout << "distance between first and second point is: " << dis << endl;
+                cout << hitPoints[0]->node->getName() << " " << hitPoints[0]->index << std::endl;
+                cout << hitPoints[0]->distance << " " << hitPoints[hitPoints.size()-1]->distance << endl;
             }
         }
         else {
             cout << "MISS" << endl;
+            hitPoints.clear();
         }
     }
 }

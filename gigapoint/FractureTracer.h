@@ -18,29 +18,8 @@
 #ifndef CC_TRACE_HEADER
 #define CC_TRACE_HEADER
 
-//#define DEBUG_PATH   //n.b. uncomment this to write point-costs to a scalar field for debug purposes
-
-/*
-#include <ccHObject.h>
-#include <ccPolyline.h>
-#include <ccSphere.h>
-#include <DgmOctree.h>
-#include <DgmOctreeReferenceCloud.h>
-#include <GenericIndexedCloudPersist.h>
-#include <ccPointCloud.h>
-#include <ccColorTypes.h>
-#include <Neighbourhood.h>
-#include <ccPlane.h>
-#include <Jacobi.h>
-#include <ccScalarField.h>
-*/
-
-
-//class gigapoint::NodeGeometry;
-
 #include <vector>
 #include <algorithm>
-//#include <unordered_map>
 #include <deque>
 #include "Utils.h"
 
@@ -65,6 +44,12 @@ class FractureTracer
 public:
         FractureTracer(PointCloud* root);
         virtual ~FractureTracer() {}
+
+        void render();
+        int test();
+        std::vector< Point > m_neighbours;
+
+        static const int MAX_COST=99999;
 
 	//inherited from ccHObject
         //inline virtual CC_CLASS_ENUM getClassID() const override { return CC_TYPES::POLY_LINE; }
@@ -119,12 +104,12 @@ public:
 	  -true if an optimal path was successfully identified
 	  -false if the a path could not be found (iterations > maxIterations)
 	*/
-	bool optimizePath(int maxIterations = 1000000);
+    //bool optimizePath(int maxIterations );
 
 	/*
 	Applies the optimized path to the underlying polyline object (allows saving etc.).
 	*/
-    void finalizePath();
+    //void finalizePath();
 
 
     std::vector< std::deque< Point > >& getTraceRef() {return m_trace;}
@@ -144,6 +129,14 @@ public:
 
     //void setTraceColor(ccColor::Rgba col) { m_trace_colour = col; }
     //void setWaypointColor(ccColor::Rgba col) { m_waypoint_colour = col; }
+    enum TRACERSTATUS
+    {
+        DONOTHING =1,
+        START = 2,
+        TRACING = 3,
+        FINISHED_TRACEFOUND =4,
+        FINISHED_NOLUCK = 5
+    };
 
 	enum MODE 
 	{
@@ -157,19 +150,59 @@ public:
 		INV_SCALAR = 128
 	};
 
+    typedef struct PointData_t {
+        bool visited;
+        int cost;
+        PointIndex previous;
+        PointData_t() : cost(-1),visited(false)
+        {
+
+        }
+        PointData_t(bool b) : cost(-1),visited(b)
+        {
+
+        }
+    } PointData;
+
+
 	static int COST_MODE;
+    //bool m_initialized;
+    //bool m_finishedTrace;
+    int debugSegment();
+    std::map<PointIndex,PointData> m_PointData;
+    //std::map<PointIndex, PointIndex> m_closedSet; //visited nodes (key=nodeID, value=prevNodeID)
+    std::map<PointIndex, PointIndex> m_openSet; //nodes we are currently exploring (key=nodeID, value=prevNodeID)
+    //std::vector<PointIndex> m_openSet;
+    //std::map<PointIndex, int> m_dist; //<node, cost estimate from start to end via this node>
+    int m_iter_count;
+    int m_maxIterations;
+    int m_cost;
+    int m_smallest_cost;
+    void setTracerStatus(TRACERSTATUS newts) {
+        tracerstatus=newts;
+    }
+    void update(){
+        if (tracerstatus==TRACING)
+            debugSegment();
+    }
 
 protected:
+    void _print();
+    TRACERSTATUS tracerstatus;
+    std::map<PointIndex,PointData>::iterator it_pointdata;
+    std::deque<Point> m_path;
 	//overidden from ccHObject
     //virtual void drawMeOnly(CC_DRAW_CONTEXT& context) override;
-
+    bool m_waitforinput;
+    Point m_current;
 	/*
 	Gets the closest waypoint to the point described by pID.
 	*/
     int getClosestWaypoint(Point p);
 
 	//contains grunt of shortest path algorithm. "offset" inserts points at the specified distance from the END of the trace (used for updating)
-    std::deque<Point> optimizeSegment(Point start, Point end, float search_r, int maxIterations, int offset=0);
+    //std::deque<Point> optimizeSegment(Point start, Point end, int maxIterations);
+
 
 	//get the edge cost of going from p1 to p2 (this containts the "cost function" to define what is "fracture like" and what is not)
     //int getSegmentCost(int p1, int p2, float search_r);
@@ -181,13 +214,15 @@ protected:
 	//      between start and end (equal to the euclidean shortest path assuming point density is more or less constant).
 
     int getSegmentCostRGB(Point p1_rgb, Point p2_rgb);
+    int getSegmentCostR(Point p1, Point p2);
+    int getSegmentCostDist(Point p1, Point p2);
     /*
       int getSegmentCostRGB(int p1, int p2);
 	int getSegmentCostDark(int p1, int p2);
 	int getSegmentCostLight(int p1, int p2);
 	int getSegmentCostCurve(int p1, int p2);
 	int getSegmentCostGrad(int p1, int p2, float search_r);
-	int getSegmentCostDist(int p1, int p2);
+
 	int getSegmentCostScalar(int p1, int p2);
 	int getSegmentCostScalarInv(int p1, int p2);
     */
@@ -212,12 +247,13 @@ private:
     //CCLib::DgmOctree::NeighboursSet m_neighbours;
     //CCLib::DgmOctree::PointDescriptor m_p;
 	float m_search_r;
-
+    //bool m_next;
 	/*
 	Test if a point falls within a circle who's diameter equals the line from segStart to segEnd. This is used to test if a newly added point should be
 	(1) appended to the end of the trace [falls outside of all segment-circles], or (2) inserted to split a segment [falls into a segment-circle]
 	*/
     //bool inCircle(const CCVector3* segStart, const CCVector3* segEnd, const CCVector3* query);
+    void _printOpenSet();
 };
 }; // namespave gigapoint
 #endif

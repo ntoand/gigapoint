@@ -136,6 +136,8 @@ public:
     NodeGeometry* getUpdateCache() {return updateCache;}
     void Update();
 
+    void test();
+
 };
 
 }; //namespace gigapoint

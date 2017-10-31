@@ -1,0 +1,19 @@
+{
+    "dataDir": "/data/big/handreas/IDR/dijkstradebug",
+    "visiblePointTarget": 50000,
+    "minNodePixelSize": 100,
+    "material": "rgb",
+    "pointScale": [0.2,0.01,0.5],
+    "pointSizeRange": [2, 50],
+    "sizeType": "adaptive",
+    "quality": "circle",
+    "numReadThread": 2,
+    "preloadToLevel": 1,
+    "maxNodeInMem": 50000,
+    "maxLoadSize": 100,
+    "cameraSpeed": 100,
+    "cameraUpdatePosOri": 1,
+    "cameraPosition": [0,0,20],
+    "cameraOrientation": [1.0, 0.0, 0.0, 0.0],
+    "onlineUpdate": 0
+}

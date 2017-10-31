@@ -129,9 +129,21 @@ public:
     }
 
     //interface facade
-    bool tryGetNode(const string &name,NodeGeometry * node) {return lrucache->tryGet(name,node);}
+    bool tryGetNode(const string &name,NodeGeometry*& node) {
+        //lrucache->dumpDebug(std::coulrucache->tryGet(name,node);t);
+        bool b = lrucache->tryGet(name,node);
+        //return lrucache->tryGet(name,node);
+        if (!b)
+            std::cout << "unable to find node " << name << std::endl;
+        else
+            std::cout << "found node " << name << node->getName()<< std::endl;
+        return b;
+    }
     NodeGeometry* getRoot(){ return root;}
     std::list<NodeGeometry*> & getListOfVisibleNodesRef() {return displayList;}
+
+    int getWidth() {return width;}
+    int getHeight() {return height;}
 
 }; //class PointCloud
 }; //namespace gigapoint

@@ -39,7 +39,9 @@ public:
     {
         // After a frame all render passes had a chance to update their
         // textures. reset the raster update flag.
-       
+       #ifdef  INTERACTION
+        interaction->traceAllFractures();
+       #endif
     }
     
     virtual void dispose()
@@ -152,7 +154,25 @@ public:
     gigapoint::Interaction* interaction;
     gigapoint::Option* option; 
     bool visible;
-};
+
+#if defined INTERACTION
+    void traceFracture(int playerid){interaction->traceFracture(playerid);}
+
+    void test()
+    {
+        interaction->test();
+        //pointcloud->getRoot()->test();
+    }
+    void setDrawTrace(bool b) {interaction->setDrawTrace(b);}
+    void pickPointFromRay(const omega::Vector3f &origin,const omega::Vector3f &direction,int playerid)
+        { interaction->pickPointFromRay(origin,direction,playerid);}
+    void useSelectedPointAsTracePoint() {interaction->useSelectedPointAsTracePoint();}
+    void resetTracer(int playerid) {interaction->resetTracer(playerid);}
+    void next() {interaction->next();}
+
+#endif
+
+}; //class GigapointRenderModule
 
 ///////////////////////////////////////////////////////////////////////////////
 class GigapointRenderPass : public RenderPass
@@ -206,7 +226,7 @@ public:
 private:
     GigapointRenderModule* module;
 
-};
+}; //class GigapointRenderPass
 
 ///////////////////////////////////////////////////////////////////////////////
 void GigapointRenderModule::initializeRenderer(Renderer* r)
@@ -223,9 +243,7 @@ GigapointRenderModule* initialize()
     string INDENT1="\t";
     cout << RED
          << "Andreas TODO List" << endl
-         << " 3 controllers and tracers \n"
-         << INDENT1 << "Python events \n"
-         << INDENT1 << "3 tracer objects \n"
+         << " 3 controllers and tracers \n"                  
          << INDENT1 << "3 colors for drawing traces and interaction \n"
          << INDENT1 << " implement fixed nodelevel in memory and for search to keep all nodes euqal\n"
          << "onlineupdate demo using a lasfile ordered by scantime \n"
@@ -236,6 +254,7 @@ GigapointRenderModule* initialize()
     prm->doInitialize(Engine::instance());
     return prm;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Python API
@@ -250,12 +269,31 @@ BOOST_PYTHON_MODULE(gigapoint)
         PYAPI_METHOD(GigapointRenderModule, updateSizeType)
         PYAPI_METHOD(GigapointRenderModule, updatePointScale)
         PYAPI_METHOD(GigapointRenderModule, updateVisible)
-        PYAPI_METHOD(GigapointRenderModule, updateInteractionMode)
-        PYAPI_METHOD(GigapointRenderModule, printInfo)
-        PYAPI_METHOD(GigapointRenderModule, handleCommand)
+        PYAPI_METHOD(GigapointRenderModule, printInfo)        
         PYAPI_METHOD(GigapointRenderModule, updateFilter)
         PYAPI_METHOD(GigapointRenderModule, updateEdl)
-        ;
+
+        #if defined ONLINEUPDATE
+        PYAPI_METHOD(GigapointRenderModule, handleCommand)
+        #endif
+
+
+#if defined INTERACTION
+        PYAPI_METHOD(GigapointRenderModule, updateInteractionMode)
+        PYAPI_METHOD(GigapointRenderModule, traceFracture)
+        PYAPI_METHOD(GigapointRenderModule, test)
+        PYAPI_METHOD(GigapointRenderModule, setDrawTrace)
+        PYAPI_METHOD(GigapointRenderModule, pickPointFromRay)
+        PYAPI_METHOD(GigapointRenderModule, useSelectedPointAsTracePoint)
+        PYAPI_METHOD(GigapointRenderModule, resetTracer)
+        //PYAPI_METHOD(GigapointRenderModule, next)
+    ;
+
+
+#endif
+    ;
 
     def("initialize", initialize, PYAPI_RETURN_REF);
+
+
 }

@@ -88,7 +88,7 @@ int NodeGeometry::loadHierachy(LRUCache *nodecache, bool force) {
 
 	assert(info);
 
-    cout << "Load hierachy file: " << hrc_filename << endl;   
+    //cout << "Load hierachy file: " << hrc_filename << endl;
     NodeGeometry* n = this;
 
 	if(level == 0) { // root
@@ -180,7 +180,7 @@ int NodeGeometry::loadHierachy(LRUCache *nodecache, bool force) {
             cnode->setBBox(cbbox);
             cnode->setInfo(pnode->getInfo());
             cnode->setTightBBox(tightcbbox);            
-            //cnode->printInfo();
+            cnode->printInfo();
             pnode->addChild(cnode);
             pnode->setHasChildren(true);
             cnode->loadHierachy(nodecache);
@@ -199,6 +199,38 @@ ifstream::pos_type NodeGeometry::getFilesize(const char* filename)
         return in.tellg();
 }
 
+/*
+int NodeGeometry::makeData() {
+    if(loaded)
+    return 0;
+
+    assert(info);
+    float x,y,z,r,g,b;
+    x=1;y=0;z=0;r=1;g=0;b=0;
+    vertices.push_back(x);    vertices.push_back(y);    vertices.push_back(z);
+    vertices.push_back(r);    vertices.push_back(g);    vertices.push_back(b);
+    x=2;y=0;z=0;r=2;g=0;b=0;
+    vertices.push_back(x);    vertices.push_back(y);    vertices.push_back(z);
+    vertices.push_back(r);    vertices.push_back(g);    vertices.push_back(b);
+    x=3;y=0;z=0;r=3;g=0;b=0;
+    vertices.push_back(x);    vertices.push_back(y);    vertices.push_back(z);
+    vertices.push_back(r);    vertices.push_back(g);    vertices.push_back(b);
+    x=4;y=0;z=0;r=4;g=0;b=0;
+    vertices.push_back(x);    vertices.push_back(y);    vertices.push_back(z);
+    vertices.push_back(r);    vertices.push_back(g);    vertices.push_back(b);
+    x=5;y=0;z=0;r=5;g=0;b=0;
+    vertices.push_back(x);    vertices.push_back(y);    vertices.push_back(z);
+    vertices.push_back(r);    vertices.push_back(g);    vertices.push_back(b);
+    x=6;y=0;z=0;r=6;g=0;b=0;
+    vertices.push_back(x);    vertices.push_back(y);    vertices.push_back(z);
+    vertices.push_back(r);    vertices.push_back(g);    vertices.push_back(b);
+
+
+    loading = true;
+    loading = false;
+    loaded = true;
+}
+*/
 int NodeGeometry::loadData() {
 
     if(loaded)
@@ -272,10 +304,11 @@ int NodeGeometry::loadData() {
 	}
 
 	reader.close();
-    //cout << "done reading " << filename.c_str() << std::endl;
+
 	loading = false;
 	if(vertices.size() > 0)
 		loaded = true;        
+        cout << "done reading " << filename.c_str() << " with #points: "<< vertices.size()/3 << std::endl;
 	return 0;
 }
 
@@ -292,12 +325,12 @@ void NodeGeometry::printInfo() {
 		cout << bbox[i] << " ";
 	cout << endl;
 
-	/*
+
 	cout << "tight bbox: ";
 	for(int i=0; i < 6; i++)
 		cout << tightbbox[i] << " ";
 	cout << endl;
-	*/
+
 
 	if(!loaded)
 		return;
@@ -318,11 +351,12 @@ void NodeGeometry::printInfo() {
 
 int NodeGeometry::initVBO() {
     if(initvbo) {
-        std::cout << "reinitializing VBO of Node " << name << std::endl;
         glDeleteBuffers(1, &vertexbuffer);
         glDeleteBuffers(1, &colorbuffer);
         initvbo = false;
+        return 0;
     }
+    std::cout << "reinitializing VBO of Node " << name << std::endl;
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(float), &vertices[0], GL_STATIC_DRAW);
@@ -398,6 +432,18 @@ void NodeGeometry::draw(Material* material, const int height) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     shader->unbind();
     texture->unbind();
+
+    /* draw tightbb diagonal
+    glDisable(GL_LIGHTING);
+    glDisable(GL_BLEND);
+    //draw ray line
+    glLineWidth(4.0);
+    glColor3f(1.0, 1.0, 1.0);
+    glBegin(GL_LINES);
+    glVertex3f(tightbbox[0],tightbbox[1],tightbbox[2]);
+    glVertex3f(tightbbox[3],tightbbox[4],tightbbox[5]);
+    glEnd();
+    */
 }
 
 void NodeGeometry::freeData(bool keepupdatecache) {
@@ -517,7 +563,7 @@ std::vector< Point > NodeGeometry::getPointsInSphericalNeighbourhood(Point curre
             pos[2] = node->vertices[3*i+2];
             if (DIST3(pos,current.position) < search_r)
             {
-                Point p(this,i);
+                Point p(node,i);
                 p.color[0]=node->colors[3*i];
                 p.color[1]=node->colors[3*i+1];
                 p.color[2]=node->colors[3*i+2];
@@ -553,28 +599,49 @@ std::vector< Point > NodeGeometry::getPointsInSphericalNeighbourhood(Point curre
 
 // interaction
 void NodeGeometry::findHitPoint(const omega::Ray& r, HitPoint* point) {
+    int numhits=0;
 	// check with the whole node first
 	Vector3f pos = Vector3f(spherecentre[0], spherecentre[1], spherecentre[2]);
-	std::pair<bool, omega::real> result = r.intersects(Sphere(pos, sphereradius));
+	std::pair<bool, omega::real> result = r.intersects(Sphere(pos, sphereradius));    
 	if(!result.first)
+    {
+        //std::cout << this->getName() << ": no hit " <<std::endl;
 		return;
+    }
 
 	// check all points
 	int numpoints = vertices.size() / 3;
 	for(int i=0; i < numpoints; i++) {
 		pos = Vector3f(vertices[3*i], vertices[3*i+1], vertices[3*i+2]);
-		result = r.intersects(Sphere(pos, 2));
+        result = r.intersects(Sphere(pos, 2));
 		if(result.first) {
+            numhits++;
 			float dis = (float)result.second;
+            //std::cout << "dis" << dis <<std::endl;
 			if (point->distance == -1 || point->distance > dis) {
 				point->distance = dis;
 				point->position[0] = pos[0];
 				point->position[1] = pos[1];
 				point->position[2] = pos[2];
-                //std::cout << "hitpoint index is " << i <<std::endl;du an
+                point->node=this;
+                point->index=i;
+
 			}
 		}
     }
+     std::cout << this->getName() << ": hits. checking numpoints: " << numhits<< " " << numpoints << std::endl;
+}
+
+void NodeGeometry::test()
+{
+    int numpoints = colors.size();
+    for(int i=0; i < numpoints; i++) {
+        if (i%3==0)
+            colors[i]=255;
+        else
+            colors[i]=1;
+    }
+    initVBO();
 }
 
 
