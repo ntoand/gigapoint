@@ -1,5 +1,5 @@
 {
-    "dataDir": "/data/big/handreas/century_hres/",
+    "dataDir": "/data/fast/toand/potree/century_hres/",
     "visiblePointTarget": 50000000,
     "minNodePixelSize": 100,
     "material": "rgb",

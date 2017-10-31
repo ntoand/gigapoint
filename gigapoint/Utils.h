@@ -101,7 +101,7 @@ typedef struct PCInfo_t {
 } PCInfo;
 
 class NodeGeometry;
-#include <functional>
+//#include <functional>
 
 typedef struct PointIndex_ {
     //int treePath[MIN_TREE_DEPTH];

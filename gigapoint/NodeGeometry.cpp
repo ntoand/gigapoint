@@ -180,7 +180,7 @@ int NodeGeometry::loadHierachy(LRUCache *nodecache, bool force) {
             cnode->setBBox(cbbox);
             cnode->setInfo(pnode->getInfo());
             cnode->setTightBBox(tightcbbox);            
-            cnode->printInfo();
+            //cnode->printInfo();
             pnode->addChild(cnode);
             pnode->setHasChildren(true);
             cnode->loadHierachy(nodecache);

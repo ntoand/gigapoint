@@ -12,6 +12,8 @@ cp -r gigapoint_resource dist
 cd dist
 ln -s ../../../git/IDR/multiuser_fracturetracing.py .
 ln -s ../../../git/IDR/multitarget_MTape.py .
+ln -s ../../../git/IDR/LoggingDLH.py .
+ln -s ../../../git/IDR/CoordinateCalculator.py .
 ln -s ../../../git/IDR/onlineupdatedemo.py .
 ln -s ../../../git/IDR/onlineupdatedemo_generator.py .
 cp ../../../git/IDR/crosshair_* .
