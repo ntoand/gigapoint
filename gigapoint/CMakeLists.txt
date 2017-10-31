@@ -16,11 +16,6 @@ RelWithDebInfo MinSizeRel."
       FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
-
-add_custom_target(cmqttest SOURCES "orun.log")
-
-
-
 set( FEATURE_ONLINEUPDATE_ENABLED TRUE CACHE BOOL "Enable modifications of the Pointcloud files at runtime." )
 if( FEATURE_ONLINEUPDATE_ENABLED )
   add_definitions(-DONLINEUPDATE)
@@ -30,9 +25,6 @@ set( INTERACTION_ENABLED TRUE CACHE BOOL "Enable Interaction with the Pointcloud
 if( INTERACTION_ENABLED )
   add_definitions(-DINTERACTION)
 endif()
-
-
-add_custom_target("foo" SOURCES orun.log)
 
 # Set module name and source files here
 add_library(${MODULE_NAME} MODULE 
