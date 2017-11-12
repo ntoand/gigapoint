@@ -1,0 +1,17 @@
+{
+	"dataDir": "/data/fast/handreas/NanoHub/testpore.ply_converted/",
+  "visiblePointTarget": 20000000,
+	"minNodePixelSize": 100,
+	"material": "rgb",
+	"pointScale": [0.15,0.01,0.5],
+	"pointSizeRange": [2, 400],
+	"sizeType": "adaptive",
+	"quality": "circle",
+	"numReadThread": 4,
+	"preloadToLevel": 4,
+	"maxNodeInMem": 100000,
+	"maxLoadSize": 300,
+	"cameraSpeed": 10,
+	"cameraPosition": [1500.72, 1500.60, 1500.14],
+	"cameraOrientation": [0.0185894635671, 0.115008278145, -0.685377979766, -0.718807729963]
+}
