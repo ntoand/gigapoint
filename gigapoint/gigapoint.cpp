@@ -72,6 +72,8 @@ public:
             option->quality = QUALITY_SQUARE;
         else if (quality.compare("circle") == 0)
             option->quality = QUALITY_CIRCLE;
+        else if (quality.compare("sphere") == 0)
+            option->quality = QUALITY_SPHERE;
         else
             return;
         pointcloud->setReloadShader(true);
