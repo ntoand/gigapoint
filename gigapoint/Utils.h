@@ -49,6 +49,7 @@ namespace gigapoint {
 
 #define QUALITY_SQUARE 0
 #define QUALITY_CIRCLE 1
+#define QUALITY_SPHERE 2
 
 
 // interaction

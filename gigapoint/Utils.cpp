@@ -308,6 +308,8 @@ Option* Utils::loadOption(const string filename) {
             option->quality = QUALITY_SQUARE;
         else if (tmp.compare("circle") == 0)
             option->quality = QUALITY_CIRCLE;
+        else if (tmp.compare("sphere") == 0 || tmp.compare("ball") == 0)
+            option->quality = QUALITY_SPHERE;
         else
             option->quality = QUALITY_SQUARE;
 

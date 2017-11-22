@@ -67,9 +67,7 @@ private:
     bool _unload;
     bool render;
 
-
 	int width, height;
-	
 
 	PCInfo* pcinfo;
 	Material* materialPoint;

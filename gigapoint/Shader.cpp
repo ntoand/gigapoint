@@ -44,6 +44,10 @@ Shader& Shader::load(string shaderPrefix, list<string> attributes, list<string> 
             fra.append("#define SQUARE_POINT_SHAPE\n");
         else if (option->quality == QUALITY_CIRCLE)
             fra.append("#define CIRCLE_POINT_SHAPE\n");
+        else if (option->quality == QUALITY_SPHERE) {
+            ver.append("#define SPHERE_POINT_SHAPE\n");
+            fra.append("#define SPHERE_POINT_SHAPE\n");
+        }
 
         if(option->filter == FILTER_EDL) {
             ver.append("#define FILTER_EDL\n");

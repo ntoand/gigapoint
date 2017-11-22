@@ -16,6 +16,10 @@ varying vec3 vColor;
 varying float vDepth;
 #endif
 
+#if defined SPHERE_POINT_SHAPE
+varying vec3 vPosEye;
+#endif
+
 void main()
 {
 	//position
@@ -25,6 +29,10 @@ void main()
 #else
     gl_Position = gl_ModelViewProjectionMatrix * vec4(VertexPosition,1.0);
     vec3 mvPosition = (gl_ModelViewMatrix * vec4(VertexPosition,1.0)).xyz;
+#endif
+
+#if defined SPHERE_POINT_SHAPE
+    vPosEye = mvPosition;
 #endif
 
 #if defined FILTER_EDL

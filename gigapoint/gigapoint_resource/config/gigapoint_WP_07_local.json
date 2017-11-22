@@ -1,0 +1,18 @@
+{
+	"dataDir": "/Users/toand/git/data/pointcloud/WP_07/WP_07_potree",
+	"visiblePointTarget": 5000000,
+	"minNodePixelSize": 100,
+	"material": "rgb",
+	"pointScale": [0.1,0.01,0.3],
+	"pointSizeRange": [2, 50],
+	"sizeType": "adaptive",
+	"quality": "sphere",
+	"numReadThread": 2,
+	"preloadToLevel": 3,
+	"maxNodeInMem": 50000,
+	"maxLoadSize": 100,
+	"cameraSpeed": 1,
+	"cameraUpdatePosOri": 1,
+	"cameraPosition": [0, 10, 0],
+	"cameraOrientation": [0, 0, 0, 1]
+}

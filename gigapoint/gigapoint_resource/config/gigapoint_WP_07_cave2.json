@@ -1,0 +1,17 @@
+{
+	"dataDir": "/data/fast/toand/potree/WP_07_potree",
+	"visiblePointTarget": 20000000,
+	"minNodePixelSize": 100,
+	"material": "rgb",
+	"pointScale": [0.1,0.01,0.3],
+	"pointSizeRange": [2, 400],
+	"sizeType": "adaptive",
+	"quality": "sphere",
+	"numReadThread": 4,
+	"preloadToLevel": 4,
+	"maxNodeInMem": 100000,
+	"maxLoadSize": 300,
+	"cameraSpeed": 1,
+	"cameraPosition": [0, 10, 0],
+	"cameraOrientation": [0, 0, 0, 1]
+}

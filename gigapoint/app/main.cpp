@@ -126,6 +126,7 @@ void init_resources(string configfile, bool zup = false)
     
     pointcloud = new PointCloud(option);
     pointcloud->initPointCloud();
+    pointcloud->setPrintInfo(true);
 }
 
 void free_resources()
@@ -158,7 +159,7 @@ void doMovement() {
         cout << "direction: " << camera->camera_direction[0] << ", " << camera->camera_direction[1] << ", " << camera->camera_direction[2] << endl;
         cout << "lookat: " << camera->camera_look_at[0] << ", " << camera->camera_look_at[1] << ", " << camera->camera_look_at[2] << endl;
         cout << "up: " << camera->camera_up[0] << ", " << camera->camera_up[1] << ", " << camera->camera_up[2] << endl;
-        //pointcloud->setPrintInfo(true);
+        pointcloud->setPrintInfo(true);
         keys[GLFW_KEY_I] = false;
     }
     if(keys[GLFW_KEY_T]) {
@@ -186,11 +187,11 @@ void mainLoop()
         
         // GUI
         nk_glfw3_new_frame();
-        if (nk_begin(ctx, "Settings", nk_rect(10, 10, 230, 130),
+        if (nk_begin(ctx, "Settings", nk_rect(10, 10, 230, 150),
                      //NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
                      NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
         {
-            static int colormode = MATERIAL_RGB;
+            static int colormode = option->material;
             nk_layout_row_dynamic(ctx, 25, 2);
             //nk_label(ctx, "color mode: ", NK_TEXT_LEFT);
             if (nk_option_label(ctx, "rgb", colormode == MATERIAL_RGB)) colormode = MATERIAL_RGB;
@@ -200,7 +201,13 @@ void mainLoop()
             nk_layout_row_dynamic(ctx, 25, 1);
             nk_property_float(ctx, "Pointscale:", option->pointScale[1], &pointscale, option->pointScale[2], 0.02, 1);
             
-            static int filter = FILTER_NONE;
+            static int quality = option->quality;
+            nk_layout_row_dynamic(ctx, 15, 3);
+            if (nk_option_label(ctx, "square", quality == QUALITY_SQUARE)) quality = QUALITY_SQUARE;
+            if (nk_option_label(ctx, "circle", quality == QUALITY_CIRCLE)) quality = QUALITY_CIRCLE;
+            if (nk_option_label(ctx, "sphere", quality == QUALITY_SPHERE)) quality = QUALITY_SPHERE;
+            
+            static int filter = option->filter;
             nk_layout_row_dynamic(ctx, 25, 1);
             nk_checkbox_label(ctx, "EDL", &filter);
             
@@ -210,6 +217,10 @@ void mainLoop()
                 pointcloud->setReloadShader(true);
             }
             option->pointScale[0] = pointscale;
+            if(option->quality != quality) {
+                option->quality = quality;
+                pointcloud->setReloadShader(true);
+            }
             if(option->filter != filter) {
                 option->filter = filter;
                 pointcloud->setReloadShader(true);
@@ -277,8 +288,8 @@ void mainLoop()
 int main(int argc, char* argv[]) {
     
     //string configfile = "gigapoint_resource/config/gigapoint_century_local.json";
-    //string configfile = "gigapoint_resource/config/gigapoint_LaPalma_local.json";
-    string configfile = "gigapoint_resource/config/gigapoint_HoyoVerde_local.json";
+    string configfile = "gigapoint_resource/config/gigapoint_WP_07_local.json";
+    //string configfile = "gigapoint_resource/config/gigapoint_HoyoVerde_local.json";
     bool zup = true;
     
     if(argc == 2)
