@@ -99,7 +99,7 @@ Input parematers are stored in a json file. A sample configuration file (other c
 - pointScale (float array[3]): [point scale value, min value, max value]. Defaults to [0.1, 0.01, 1.0]
 - pointSizeRange (float array 2]: [minimum point size on screen, maximum point size on screen]. Defaults to [2, 50]
 - sizeType {"fixed", "adaptive"}. Defaults to "adaptive"
-- quality {"square", "circle"} . Defaults to "square"
+- quality {"square", "circle", "sphere"} . Defaults to "square"
 - numberReadThread (integer): number of loading threads. Defaults to 2
 - preLoadToLevel (integer): preload potree data to this level. Defaults to 5
 - maxNodeInMem (integer): maximum nodes to store in RAM. Defaults to 50000
