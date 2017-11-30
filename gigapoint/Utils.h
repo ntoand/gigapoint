@@ -34,7 +34,6 @@ namespace gigapoint {
                     ((v)[2]-(w)[2]) * ((v)[2]-(w)[2]) \
                     ))
 
-
 #define POSITION_CARTESIAN 0
 #define COLOR_PACKED 1
 #define INTENSITY 2
@@ -177,6 +176,7 @@ class Utils {
 public:
 	static unsigned int getTime();
     static bool inCircle(const float segStart[3], const float segEnd[3], const float query[3]);
+    static bool inBBox(const float pos[3], const float bbox[6]);
 	static int testPlane(const float V[4], const float b[6]);
 	static int testFrustum(float V[6][4], const float b[6]);
 	static void getFrustum(float V[6][4], const float X[16]);

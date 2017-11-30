@@ -158,10 +158,10 @@ public:
 #if defined INTERACTION
     void traceFracture(int playerid){interaction->traceFracture(playerid);}
 
-    void test()
+    void test(int playerid)
     {
-        interaction->test();
-        //pointcloud->getRoot()->test();
+        interaction->test(playerid);
+        printInfo();
     }
     void setDrawTrace(bool b) {interaction->setDrawTrace(b);}
     void pickPointFromRay(const omega::Vector3f &origin,const omega::Vector3f &direction,int playerid)

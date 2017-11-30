@@ -59,10 +59,11 @@ void NodeGeometry::setBBox(const float* bb) {
 void NodeGeometry::setTightBBox(const float* bb) {
 	for(int i=0; i < 6; i++)
 		tightbbox[i] = bb[i];
+
 	spherecentre[0] = (tightbbox[0] + tightbbox[3])*0.5;
-	spherecentre[1] = (tightbbox[1] + tightbbox[4])*0.5;
-	spherecentre[2] = (tightbbox[2] + tightbbox[5])*0.5;
-	float bmin[3] = { tightbbox[0], tightbbox[1], tightbbox[2] };
+    spherecentre[1] = (tightbbox[1] + tightbbox[4])*0.5;
+    spherecentre[2] = (tightbbox[2] + tightbbox[5])*0.5;
+    float bmin[3] = { tightbbox[0], tightbbox[1], tightbbox[2] };
 	sphereradius = Utils::distance(spherecentre, bmin);
 }
 
@@ -116,11 +117,11 @@ int NodeGeometry::loadHierachy(LRUCache *nodecache, bool force) {
 	offset += 5;
 
 	std::bitset<8> x(children);
-        cout << "Root children: " << x << endl;
-        cout << "Root numpoints: " << n->numpoints << endl;
+        //cout << "Root children: " << x << endl;
+        //cout << "Root numpoints: " << n->numpoints << endl;
 
     stack.push_back(HRC_Item(name, children, n->numpoints));
-        cout << "Root name: " << name << endl;
+        //cout << "Root name: " << name << endl;
 	while(stack.size() > 0){
 
 		HRC_Item snode = stack.front();
@@ -308,7 +309,7 @@ int NodeGeometry::loadData() {
 	loading = false;
 	if(vertices.size() > 0)
 		loaded = true;        
-        cout << "done reading " << filename.c_str() << " with #points: "<< vertices.size()/3 << std::endl;
+        //cout << "done reading " << filename.c_str() << " with #points: "<< vertices.size()/3 << std::endl;
 	return 0;
 }
 
@@ -324,7 +325,6 @@ void NodeGeometry::printInfo() {
 	for(int i=0; i < 6; i++)
 		cout << bbox[i] << " ";
 	cout << endl;
-
 
 	cout << "tight bbox: ";
 	for(int i=0; i < 6; i++)
@@ -356,7 +356,7 @@ int NodeGeometry::initVBO() {
         initvbo = false;
         return 0;
     }
-    std::cout << "reinitializing VBO of Node " << name << std::endl;
+    //std::cout << "reinitializing VBO of Node " << name << std::endl;
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(float), &vertices[0], GL_STATIC_DRAW);
@@ -550,17 +550,24 @@ std::vector< Point > NodeGeometry::getPointsInSphericalNeighbourhood(Point curre
     NodeGeometry *c=NULL;
     float pos[3];
     float dist;
+    float *bbox;
+    int nodecounter=0;
+    int ptscounter=0;
 
     while(!nodesInRange.empty())
     {
+
         node=nodesInRange.back();
         nodesInRange.pop_back();
 
         int numpoints = node->vertices.size() / 3;
         for(int i=0; i < numpoints; i++) {
+            ptscounter++;
+
             pos[0] = node->vertices[3*i];
             pos[1] = node->vertices[3*i+1];
             pos[2] = node->vertices[3*i+2];
+            bbox=node->getBBox();
             if (DIST3(pos,current.position) < search_r)
             {
                 Point p(node,i);
@@ -571,14 +578,18 @@ std::vector< Point > NodeGeometry::getPointsInSphericalNeighbourhood(Point curre
                 p.position[1]=node->vertices[3*i+1];
                 p.position[2]=node->vertices[3*i+2];
                 //p.index.nodename=node->name;
-                points.push_back(p);
+                points.push_back(p);                
             }
         }
 
 
-        // stop at certain treedepth. treenodes might not be present on other cave nodes
-        if (node->level > MIN_TREE_DEPTH)
+        // stop at certain treedepth. treenodes might not be present on other cave nodes        
+        if (node->level >= MIN_TREE_DEPTH)
+        {
+            //cout << "ignoring node " << node->getName() << endl;
             continue;
+        }
+
 
         //check all children if they are close enough
         for (int i=0;i<8;++i)
@@ -586,13 +597,17 @@ std::vector< Point > NodeGeometry::getPointsInSphericalNeighbourhood(Point curre
             c=node->getChild(i);
             if (c!=NULL)
             {
-                float dist=DIST3(node->getSphereCentre(),c->getSphereCentre());
-                dist=dist - node->getSphereRadius()- c->getSphereRadius();
-                if (dist <0 || dist < search_r)
+                nodecounter++;
+
+                if (Utils::inBBox(current.position,c->getBBox()))
+                {
                     nodesInRange.push_back(c);
+                    //cout << "searching neighbours in " << c->getName() << endl;
+                }
             }
         }
     }
+    cout << "[getPointsInSphericalNeighbourhood] visitedNodes:" << nodecounter << " #pts: "<< points.size() << std::endl;
     return points;
 }
 
@@ -601,8 +616,11 @@ std::vector< Point > NodeGeometry::getPointsInSphericalNeighbourhood(Point curre
 void NodeGeometry::findHitPoint(const omega::Ray& r, HitPoint* point) {
     int numhits=0;
 	// check with the whole node first
-	Vector3f pos = Vector3f(spherecentre[0], spherecentre[1], spherecentre[2]);
-	std::pair<bool, omega::real> result = r.intersects(Sphere(pos, sphereradius));    
+    Vector3f pos;
+    //Vector3f pos = Vector3f(spherecentre[0], spherecentre[1], spherecentre[2]);
+    //std::pair<bool, omega::real> result = r.intersects(Sphere(pos, sphereradius));
+
+    std::pair<bool, omega::real> result = r.intersects(AlignedBox3(bbox[0],bbox[1],bbox[2],bbox[3],bbox[4],bbox[5]));
 	if(!result.first)
     {
         //std::cout << this->getName() << ": no hit " <<std::endl;

@@ -24,7 +24,8 @@
 
 namespace gigapoint {
 
-FractureTracer::FractureTracer(PointCloud* cloud) : m_relMarkerScale(5.0f),m_cloud(NULL),m_previous(-1),m_waitforinput(false),tracerstatus(DONOTHING) {
+FractureTracer::FractureTracer(PointCloud* cloud) : m_relMarkerScale(5.0f),m_cloud(NULL),m_previous(-1),
+    m_waitforinput(false),tracerstatus(DONOTHING),m_destroy(false) {
 
 
     //m_initialized=false;
@@ -33,8 +34,8 @@ FractureTracer::FractureTracer(PointCloud* cloud) : m_relMarkerScale(5.0f),m_clo
 
     m_cloud = cloud; //store pointer ourselves also
     //m_search_r = calculateOptimumSearchRadius(); //estimate the search radius we want to use    
-    m_search_r = 3; //should corespond to hierarchy level 4
-    std::cout << " Fracture tracer search radius/spacing : " << m_search_r <<" / " << m_cloud->getPCInfo()->spacing << std::endl;
+    m_search_r = 2;
+    //std::cout << " Fracture tracer search radius/spacing : " << m_search_r <<" / " << m_cloud->getPCInfo()->spacing << std::endl;
 	//store these info as object attributes
 	//object->hasMetaData("search_r") && object->hasMetaData("cost_function");
     /*
@@ -236,12 +237,9 @@ int FractureTracer::debugSegment()
         return -1; //error -> no cloud
     }
 
-    //retreive and store start & end rgb
-    /*if (m_path.size()>0) {  //REMOVE
-        m_start_rgb= m_path[0];
-        start=m_path[0];
-    } else */
     unsigned int start_time = Utils::getTime();
+    unsigned int tic;
+    unsigned int neighbour_search_time=0;
     if(tracerstatus==START) {   // initialisation, or first time run
         m_start_rgb= start;
         m_end_rgb= end;
@@ -282,6 +280,7 @@ int FractureTracer::debugSegment()
     if (m_openSet.size()==0)
     {
         cout << "openSet is empty. we seem to be finished." <<endl;
+        setTracerStatus(FINISHED_NOLUCK);
         return 0;
     }
     while (m_openSet.size() > 0) //while unvisited nodes exist
@@ -336,7 +335,7 @@ int FractureTracer::debugSegment()
             m_path.push_front(start);
 
             //return
-            cout << "[FractureTracer::optimizeSegment] iterations:" << m_iter_count << std::endl;
+            cout << "[FractureTracer::optimizeSegment] finished after iterations:" << m_iter_count << std::endl;
             setTracerStatus(FINISHED_TRACEFOUND);
             return 0;//m_path;
         }
@@ -348,24 +347,32 @@ int FractureTracer::debugSegment()
                     (cur.position[2] - end.position[2])*(cur.position[2] - end.position[2]);
 
         //fill "neighbours" with nodes - essentially get results of a "sphere" search around active current point
+        tic = Utils::getTime();
         m_neighbours.clear();
         m_neighbours=m_cloud->getPointsInSphericalNeighbourhood(m_current, m_search_r);
         //cout << "[FractureTracer::optimizeSegment] getPointsInSphericalNeighbourhood returned :" << m_neighbours.size() << std::endl;
-        cout << "Iter / Neigh / search_r / dist2start / dist2end : " << m_iter_count << " / " << m_neighbours.size() << " / " << m_search_r
-             << " / " << Utils::distance(start.position,m_current.position) << " / " << Utils::distance(end.position,m_current.position) << endl;
+
         if (m_neighbours.size() > 10000) {
             m_search_r/=2;
+            cout << "new m_search_r: " << m_search_r <<endl;
         }
-        else if (m_neighbours.size() == 0 ) {
-            while (m_neighbours.size()) {
+        else if (m_neighbours.size()< 100 ) {
+            while (m_neighbours.size() < 100 ) {
                 m_search_r*=2;
                 m_neighbours=m_cloud->getPointsInSphericalNeighbourhood(m_current, m_search_r);
+                cout << "new m_search_r: " << m_search_r <<" researching" <<endl;
             }
+        }
 
+
+        neighbour_search_time+=Utils::getTime()-tic;
+        /*
+        if (omega::SystemManager::instance()->isMaster()) {
+            cout << "Iter / Neigh / search_r / neigh_time / dist2start / dist2end : " << m_iter_count << " / " << m_neighbours.size() << " / " << m_search_r
+                << " / " << neighbour_search_time << " / " << Utils::distance(start.position,m_current.position) << " / " << Utils::distance(end.position,m_current.position) << endl;            
         }
-        else if  (m_neighbours.size() < 100) {
-            m_search_r*=2;
-        }
+        */
+
 
         //loop through neighbours
         for (size_t i = 0; i < m_neighbours.size(); i++) //N.B. i = [pointID,cost]
@@ -398,7 +405,7 @@ int FractureTracer::debugSegment()
             //transform into cost from start node
             m_cost += m_PointData[m_current.index].cost;
             m_openSet[apoint.index] = apoint.index; //add to open set - we can move here next
-            //std::cout << "openst_add Node/IDx/Pos: " << apoint.index.node->getName() <<"/" << apoint.index.index << " " << apoint.position[0] << " " << apoint.position[1] << " "  << apoint.position[2] << std::endl;
+
             //have we visited this node before?
             if ((*it_pointdata).second.cost!=-1)
             {
@@ -423,15 +430,16 @@ int FractureTracer::debugSegment()
         //return m_iter_count;
         if(Utils::getTime() - start_time > 150)
         {
-            cout << "[FractureTracer::optimizeSegment] dropping out after 150ms:" << std::endl;
+            if (omega::SystemManager::instance()->isMaster()) {
+            cout << "150ms. " << "t:" << Utils::getTime() - start_time <<" #" << " / " << m_neighbours.size() << " r:" << m_search_r << " iter:"<< m_iter_count << std::endl;
+            }
             return -2;
         }
     } // while
     cout << "[FractureTracer::optimizeSegment] iterations:" << m_iter_count << std::endl;
     //assert(false);
-    setTracerStatus(FINISHED_NOLUCK);
+    //setTracerStatus(FINISHED_NOLUCK);
     return -1; //shouldn't come here?
-
 }
 
 
@@ -659,7 +667,59 @@ int FractureTracer::getSegmentCostRGB(Point p1_rgb, Point p2_rgb)
         (p2_rgb.color[2] - m_end_rgb.color[2]) * (p2_rgb.color[2] - m_end_rgb.color[2]))) / 3.5; //N.B. the divide by 3.5 scales this cost function to range between 0 & 255
 }
 
-int FractureTracer::test() {
+
+int FractureTracer::test(int playerID) {
+    /*
+    NodeGeometry* nodey;
+    m_cloud->tryGetNode("r4",nodey);
+    Point p1y(nodey,7778);
+    cout << "SizeNeigh: " << m_cloud->getPointsInSphericalNeighbourhood(p1y, m_search_r).size() << std::endl;
+    return 0;
+    */
+    /*
+    if (!omega::SystemManager::instance()->isMaster()) {
+        return 0;
+    }
+
+    if (tracerstatus==TRACING) {
+           debugSegment();
+    }
+    else if (m_waypoints.size()==0 && tracerstatus == DONOTHING)
+    {
+        */
+        cout << "adding 2 waypoints " << endl;
+        NodeGeometry* node;
+        m_cloud->tryGetNode("r4",node);
+        Point p1(node,7778);
+        Point p2(node,7719);
+        Point p3(node,1733);
+        Point p4(node,1722);
+        p1.index.node->getPointData(p1);
+        p2.index.node->getPointData(p2);
+        p3.index.node->getPointData(p3);
+        p4.index.node->getPointData(p4);
+        //float d=Utils::distance(p3.position,p4.position);
+        //float d2=DIST3(p3.position,p4.position);
+        if (playerID==1) {
+            this->insertWaypoint(p3);
+            this->insertWaypoint(p4);
+        }
+        else {
+            this->insertWaypoint(p1);
+            this->insertWaypoint(p2);
+        }
+
+        //setTracerStatus(START);
+        //debugSegment();
+    //}
+    return 0;
+}
+
+# if 0
+int FractureTracer::insert2pointsandtrace() {
+    if (!omega::SystemManager::instance()->isMaster()) {
+        return 0;
+    }
 
     if (tracerstatus==TRACING) {
            debugSegment();
@@ -669,19 +729,10 @@ int FractureTracer::test() {
         cout << "adding 2 waypoints " << endl;
         NodeGeometry* node;
         m_cloud->tryGetNode("r4",node);
-        //std::cout << b << node << std::endl;
-        //Point p1(node,1179);
         Point p1(node,7778);
-        //m_cloud->tryGetNode("r60431",node);
-        //m_cloud->tryGetNode("r423",node);
-
-        //std::cout << b << node->getName() << std::endl;
         Point p2(node,7719);
-        //node->setPointColor(p1,255,1,1);
-        //node->setPointColor(p2,255,1,1);
-        //node->initVBO();
-
-
+        Point p3(node,1733);
+        Point p4(node,1722);
         p1.index.node->getPointData(p1);
         p2.index.node->getPointData(p2);
         this->insertWaypoint(p1);
@@ -691,6 +742,7 @@ int FractureTracer::test() {
     }
     return 0;
 }
+#endif
 
 # if 0
 int FractureTracer::getSegmentCost(int p1, int p2, float search_r)

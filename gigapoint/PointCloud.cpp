@@ -138,7 +138,6 @@ int PointCloud::preloadUpToLevel(const int level) {
 		}
 
 	}
-
 	return 0;
 }
 
@@ -308,6 +307,7 @@ void PointCloud::debug() {
     Utils::printPCInfo(root->getInfo());
     cout << "numVisibleNodes: " << numVisibleNodes << " numVisiblePoints: " << numVisiblePoints <<
             " nodeQueue size: " << nodeQueue.size() << " lrucache size: " << lrucache->size() << endl;
+
 
     /*
     for(map<string, NodeGeometry*>::iterator it = nodes->begin(); it != nodes->end(); it++) {

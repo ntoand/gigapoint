@@ -89,9 +89,43 @@ if "cameraPosition" in config:
 	campos = config["cameraPosition"]
 if "cameraOrientation" in config:
 	camori = config["cameraOrientation"]
-cmd = 'cam.setPosition(Vector3(' + str(campos[0]) + ',' + str(campos[1]) + ',' + str(campos[2]) + ')),' + \
+
+def cmdFromPosOri(campos,camori):
+  cmd = 'cam.setPosition(Vector3(' + str(campos[0]) + ',' + str(campos[1]) + ',' + str(campos[2]) + ')),' + \
 		'cam.setOrientation(Quaternion(' + str(camori[0]) + ',' + str(camori[1]) + ',' + str(camori[2]) + ',' + str(camori[3]) + '))'
-menu.addButton("Go to camera 1", cmd)
+  return cmd
+
+def goToWayPoint(interpObj,wpname):
+  global waypoints
+  wp=waypoints[wpname]
+  interpObj.setTargetPosition(Vector3(wp[0],wp[1],wp[2]))
+  interpObj.setTargetOrientation(Quaternion(wp[3],wp[4],wp[5],wp[6]))
+  interpObj.startInterpolation()
+  
+global waypoints
+waypoints={}
+waypoints['center']=[-76.57, -67.20, 133.13,0.06, 0.07, -0.67, -0.74]
+waypoints['TopView']=[-96.24, 24.91, 248.14,0.07,0.06, -0.53, -0.84]
+
+
+menu.addButton("Go to camera 1", cmdFromPosOri(campos,camori))
+campos=[-96.24, 24.91, 248.14]
+menu.addButton("TopView", cmdFromPosOri([-96.24, 24.91, 248.14],[0.07,0.06, -0.53, -0.84]))
+menu.addButton("center", cmdFromPosOri([-76.57, -67.20, 133.13],[0.06, 0.07, -0.67, -0.74]))
+#menu.addButton("TopView3", cmdFromPosOri([],[]))
+#menu.addButton("TopView4", cmdFromPosOri([],[]))
+#menu.addButton("TopView5", cmdFromPosOri([],[]))
+
+# Import the CAVEUTIL module.
+from caveutil import *
+
+interp = InterpolActor(getDefaultCamera())
+interp.setTransitionType(InterpolActor.SMOOTH)  # Use SMOOTH ease-in/ease-out interpolation rather than LINEAR
+interp.setDuration(5)             # Set interpolation duration to 3 seconds
+interp.setOperation(InterpolActor.POSITION | InterpolActor.ORIENT)  # Interpolate both position and orientation
+
+menu.addButton("goto center",'goToWayPoint(interp,"center")')
+
 
 lscale = menu.addLabel("Point scale")
 #l3.getWidget().setStyleValue('border-top', '1 white')

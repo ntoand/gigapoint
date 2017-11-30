@@ -46,9 +46,11 @@ public:
         virtual ~FractureTracer() {}
 
         void render();
-        int test();
+        int test(int playerID);
         std::vector< Point > m_neighbours;
-
+        bool m_destroy;
+        void destroy() {m_destroy=true;}
+        bool destroyme() {return m_destroy;}
         static const int MAX_COST=99999;
 
 	//inherited from ccHObject

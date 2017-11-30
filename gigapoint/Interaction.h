@@ -30,7 +30,7 @@ public:
     void pickPointFromRay(const omega::Vector3f &origin,const omega::Vector3f &direction,int playerid);
     void useSelectedPointAsTracePoint();
     void resetTracer(int playerid);
-    int test();
+    int test(int playerID);
 
 private:
     bool m_drawTrace;

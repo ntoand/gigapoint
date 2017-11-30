@@ -50,6 +50,13 @@ bool Utils::inCircle(const float segStart[3], const float segEnd[3], const float
     return DOT3(qs, qe) < 0;
 }
 
+bool Utils::inBBox(const float pos[3], const float bbox[6])
+{
+    return pos[0] > bbox[0] && pos[0] < bbox[3]
+        && pos[1] > bbox[1] && pos[1] < bbox[4]
+        && pos[2] > bbox[2] && pos[2] < bbox[5];
+}
+
 int Utils::testPlane( const float V[4], const float b[6])
 {
     const float k00 = b[0] * V[0];
