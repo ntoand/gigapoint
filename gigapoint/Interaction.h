@@ -17,8 +17,8 @@ public:
     ~Interaction();
 
     // interaction
-    void updateRay(const omega::Ray& r);
-    void findHitPoint();
+    void updateRay(const omega::Ray& r, int playerid);
+    bool findHitPoint(int playerid);
     void traceFracture(int playerid);
     void traceAllFractures();
     //void insertTracePoint(const omega::Vector3f &origin,const omega::Vector3f &direction,int playerid);
@@ -31,6 +31,9 @@ public:
     void useSelectedPointAsTracePoint();
     void resetTracer(int playerid);
     int test(int playerID);
+    void setTracerPointScale(float scale);
+    FractureTracer *getTracer(int playerid) {return m_tracers[playerid];}
+    void setColor(std::string,std::string,float r,float g,float b);
 
 private:
     bool m_drawTrace;
@@ -39,14 +42,17 @@ private:
     PointCloud* m_cloud;
 
     // interaction
-    omega::Ray ray;
+    omega::Ray rays[3];
+    std::pair<bool,HitPoint> selectionPoints[3];
     vector<HitPoint*> hitPoints;
+
     int interactMode;
     //fracture tracing
     FractureTracer* tracerRED;
     FractureTracer* tracerGREEN;
     FractureTracer* tracerBLUE;
     FractureTracer* tracer;
+    std::vector< FractureTracer* > m_tracers;
     void setTracerByPlayerId(int playerid);
 
 }; //class Interaction

@@ -25,8 +25,13 @@
 namespace gigapoint {
 
 FractureTracer::FractureTracer(PointCloud* cloud) : m_relMarkerScale(5.0f),m_cloud(NULL),m_previous(-1),
-    m_waitforinput(false),tracerstatus(DONOTHING),m_destroy(false) {
-
+    m_waitforinput(false),tracerstatus(DONOTHING),m_destroy(false),pointscale(20) {
+    selectionColor[0]=0.0;
+    selectionColor[1]=1.0;
+    selectionColor[2]=0.0;
+    rayColor[0]=0.0;
+    rayColor[1]=0.0;
+    rayColor[2]=0.0;
 
     //m_initialized=false;
     //m_finishedTrace=false;
@@ -1038,7 +1043,7 @@ void FractureTracer::render()
     glDisable(GL_BLEND);
 
     glEnable(GL_PROGRAM_POINT_SIZE_EXT);
-    glPointSize(20);
+    glPointSize(pointscale);
     glColor3f(1.0, 1.0, 0.0); //yellow
     glBegin(GL_POINTS);
 
@@ -1052,7 +1057,7 @@ void FractureTracer::render()
     glEnd();
 
     if (tracerstatus==TRACING) {
-        glPointSize(5);
+        glPointSize(pointscale/4);
         glColor3f(0.8, 0.8, 0.8); //white
         glBegin(GL_POINTS);
         for (std::vector < Point > ::iterator it = m_neighbours.begin() ; it != m_neighbours.end(); ++it)
@@ -1075,13 +1080,13 @@ void FractureTracer::render()
         glEnd();
     }
 
-    glPointSize(40);
+    glPointSize(pointscale*2);
     glColor3f(0.0, 1.0, 0.0); //green
     glBegin(GL_POINTS);
     glVertex3f(m_current.position[0],m_current.position[1],m_current.position[2]);
     glEnd();
 
-    glPointSize(40);
+    glPointSize(pointscale*2);
     glColor3f(1.0, 1.0, 1.0); //white
     glBegin(GL_POINTS);
     for (std::deque < Point > ::iterator it = m_path.begin() ; it != m_path.end(); ++it)
@@ -1201,5 +1206,14 @@ void FractureTracer::drawMeOnly(CC_DRAW_CONTEXT& context)
 	}
 }
 */
+
+void FractureTracer::setComponentColor(std::string component,float r,float g,float b){
+
+    if (component == "ray") {rayColor[0]=r;rayColor[1]=g;rayColor[2]=b;}
+    else if (component=="selection"){selectionColor[0]=r;selectionColor[1]=g;selectionColor[2]=b;}
+    else if (component=="trace"){traceColor[0]=r;traceColor[1]=g;traceColor[2]=b;}
+    else if (component=="waypoint"){waypointColor[0]=r;waypointColor[1]=g;waypointColor[2]=b;}
+    else{cout << "cannot set color for tracercomponent with name: "<< component <<endl;return;}
+}
 
 }; // namespace gigapoint

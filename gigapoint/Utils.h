@@ -161,12 +161,20 @@ typedef struct Point_{
 
 typedef struct HitPoint_ {
 	float distance;
-	float position[3];
-    NodeGeometry *node;
+	float position[3];    
     int index;
+    NodeGeometry *node;
 	HitPoint_() {
 		distance = -1;
 	}
+    HitPoint_(HitPoint_*pt) {
+        distance = pt->distance;
+        index = pt->index;
+        position[0]=pt->position[0];
+        position[1]=pt->position[1];
+        position[2]=pt->position[2];
+        node=pt->node;
+    }
 } HitPoint;
 
 

@@ -200,38 +200,7 @@ ifstream::pos_type NodeGeometry::getFilesize(const char* filename)
         return in.tellg();
 }
 
-/*
-int NodeGeometry::makeData() {
-    if(loaded)
-    return 0;
 
-    assert(info);
-    float x,y,z,r,g,b;
-    x=1;y=0;z=0;r=1;g=0;b=0;
-    vertices.push_back(x);    vertices.push_back(y);    vertices.push_back(z);
-    vertices.push_back(r);    vertices.push_back(g);    vertices.push_back(b);
-    x=2;y=0;z=0;r=2;g=0;b=0;
-    vertices.push_back(x);    vertices.push_back(y);    vertices.push_back(z);
-    vertices.push_back(r);    vertices.push_back(g);    vertices.push_back(b);
-    x=3;y=0;z=0;r=3;g=0;b=0;
-    vertices.push_back(x);    vertices.push_back(y);    vertices.push_back(z);
-    vertices.push_back(r);    vertices.push_back(g);    vertices.push_back(b);
-    x=4;y=0;z=0;r=4;g=0;b=0;
-    vertices.push_back(x);    vertices.push_back(y);    vertices.push_back(z);
-    vertices.push_back(r);    vertices.push_back(g);    vertices.push_back(b);
-    x=5;y=0;z=0;r=5;g=0;b=0;
-    vertices.push_back(x);    vertices.push_back(y);    vertices.push_back(z);
-    vertices.push_back(r);    vertices.push_back(g);    vertices.push_back(b);
-    x=6;y=0;z=0;r=6;g=0;b=0;
-    vertices.push_back(x);    vertices.push_back(y);    vertices.push_back(z);
-    vertices.push_back(r);    vertices.push_back(g);    vertices.push_back(b);
-
-
-    loading = true;
-    loading = false;
-    loaded = true;
-}
-*/
 int NodeGeometry::loadData() {
 
     if(loaded)
@@ -242,7 +211,7 @@ int NodeGeometry::loadData() {
 	loading = true;
 
 	string filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".bin";
-    cout << "Load file: " << filename << endl;
+    //cout << "Load file: " << filename << endl;
 	datafile = filename;
     //cout << "start reading " << datafile <<  std::endl;
 

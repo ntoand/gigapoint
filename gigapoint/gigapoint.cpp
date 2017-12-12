@@ -168,8 +168,9 @@ public:
         { interaction->pickPointFromRay(origin,direction,playerid);}
     void useSelectedPointAsTracePoint() {interaction->useSelectedPointAsTracePoint();}
     void resetTracer(int playerid) {interaction->resetTracer(playerid);}
+    void setTracerPointScale(float scale) {interaction->setTracerPointScale(scale);}
     void next() {interaction->next();}
-
+    void setTracerColor(std::string tracer,std::string component,float r,float g,float b){interaction->setColor(tracer,component,r,g,b);}
 #endif
 
 }; //class GigapointRenderModule
@@ -286,6 +287,8 @@ BOOST_PYTHON_MODULE(gigapoint)
         PYAPI_METHOD(GigapointRenderModule, pickPointFromRay)
         PYAPI_METHOD(GigapointRenderModule, useSelectedPointAsTracePoint)
         PYAPI_METHOD(GigapointRenderModule, resetTracer)
+        PYAPI_METHOD(GigapointRenderModule, setTracerPointScale)
+        PYAPI_METHOD(GigapointRenderModule, setTracerColor)
         //PYAPI_METHOD(GigapointRenderModule, next)
     ;
 

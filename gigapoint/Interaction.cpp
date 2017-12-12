@@ -11,22 +11,35 @@ Interaction::Interaction(PointCloud *p): m_cloud(p) ,interactMode(INTERACT_NONE)
 {
     windowWidth=m_cloud->getWidth();
     windowHeight=m_cloud->getHeight();
+    m_tracers.clear();
+    tracerRED=new FractureTracer(m_cloud);
+    tracerGREEN=new FractureTracer(m_cloud);
+    tracerBLUE=new FractureTracer(m_cloud);
+    m_tracers.push_back(tracerRED);
+    m_tracers.push_back(tracerGREEN);
+    m_tracers.push_back(tracerBLUE);
 }
 
 Interaction::~Interaction() {
+    for (int i=0;i<3;i++)
+    {
+        delete m_tracers[i];
+    }
+    /*
     if(tracerRED)
         delete tracerRED;
     if(tracerGREEN)
         delete tracerGREEN;
     if(tracerBLUE)
         delete tracerBLUE;
+    */
 }
 
 void Interaction::setTracerByPlayerId(int playerid) {
     switch (playerid) {
-            case 1: if (tracerRED==NULL) {tracerRED=new FractureTracer(m_cloud);} ;tracer=tracerRED; break;
-            case 2: if (tracerGREEN==NULL) {tracerGREEN=new FractureTracer(m_cloud);} ;tracer=tracerGREEN; break;
-            case 3: if (tracerBLUE==NULL) {tracerBLUE=new FractureTracer(m_cloud);} ;tracer=tracerBLUE; break;
+            case 1: if (tracerRED==NULL) {tracerRED=new FractureTracer(m_cloud); m_tracers[0]=tracerRED;} ;tracer=tracerRED;break;
+            case 2: if (tracerGREEN==NULL) {tracerGREEN=new FractureTracer(m_cloud);m_tracers[1]=tracerGREEN;} ;tracer=tracerGREEN; break;
+            case 3: if (tracerBLUE==NULL) {tracerBLUE=new FractureTracer(m_cloud);m_tracers[2]=tracerBLUE;} ;tracer=tracerBLUE; break;
             default: std::cout << "unhandled playerid" << playerid << std::endl;
         }
 }
@@ -56,32 +69,51 @@ int Interaction::test(int playerID) {
     */
 }
 
+void Interaction::setTracerPointScale(float scale)
+{
+    for (int i=0;i<3;i++)
+    {
+        if (NULL!=m_tracers[i]) {
+            m_tracers[i]->setPointScale(scale);
+            cout << "Updating Tracer Scale to: " << scale << endl;
+        }
+    }
+}
+
 //void Interaction::next() { tracer->next(); }
 
 void Interaction::draw()
 {
     // draw interaction
-    if(interactMode != INTERACT_NONE) {
-        glDisable(GL_LIGHTING);
-        glDisable(GL_BLEND);
-        //draw ray line
-        Vector3f spos = ray.getOrigin(); //- 1*ray.getDirection();
-        Vector3f epos = ray.getOrigin() + 100*ray.getDirection();
-        glLineWidth(4.0);
-        glColor3f(1.0, 1.0, 1.0);
-        glBegin(GL_LINES);
-        glVertex3f(spos[0], spos[1], spos[2]);
-        glVertex3f(epos[0], epos[1], epos[2]);
-        glEnd();
+    if(interactMode != INTERACT_NONE) {        
 
-        glEnable(GL_PROGRAM_POINT_SIZE_EXT);
-        glPointSize(20);
-        glColor3f(0.0, 1.0, 0.0);
-        glBegin(GL_POINTS);
-        for(int i=0; i < hitPoints.size(); i++) {
-            glVertex3f(hitPoints[i]->position[0], hitPoints[i]->position[1], hitPoints[i]->position[2]);
+        //draw ray line
+        Vector3f spos;
+        Vector3f epos;
+        omega::Ray ray;
+        for (int playerid=0;playerid<3;playerid++)
+        {
+            glDisable(GL_LIGHTING);
+            glDisable(GL_BLEND);
+            ray=rays[playerid];
+            spos = ray.getOrigin(); //- 1*ray.getDirection();
+            epos = ray.getOrigin() + 100*ray.getDirection();
+            glLineWidth(4.0);
+            glColor3f(m_tracers[playerid]->rayColor[0], m_tracers[playerid]->rayColor[1], m_tracers[playerid]->rayColor[2]);
+            glBegin(GL_LINES);
+            glVertex3f(spos[0], spos[1], spos[2]);
+            glVertex3f(epos[0], epos[1], epos[2]);
+            glEnd();
+            if (selectionPoints[playerid].first) {
+                glEnable(GL_PROGRAM_POINT_SIZE_EXT);
+                glPointSize(20);
+                glColor3f(m_tracers[playerid]->selectionColor[0], m_tracers[playerid]->selectionColor[1], m_tracers[playerid]->selectionColor[1]);
+                glBegin(GL_POINTS);
+                glVertex3f(selectionPoints[playerid].second.position[0], selectionPoints[playerid].second.position[1], selectionPoints[playerid].second.position[2]);
+                glEnd();
+            }
         }
-        glEnd();
+
     }
     drawTrace();
 }
@@ -119,17 +151,17 @@ void Interaction::useSelectedPointAsTracePoint()
 
 
 void Interaction::pickPointFromRay(const omega::Vector3f &origin,const omega::Vector3f &direction,int playerid) {
-    setTracerByPlayerId(playerid);    
-    ray.setOrigin(origin);
-    ray.setDirection(direction);
-    findHitPoint();
+    setTracerByPlayerId(playerid);
+    rays[playerid-1].setOrigin(origin);
+    rays[playerid-1].setDirection(direction);
+    findHitPoint(playerid);
 }
 
 
 
 // interaction
-void Interaction::updateRay(const omega::Ray& r) {
-    ray = r;
+void Interaction::updateRay(const omega::Ray& r, int playerid) {
+    rays[playerid-1] = r;
 }
 
 
@@ -178,9 +210,10 @@ void Interaction::updateInteractionMode(const string& mode)
 
 bool hitpointcomparator (HitPoint* i,HitPoint* j) { return (i->distance<j->distance); }
 
-void Interaction::findHitPoint() {
+bool Interaction::findHitPoint(int playerid) {
 
     if (interactMode == INTERACT_POINT) {
+        omega::Ray ray = rays[playerid-1];
         unsigned int start_time = Utils::getTime();
         hitPoints.clear();
         HitPoint* point = new HitPoint();
@@ -193,6 +226,7 @@ void Interaction::findHitPoint() {
         std::sort (hitPoints.begin(), hitPoints.end(), hitpointcomparator);
         if(point->distance != -1) {
             hitPoints.push_back(point);
+            selectionPoints[playerid-1]=std::pair<bool,HitPoint>(true,HitPoint(hitPoints[0]));
             cout << "find time: " << Utils::getTime() - start_time << " size: " << hitPoints.size()
                 << " dis: " << hitPoints[0]->distance
                 << " pos: " << hitPoints[0]->position[0] << " " << hitPoints[0]->position[1] << " "
@@ -203,12 +237,27 @@ void Interaction::findHitPoint() {
                 cout << hitPoints[0]->node->getName() << " " << hitPoints[0]->index << std::endl;
                 cout << hitPoints[0]->distance << " " << hitPoints[hitPoints.size()-1]->distance << endl;
             }
+
         }
         else {
             cout << "MISS" << endl;
             hitPoints.clear();
+            selectionPoints[playerid-1]=std::pair<bool,HitPoint>(false,HitPoint());
         }
     }
+}
+
+void Interaction::setColor(std::string tracername, std::string component,float r,float g,float b)
+{
+
+    FractureTracer *_tracer=NULL;
+    if (tracername == "RED") {_tracer=tracerRED;}
+    else if (tracername=="GREEN"){_tracer=tracerGREEN;}
+    else if (tracername=="BLUE"){_tracer=tracerBLUE;}
+    else{cout << "cannot set color for tracer with name: "<< tracername <<endl;return;}
+
+    if (_tracer!=NULL)
+        _tracer->setComponentColor(component,r,g,b);
 }
 
 

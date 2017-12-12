@@ -52,6 +52,9 @@ public:
         void destroy() {m_destroy=true;}
         bool destroyme() {return m_destroy;}
         static const int MAX_COST=99999;
+        void setPointScale(float scale) {pointscale=scale;}
+        void setComponentColor(std::string component,float r,float g,float b);
+
 
 	//inherited from ccHObject
         //inline virtual CC_CLASS_ENUM getClassID() const override { return CC_TYPES::POLY_LINE; }
@@ -187,6 +190,8 @@ public:
         if (tracerstatus==TRACING)
             debugSegment();
     }
+    float rayColor[3];
+    float selectionColor[3];
 
 protected:
     void _print();
@@ -197,6 +202,7 @@ protected:
     //virtual void drawMeOnly(CC_DRAW_CONTEXT& context) override;
     bool m_waitforinput;
     Point m_current;
+    float pointscale;
 	/*
 	Gets the closest waypoint to the point described by pID.
 	*/
@@ -256,6 +262,9 @@ private:
 	*/
     //bool inCircle(const CCVector3* segStart, const CCVector3* segEnd, const CCVector3* query);
     void _printOpenSet();
+
+    float traceColor[3];
+    float waypointColor[3];
 };
 }; // namespave gigapoint
 #endif
