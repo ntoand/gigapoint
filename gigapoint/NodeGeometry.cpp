@@ -576,7 +576,7 @@ std::vector< Point > NodeGeometry::getPointsInSphericalNeighbourhood(Point curre
             }
         }
     }
-    cout << "[getPointsInSphericalNeighbourhood] visitedNodes:" << nodecounter << " #pts: "<< points.size() << std::endl;
+    //awcout << "[getPointsInSphericalNeighbourhood] visitedNodes:" << nodecounter << " #pts: "<< points.size() << std::endl;
     return points;
 }
 
@@ -616,7 +616,7 @@ void NodeGeometry::findHitPoint(const omega::Ray& r, HitPoint* point) {
 			}
 		}
     }
-     std::cout << this->getName() << ": hits. checking numpoints: " << numhits<< " " << numpoints << std::endl;
+     //std::cout << this->getName() << ": hits. checking numpoints: " << numhits<< " " << numpoints << std::endl;
 }
 
 void NodeGeometry::test()

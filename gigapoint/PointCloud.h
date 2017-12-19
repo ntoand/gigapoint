@@ -39,16 +39,20 @@ public:
 	NodeLoaderThread(wqueue<NodeGeometry*>& queue, int m) : m_queue(queue), maxLoadSize(m) {}
 
 	void* run() {
-        for (;;) {
+        for (;;)
+        {
             NodeGeometry* node = (NodeGeometry*)m_queue.remove();
-	    node->setInQueue(false);        
-	    if(m_queue.size() < maxLoadSize)
-            if(!node->isDirty()) {
-                node->loadData();
-            } else {
-                node->initUpdateCache();
-                //node->updateCache->loadHierachy(); // called during update visibility
-                node->getUpdateCache()->loadData();
+            node->setInQueue(false);
+            if(m_queue.size() < maxLoadSize) {
+                if(!node->isDirty()) {
+                    node->loadData();
+                }
+                else
+                {
+                    node->initUpdateCache();
+                    //node->updateCache->loadHierachy(); // called during update visibility
+                    node->getUpdateCache()->loadData();
+                }
             }
         }
         return NULL;

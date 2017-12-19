@@ -7,17 +7,30 @@ using namespace std;
 using namespace omicron;
 
 namespace gigapoint {
-Interaction::Interaction(PointCloud *p): m_cloud(p) ,interactMode(INTERACT_NONE),tracerRED(NULL),tracerGREEN(NULL),tracerBLUE(NULL),tracer(NULL),m_drawTrace(true)
+Interaction::Interaction(PointCloud *p): m_cloud(p) ,interactMode(INTERACT_NONE),
+    tracerRED(NULL),tracerGREEN(NULL),tracerBLUE(NULL),tracer(NULL),m_drawTrace(true),numSegmentTracerThread(9)
 {
     windowWidth=m_cloud->getWidth();
     windowHeight=m_cloud->getHeight();
     m_tracers.clear();
-    tracerRED=new FractureTracer(m_cloud);
-    tracerGREEN=new FractureTracer(m_cloud);
-    tracerBLUE=new FractureTracer(m_cloud);
+    tracerRED=new FractureTracer(m_cloud,1,this);
+    tracerGREEN=new FractureTracer(m_cloud,2,this);
+    tracerBLUE=new FractureTracer(m_cloud,3,this);
     m_tracers.push_back(tracerRED);
     m_tracers.push_back(tracerGREEN);
     m_tracers.push_back(tracerBLUE);
+
+
+    if(segmentTracerThreads.size() == 0) {
+        for(int i = 0; i < numSegmentTracerThread; i++) {
+            SegmentTracerThread* t = new SegmentTracerThread(segmentQueue);
+            t->start();
+            segmentTracerThreads.push_back(t);
+            cout << "starting segment thread. ID:";
+        }
+
+    }
+
 }
 
 Interaction::~Interaction() {
@@ -37,9 +50,9 @@ Interaction::~Interaction() {
 
 void Interaction::setTracerByPlayerId(int playerid) {
     switch (playerid) {
-            case 1: if (tracerRED==NULL) {tracerRED=new FractureTracer(m_cloud); m_tracers[0]=tracerRED;} ;tracer=tracerRED;break;
-            case 2: if (tracerGREEN==NULL) {tracerGREEN=new FractureTracer(m_cloud);m_tracers[1]=tracerGREEN;} ;tracer=tracerGREEN; break;
-            case 3: if (tracerBLUE==NULL) {tracerBLUE=new FractureTracer(m_cloud);m_tracers[2]=tracerBLUE;} ;tracer=tracerBLUE; break;
+            case 1: if (tracerRED==NULL) {tracerRED=new FractureTracer(m_cloud,1,this); m_tracers[0]=tracerRED;} ;tracer=tracerRED;break;
+            case 2: if (tracerGREEN==NULL) {tracerGREEN=new FractureTracer(m_cloud,2,this);m_tracers[1]=tracerGREEN;} ;tracer=tracerGREEN; break;
+            case 3: if (tracerBLUE==NULL) {tracerBLUE=new FractureTracer(m_cloud,3,this);m_tracers[2]=tracerBLUE;} ;tracer=tracerBLUE; break;
             default: std::cout << "unhandled playerid" << playerid << std::endl;
         }
 }
@@ -167,12 +180,14 @@ void Interaction::updateRay(const omega::Ray& r, int playerid) {
 
 void Interaction::traceAllFractures()
 {
+    /*
     if (tracerRED!=NULL)
         tracerRED->update();
     if (tracerGREEN!=NULL)
         tracerGREEN->update();
     if (tracerBLUE!=NULL)
         tracerBLUE->update();
+        */
     //setTracerByPlayerId(1);
     //tracer->update();
 }
@@ -185,9 +200,8 @@ void Interaction::traceFracture(int playerid)
     {
         cout << "not tracing, not enough waypoints" << endl;
         return;
-    }
-    tracer->setTracerStatus(FractureTracer::START);
-    tracer->debugSegment();
+    }    
+    tracer->optimizePath();
     //bool success = true;//tracer->optimizePath(1000000);
     //if (success)
 //        cout << "Tracing was sucessfull #Tracepoints:" << tracer->getTraceRef().size() << endl;
@@ -231,12 +245,12 @@ bool Interaction::findHitPoint(int playerid) {
                 << " dis: " << hitPoints[0]->distance
                 << " pos: " << hitPoints[0]->position[0] << " " << hitPoints[0]->position[1] << " "
                 << hitPoints[0]->position[2] << endl;
-            if (hitPoints.size() >=2 ) {
+           /* if (hitPoints.size() >=2 ) {
                 float dis=Utils::distance(hitPoints[0]->position,hitPoints[1]->position);
                 cout << "distance between first and second point is: " << dis << endl;
                 cout << hitPoints[0]->node->getName() << " " << hitPoints[0]->index << std::endl;
                 cout << hitPoints[0]->distance << " " << hitPoints[hitPoints.size()-1]->distance << endl;
-            }
+            }*/
 
         }
         else {
@@ -258,6 +272,11 @@ void Interaction::setColor(std::string tracername, std::string component,float r
 
     if (_tracer!=NULL)
         _tracer->setComponentColor(component,r,g,b);
+}
+
+void Interaction::addSegmentToTracingQueue(TracingSegment *segment)
+{
+    segmentQueue.add(segment);
 }
 
 

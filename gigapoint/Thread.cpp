@@ -25,7 +25,7 @@ int Thread::start() {
     if (result == 0) {
         m_running = 1;
     }
-    std::cout << "Start loader thread: " << m_tid << std::endl;
+    std::cout << m_tid << std::endl;
     return result;
 }
 

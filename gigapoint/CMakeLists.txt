@@ -45,6 +45,8 @@ add_library(${MODULE_NAME} MODULE
 	ColorTexture.cpp 
 	Material.h
 	Material.cpp
+        TracingSegment.cpp
+        TracingSegment.h
         FractureTracer.cpp
         FractureTracer.h
 	FrameBuffer.h

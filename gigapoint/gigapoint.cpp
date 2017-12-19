@@ -40,7 +40,7 @@ public:
         // After a frame all render passes had a chance to update their
         // textures. reset the raster update flag.
        #ifdef  INTERACTION
-        interaction->traceAllFractures();
+        //interaction->traceAllFractures();
        #endif
     }
     

@@ -5,11 +5,33 @@
 #include "Utils.h"
 #include "iostream"
 
-namespace gigapoint {
+#include "Thread.h"
+#include "wqueue.h"
+#include "TracingSegment.h"
 
+namespace gigapoint {
 
 class FractureTracer;
 class PointCloud;
+
+class SegmentTracerThread : public Thread {
+private:
+    wqueue<TracingSegment*>& m_queue;
+
+public:
+    SegmentTracerThread(wqueue<TracingSegment*>& queue) : m_queue(queue) {}
+
+    void* run() {
+        for (;;)
+        {
+            TracingSegment* segment = (TracingSegment*)m_queue.remove();
+            segment->setStatus(TracingSegment::SEGMENT_START);
+            segment->trace();
+        }
+        return NULL;
+    }
+};
+
 
 class Interaction {
 public:
@@ -34,8 +56,14 @@ public:
     void setTracerPointScale(float scale);
     FractureTracer *getTracer(int playerid) {return m_tracers[playerid];}
     void setColor(std::string,std::string,float r,float g,float b);
+    void addSegmentToTracingQueue(TracingSegment*);
 
 private:
+    // tracer threads
+    wqueue<TracingSegment*>  segmentQueue;
+    std::list<SegmentTracerThread*> segmentTracerThreads;
+    int numSegmentTracerThread;
+
     bool m_drawTrace;
     void drawCrosshair();
     int windowWidth,windowHeight;

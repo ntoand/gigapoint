@@ -1,3 +1,6 @@
+#ifndef _WQUEUE_H
+#define _WQUEUE_H
+
 #include <pthread.h>
 #include <list>
 
@@ -60,3 +63,4 @@ public:
 };
 
 }; //namespace gigapoint
+#endif

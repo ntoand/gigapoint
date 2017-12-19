@@ -21,25 +21,26 @@
 #include "PointCloud.h"
 #include "iostream"
 #include "NodeGeometry.h"
+#include "TracingSegment.h"
+#include "Interaction.h"
 
 namespace gigapoint {
 
-FractureTracer::FractureTracer(PointCloud* cloud) : m_relMarkerScale(5.0f),m_cloud(NULL),m_previous(-1),
-    m_waitforinput(false),tracerstatus(DONOTHING),m_destroy(false),pointscale(20) {
+FractureTracer::FractureTracer(PointCloud* cloud,int playerid,Interaction* inter) : m_relMarkerScale(5.0f),m_cloud(NULL),m_previous(-1),
+    m_waitforinput(false),tracerstatus(DONOTHING),m_destroy(false),pointscale(20),m_playerid(playerid),interactionClass(inter),m_search_r(2) {
     selectionColor[0]=0.0;
     selectionColor[1]=1.0;
     selectionColor[2]=0.0;
     rayColor[0]=0.0;
     rayColor[1]=0.0;
     rayColor[2]=0.0;
-
     //m_initialized=false;
     //m_finishedTrace=false;
     m_maxIterations=100000;
 
     m_cloud = cloud; //store pointer ourselves also
     //m_search_r = calculateOptimumSearchRadius(); //estimate the search radius we want to use    
-    m_search_r = 2;
+    //m_search_r = 2;
     //std::cout << " Fracture tracer search radius/spacing : " << m_search_r <<" / " << m_cloud->getPCInfo()->spacing << std::endl;
 	//store these info as object attributes
 	//object->hasMetaData("search_r") && object->hasMetaData("cost_function");
@@ -70,71 +71,31 @@ FractureTracer::FractureTracer(PointCloud* cloud) : m_relMarkerScale(5.0f),m_clo
 
 }
 
-int FractureTracer::insertWaypoint(Point Q)
-{
-
-	if (m_waypoints.size() >= 2)
-	{
-		//get location of point to add
-		//const CCVector3* Q = m_cloud->getPoint(pointId);
-        //float Q[3] = *m_cloud->getPoint(pointId);
-        Point start, end;
-		//check if point is "inside" any segments
-		for (int i = 1; i < m_waypoints.size(); i++)
-		{
-			//get start and end points
-            //m_cloud->getPoint(m_waypoints[i - 1], start);
-            //m_cloud->getPoint(m_waypoints[i], end);
-            start=m_waypoints[i-1];
-            end=m_waypoints[i];
-
-			//are we are "inside" this segment
-            if (Utils::inCircle(start.position, end.position, Q.position))
-			{
-				//insert waypoint
-                m_waypoints.insert(m_waypoints.begin() + i, Q);
-				m_previous = i;
-				return i;
-			}
-		}
-
-		//check if the point is closer to the start than the end -> i.e. the point should be 'pre-pended'
-        //CCVector3 sp = Q - start;
-        //CCVector3 ep = Q - end;
-        float ds=DIST3(Q.position,start.position);
-        float de=DIST3(Q.position,end.position);
-        if (ds < de)
-		{
-            m_waypoints.insert(m_waypoints.begin(), Q);
-			m_previous = 0;
-			return 0;
-		}
-	}
-
-	//add point to end of the trace
-    m_waypoints.push_back(Q);
-	m_previous = static_cast<int>(m_waypoints.size()) - 1;
-	return m_previous;
+void FractureTracer::checkOnTraces() {
+    std::vector<TracingSegment *>::iterator it=m_trace.begin();
+    TracingSegment *seg;
+    bool success=true;
+    for( ; it != m_trace.end();it++)
+    {
+        seg=(*it);
+        if (seg->getStatus()<=3)
+            return;
+        else if(seg->getStatus()==TracingSegment::SEGMENT_FINISHED_NOTFOUND)
+            success=false;
+    }
+    //if (!success)
+    //    m_trace.clear();
+    setTracerStatus(FINISHED_DONE);
 }
 
-/*
-bool FractureTracer::optimizePath(int maxIterations)
+bool FractureTracer::optimizePath()
 {
-	bool success = true;
-
-	if (m_waypoints.size() < 2)
+    if (m_waypoints.size() < 2)
 	{
 		m_trace.clear();
 		return false; //no segments...
 	}
 
-	#ifdef DEBUG_PATH
-	int idx = m_cloud->getScalarFieldIndexByName("Search"); //look for scalar field to write search to
-	if (idx == -1) //doesn't exist - create
-		idx=m_cloud->addScalarField("Search");
-	m_cloud->setCurrentScalarField(idx);
-	#endif
-	
 	//loop through segments and build/rebuild trace
     Point start, end;
     int tID; //declare vars
@@ -149,14 +110,33 @@ bool FractureTracer::optimizePath(int maxIterations)
 		//calculate indices
 		start = m_waypoints[i - 1]; //global point id for the start waypoint
 		end = m_waypoints[i]; //global point id for the end waypoint
-		tID = i - 1; //id of the trace segment id (in m_trace vector)
+        tID = i - 1; //id of the trace segment id (in m_trace vector)
+        TracingSegment *seg = new TracingSegment(this,m_waypoints[i - 1],m_waypoints[i]);
+        m_trace.push_back(seg);
+        interactionClass->addSegmentToTracingQueue(seg);
 
+        /*
+        //TODO query status, trennen nach init und finieshed
+
+        std::deque<Point> segment = optimizeSegment(m_waypoints[i - 1], m_waypoints[i]);
+
+
+        if (tracerstatus==FINISHED_SEGMENTFOUND)
+            m_trace.push_back(segment);
+        else if (tracerstatus==FINISHED_SEGMENTNOTFOUND)
+            cout << "tracing doesn't work" << endl;
+        */
+        /*
 		//are we adding to the end of the trace?
 		if (tID >= m_trace.size()) 
 		{
-            std::deque<Point> segment = optimizeSegment(start, end, maxIterations); //calculate segment
+            std::deque<Point> segment = optimizeSegment(start, end); //calculate segment
+            if (segment.size()==0){
+                cout << "invalid segment" << endl;
+                return false;
+            }
 			m_trace.push_back(segment); //store segment
-			success = success && !segment.empty(); //if the queue is empty, we failed
+
 		} else //no... we're somewhere in the middle - update segment if necessary
 		{
 			if (!m_trace[tID].empty() && (m_trace[tID][0] == start) &&  (m_trace[tID][m_trace[tID].size() - 1] == end)) //valid trace and start/end match
@@ -164,8 +144,7 @@ bool FractureTracer::optimizePath(int maxIterations)
 			else
 			{
 				//calculate segment
-                std::deque<Point> segment = optimizeSegment(start, end, maxIterations); //calculate segment
-				success = success && !segment.empty(); //if the queue is empty, we failed
+                std::deque<Point> segment = optimizeSegment(start, end); //calculate segment
 
 				//add trace
 				if (m_trace[tID][m_trace[tID].size() - 1] == end) //end matches - we can replace the current trace & things should be sweet (all prior traces will have been updated already)
@@ -173,36 +152,63 @@ bool FractureTracer::optimizePath(int maxIterations)
 				else //end doesn't match - we need to insert
 					m_trace.insert(m_trace.begin()+tID, segment);
 			}
-		}
+        } */
 	}
-
-	#ifdef DEBUG_PATH
-	CCLib::ScalarField * f = m_cloud->getScalarField(idx);
-	f->computeMinAndMax();
-	#endif
-
-	return success;
+    setTracerStatus(TRACING_SEGMENTS);
+    return true;
 }
-*/
 
-/*
-void FractureTracer::finalizePath()
+
+
+int FractureTracer::insertWaypoint(Point Q)
 {
-    //clear existing points in background "polyline"
-    clear();
 
-    //push trace buffer to said polyline (for save/export etc.)
-    for (std::deque<int> seg : m_trace)
+    if (m_waypoints.size() >= 2)
     {
-        for (int p : seg)
+        //get location of point to add
+        //const CCVector3* Q = m_cloud->getPoint(pointId);
+        //float Q[3] = *m_cloud->getPoint(pointId);
+        Point start, end;
+        //check if point is "inside" any segments
+        for (int i = 1; i < m_waypoints.size(); i++)
         {
-            addPointIndex(p);
+            //get start and end points
+            //m_cloud->getPoint(m_waypoints[i - 1], start);
+            //m_cloud->getPoint(m_waypoints[i], end);
+            start=m_waypoints[i-1];
+            end=m_waypoints[i];
+
+            //are we are "inside" this segment
+            if (Utils::inCircle(start.position, end.position, Q.position))
+            {
+                //insert waypoint
+                m_waypoints.insert(m_waypoints.begin() + i, Q);
+                m_previous = i;
+                return i;
+            }
+        }
+
+        //check if the point is closer to the start than the end -> i.e. the point should be 'pre-pended'
+        //CCVector3 sp = Q - start;
+        //CCVector3 ep = Q - end;
+        float ds=DIST3(Q.position,start.position);
+        float de=DIST3(Q.position,end.position);
+        if (ds < de)
+        {
+            m_waypoints.insert(m_waypoints.begin(), Q);
+            m_previous = 0;
+            return 0;
         }
     }
+
+    //add point to end of the trace
+    m_waypoints.push_back(Q);
+    m_previous = static_cast<int>(m_waypoints.size()) - 1;
+    return m_previous;
 }
-*/
-// r4 7719
-//r4 7723t
+
+
+#if 0
 
 void FractureTracer::_printOpenSet()
 {
@@ -232,226 +238,9 @@ void FractureTracer::_print() {
  }
 
 
-int FractureTracer::debugSegment()
-{
-    Point start=m_waypoints[0];
-    Point end=m_waypoints[1];    
-    //check handle to point cloud
-    if (!m_cloud)
-    {
-        return -1; //error -> no cloud
-    }
-
-    unsigned int start_time = Utils::getTime();
-    unsigned int tic;
-    unsigned int neighbour_search_time=0;
-    if(tracerstatus==START) {   // initialisation, or first time run
-        m_start_rgb= start;
-        m_end_rgb= end;
-        m_path.clear();
-        m_iter_count = 0;
-        m_cost = 0;
-        m_smallest_cost = MAX_COST;
-        m_PointData.clear();
-        //m_closedSet.clear(); //visited nodes (key=nodeID, value=prevNodeID)
-        m_openSet.clear(); //nodes we are currently exploring (key=nodeID, value=prevNodeID)
-        //m_dist.clear(); //<node, cost estimate from start to end via this node>
-
-
-
-        m_openSet[start.index] = start.index; //open start node
-        //Point temp= m_cloud->getPointFromIndex(start.index);
-        //m_dist[start.index] = 0; //start-start distance = 0
-        //m_dist[end.index] = MAX_COST;
-        m_PointData[start.index]=PointData();
-        m_PointData[start.index].cost=0;
-        m_PointData[start.index].previous=start.index;
-        m_PointData[start.index].visited=true;
-        m_PointData[end.index].cost=MAX_COST;
-        //m_initialized=true;
-        setTracerStatus(TRACING);
-    }
-    //const ColorCompType* s = m_cloud->getPointColor(start);
-    //const ColorCompType* e = m_cloud->getPointColor(end);
-    //m_start_rgb[0] = s[0]; m_start_rgb[1] = s[1]; m_start_rgb[2] = s[2];
-    //m_end_rgb[0] = e[0]; m_end_rgb[1] = e[1]; m_end_rgb[2] = e[2];
-
-    //code essentialy taken from wikipedia page for Djikstra: https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
-
-
-    //declare variables used in the loop
-    float cur_d2, next_d2;
-
-    if (m_openSet.size()==0)
-    {
-        cout << "openSet is empty. we seem to be finished." <<endl;
-        setTracerStatus(FINISHED_NOLUCK);
-        return 0;
-    }
-    while (m_openSet.size() > 0) //while unvisited nodes exist
-    {
-
-
-        //check if we excede max iterations
-        if (m_iter_count > m_maxIterations) {
-            cout << "[FractureTracer::optimizeSegment] max iterations reached. Stopping" <<m_iter_count << " " << m_maxIterations<< std::endl;
-            return -1; //bail
-        }
-        m_iter_count++;
-
-        //get node from openSet with smallest cost
-        m_smallest_cost = MAX_COST;
-        for (std::map<PointIndex, PointIndex>::iterator it=m_openSet.begin();it!=m_openSet.end();++it){
-            //m_cost = m_dist[(*it).first];
-            m_cost = m_PointData[(*it).first].cost;
-            if (m_cost < m_smallest_cost)
-            {
-                m_smallest_cost = m_cost;
-                m_current =m_cloud->getPointFromIndex((*it).first);
-            }
-        }
-
-        //m_closedSet[m_current.index] = m_openSet[m_current.index]; //add current to closedSet
-        it_pointdata = m_PointData.find(m_current.index);
-        if (it_pointdata != m_PointData.end())
-        {
-            (*it_pointdata).second.visited=true;
-        } else
-        {
-            m_PointData[m_current.index]=PointData(true);
-            m_PointData[m_current.index].visited=true;
-        }
-
-
-
-        m_openSet.erase(m_current.index); //remove current from openSet
-        //cout << "m_current pos:" << m_current.position[0] << " index "<<m_current.index.index << std::endl;
-        if (m_current.index == end.index) //we've found it!
-        {
-            m_path.push_back(end); //add end node
-
-            //traverse backwards to reconstruct path
-            m_current = m_cloud->getPointFromIndex(m_PointData[m_current.index].previous); //move back one
-            while (m_current.index != start.index)
-            {
-                m_path.push_front(m_current);
-                m_current = m_cloud->getPointFromIndex(m_PointData[m_current.index].previous);
-            }
-            m_path.push_front(start);
-
-            //return
-            cout << "[FractureTracer::optimizeSegment] finished after iterations:" << m_iter_count << std::endl;
-            setTracerStatus(FINISHED_TRACEFOUND);
-            return 0;//m_path;
-        }
-
-        //calculate distance from current nodes parent to end -> avoid going backwards (in euclidean space) [essentially stops fracture turning > 90 degrees)
-        Point cur = m_current;//m_cloud->getPoint(closedSet[current]);
-        cur_d2 =	(cur.position[0] - end.position[0])*(cur.position[0] - end.position[0]) +
-                    (cur.position[1] - end.position[1])*(cur.position[1] - end.position[1]) +
-                    (cur.position[2] - end.position[2])*(cur.position[2] - end.position[2]);
-
-        //fill "neighbours" with nodes - essentially get results of a "sphere" search around active current point
-        tic = Utils::getTime();
-        m_neighbours.clear();
-        m_neighbours=m_cloud->getPointsInSphericalNeighbourhood(m_current, m_search_r);
-        //cout << "[FractureTracer::optimizeSegment] getPointsInSphericalNeighbourhood returned :" << m_neighbours.size() << std::endl;
-
-        if (m_neighbours.size() > 10000) {
-            m_search_r/=2;
-            cout << "new m_search_r: " << m_search_r <<endl;
-        }
-        else if (m_neighbours.size()< 100 ) {
-            while (m_neighbours.size() < 100 ) {
-                m_search_r*=2;
-                m_neighbours=m_cloud->getPointsInSphericalNeighbourhood(m_current, m_search_r);
-                cout << "new m_search_r: " << m_search_r <<" researching" <<endl;
-            }
-        }
-
-
-        neighbour_search_time+=Utils::getTime()-tic;
-        /*
-        if (omega::SystemManager::instance()->isMaster()) {
-            cout << "Iter / Neigh / search_r / neigh_time / dist2start / dist2end : " << m_iter_count << " / " << m_neighbours.size() << " / " << m_search_r
-                << " / " << neighbour_search_time << " / " << Utils::distance(start.position,m_current.position) << " / " << Utils::distance(end.position,m_current.position) << endl;            
-        }
-        */
-
-
-        //loop through neighbours
-        for (size_t i = 0; i < m_neighbours.size(); i++) //N.B. i = [pointID,cost]
-        {
-            Point apoint = m_neighbours[i];
-
-            //calculate (squared) distance from this neighbour to the end
-            next_d2 =	(apoint.position[0] - end.position[0])*(apoint.position[0] - end.position[0]) +
-                        (apoint.position[1] - end.position[1])*(apoint.position[1] - end.position[1]) +
-                        (apoint.position[2] - end.position[2])*(apoint.position[2] - end.position[2]);
-            //dijkstradebug
-            if (next_d2 >= cur_d2) //Bigger than the original distance? If so then bail.
-                continue;
-
-            it_pointdata = m_PointData.find(apoint.index);
-            if (it_pointdata==m_PointData.end())
-            {
-                m_PointData[apoint.index]=PointData();
-                it_pointdata = m_PointData.find(apoint.index);
-            }
-
-            //if (m_closedSet.count(apoint.index) == 1) //Is point in closed set? If so, bail.
-            //    continue;
-            if ((*it_pointdata).second.visited==true)
-                continue;
-
-            //calculate cost to this neighbour
-            m_cost = getSegmentCostRGB(m_current, apoint);
-
-            //transform into cost from start node
-            m_cost += m_PointData[m_current.index].cost;
-            m_openSet[apoint.index] = apoint.index; //add to open set - we can move here next
-
-            //have we visited this node before?
-            if ((*it_pointdata).second.cost!=-1)
-            {
-                //is this cost better?
-                if (m_cost < (*it_pointdata).second.cost)
-                {
-                    //m_dist[apoint.index] = m_cost; //update cost with better value
-                    (*it_pointdata).second.cost=m_cost;
-                    (*it_pointdata).second.previous=m_current.index;//store this as the best path to this node
-                }
-                else
-                    continue; //skip
-            } else //this is the first time we've looked at this node
-            {
-
-                (*it_pointdata).second.cost=m_cost;
-                (*it_pointdata).second.previous=m_current.index;
-            }
-        }
-        //_print();
-        //_printOpenSet();
-        //return m_iter_count;
-        if(Utils::getTime() - start_time > 150)
-        {
-            if (omega::SystemManager::instance()->isMaster()) {
-            cout << "150ms. " << "t:" << Utils::getTime() - start_time <<" #" << " / " << m_neighbours.size() << " r:" << m_search_r << " iter:"<< m_iter_count << std::endl;
-            }
-            return -2;
-        }
-    } // while
-    cout << "[FractureTracer::optimizeSegment] iterations:" << m_iter_count << std::endl;
-    //assert(false);
-    //setTracerStatus(FINISHED_NOLUCK);
-    return -1; //shouldn't come here?
-}
-
-
-
 //int FractureTracer::COST_MODE = FractureTracer::MODE::DARK; //set default cost mode
 
-#if 0
+
 std::deque<Point> FractureTracer::optimizeSegment(Point start, Point end, int maxIterations)
 {
 
@@ -1035,6 +824,10 @@ float FractureTracer::calculateOptimumSearchRadius()
 
 void FractureTracer::render()
 {
+    if (tracerstatus==TRACING_SEGMENTS)
+    {
+        checkOnTraces();
+    }
 
     if (m_waypoints.size() == 0)
         return;
@@ -1055,8 +848,8 @@ void FractureTracer::render()
         glVertex3f(p.position[0],p.position[1],p.position[2]);
     }
     glEnd();
-
-    if (tracerstatus==TRACING) {
+    /*
+    if (tracerstatus==TRACING_SEGMENT) {
         glPointSize(pointscale/4);
         glColor3f(0.8, 0.8, 0.8); //white
         glBegin(GL_POINTS);
@@ -1066,37 +859,59 @@ void FractureTracer::render()
             glVertex3f(p.position[0],p.position[1],p.position[2]);
         }
         glEnd();
-    }
-
-    if (tracerstatus==TRACING) {
+    }*/
+/*
+    if (tracerstatus==TRACING_SEGMENTS) { //debugging of openset and current
         glPointSize(5);
         glColor3f(1.0, 0.0, 0.0); //red
         glBegin(GL_POINTS);
+
         for (std::map<PointIndex, PointIndex>::iterator it=m_openSet.begin();it!=m_openSet.end();++it)
         {
             p=m_cloud->getPointFromIndex((*it).first);
             glVertex3f(p.position[0],p.position[1],p.position[2]);
         }
+        glEnd();    
+
+        glPointSize(pointscale*2);
+        glColor3f(0.0, 1.0, 0.0); //green
+        glBegin(GL_POINTS);
+        glVertex3f(m_current.position[0],m_current.position[1],m_current.position[2]);
+        glEnd();
+    }
+*/
+
+    if (tracerstatus==FINISHED_DONE) {
+        glPointSize(pointscale*2);
+        glColor3f(1.0, 1.0, 1.0); //white
+        glLineWidth(4.0);
+        glBegin(GL_LINES);
+        //glBegin(GL_POINTS);
+
+        std::vector< TracingSegment* >::iterator segit= m_trace.begin();
+        TracingSegment * seg;
+        std::deque < Point > segpath;
+        std::deque < Point >::iterator ptsit;
+        for (;segit!=m_trace.end();segit++)
+        {
+            seg=(*segit);
+            segpath =seg->getSegmentPathRef();
+            for (ptsit = segpath.begin() ; ptsit != segpath.end(); ++ptsit)
+            {
+                p=(*ptsit);
+                glVertex3f(p.position[0],p.position[1],p.position[2]);
+            }
+        }
         glEnd();
     }
 
-    glPointSize(pointscale*2);
-    glColor3f(0.0, 1.0, 0.0); //green
-    glBegin(GL_POINTS);
-    glVertex3f(m_current.position[0],m_current.position[1],m_current.position[2]);
-    glEnd();
+    //glLineWidth(4.0);
+    //glColor3f(m_tracers[playerid]->rayColor[0], m_tracers[playerid]->rayColor[1], m_tracers[playerid]->rayColor[2]);
+    //glBegin(GL_LINES);
+    //glVertex3f(spos[0], spos[1], spos[2]);
+    //glVertex3f(epos[0], epos[1], epos[2]);
+    //glEnd();
 
-    glPointSize(pointscale*2);
-    glColor3f(1.0, 1.0, 1.0); //white
-    glBegin(GL_POINTS);
-    for (std::deque < Point > ::iterator it = m_path.begin() ; it != m_path.end(); ++it)
-    {
-        p=(*it);
-        glVertex3f(p.position[0],p.position[1],p.position[2]);
-    }
-    glEnd();
-    //if (trace.size()==0)
-    //    return;
 
 }
 

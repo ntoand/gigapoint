@@ -26,6 +26,8 @@
 namespace gigapoint {
 
 class PointCloud;
+class Interaction;
+class TracingSegment;
 
 /*
 A ccTrace object is essentially a ccPolyline that is controlled/created by "waypoints" and a least-cost path algorithm
@@ -38,22 +40,21 @@ If treated as a ccTrace object, then the waypoints can be manipulated and the un
 the waypoints are also drawn as bubbles.
 
 */
-//class FractureTracer : public ccPolyline
+
 class FractureTracer
 {
 public:
-        FractureTracer(PointCloud* root);
+        FractureTracer(PointCloud* root, int playerid,Interaction* inter);
         virtual ~FractureTracer() {}
 
         void render();
-        int test(int playerID);
-        std::vector< Point > m_neighbours;
+        int test(int playerID);        
         bool m_destroy;
         void destroy() {m_destroy=true;}
-        bool destroyme() {return m_destroy;}
-        static const int MAX_COST=99999;
+        bool destroyme() {return m_destroy;}        
         void setPointScale(float scale) {pointscale=scale;}
         void setComponentColor(std::string component,float r,float g,float b);
+        float getSearchRadius(){return m_search_r;}
 
 
 	//inherited from ccHObject
@@ -109,15 +110,17 @@ public:
 	  -true if an optimal path was successfully identified
 	  -false if the a path could not be found (iterations > maxIterations)
 	*/
-    //bool optimizePath(int maxIterations );
+    bool optimizePath();
 
 	/*
 	Applies the optimized path to the underlying polyline object (allows saving etc.).
 	*/
-    //void finalizePath();
+    void finalizePath();
+
+    //std::deque<Point> optimizeSegment(Point start, Point end);
 
 
-    std::vector< std::deque< Point > >& getTraceRef() {return m_trace;}
+    //std::vector< std::deque< Point > >& getTraceRef() {return m_trace;}
 
 
 	/*
@@ -132,15 +135,15 @@ public:
 	*/
     //ccPlane* fitPlane(int surface_effect_tolerance = 10, float min_planarity = 0.75f);
 
-    //void setTraceColor(ccColor::Rgba col) { m_trace_colour = col; }
-    //void setWaypointColor(ccColor::Rgba col) { m_waypoint_colour = col; }
+
     enum TRACERSTATUS
     {
         DONOTHING =1,
-        START = 2,
-        TRACING = 3,
-        FINISHED_TRACEFOUND =4,
-        FINISHED_NOLUCK = 5
+        START_SEGMENT = 2,
+        TRACING_SEGMENTS = 3,
+        FINISHED_SEGMENTFOUND = 4,
+        FINISHED_SEGMENTNOTFOUND = 5,
+        FINISHED_DONE = 6
     };
 
 	enum MODE 
@@ -155,30 +158,11 @@ public:
 		INV_SCALAR = 128
 	};
 
-    typedef struct PointData_t {
-        bool visited;
-        int cost;
-        PointIndex previous;
-        PointData_t() : cost(-1),visited(false)
-        {
-
-        }
-        PointData_t(bool b) : cost(-1),visited(b)
-        {
-
-        }
-    } PointData;
-
-
+    PointCloud* getCloud(){return m_cloud;}
 	static int COST_MODE;
     //bool m_initialized;
     //bool m_finishedTrace;
-    int debugSegment();
-    std::map<PointIndex,PointData> m_PointData;
-    //std::map<PointIndex, PointIndex> m_closedSet; //visited nodes (key=nodeID, value=prevNodeID)
-    std::map<PointIndex, PointIndex> m_openSet; //nodes we are currently exploring (key=nodeID, value=prevNodeID)
-    //std::vector<PointIndex> m_openSet;
-    //std::map<PointIndex, int> m_dist; //<node, cost estimate from start to end via this node>
+
     int m_iter_count;
     int m_maxIterations;
     int m_cost;
@@ -186,18 +170,19 @@ public:
     void setTracerStatus(TRACERSTATUS newts) {
         tracerstatus=newts;
     }
+    /*
     void update(){
-        if (tracerstatus==TRACING)
-            debugSegment();
+        if (tracerstatus!=DONOTHING && tracerstatus!=FINISHED_DONE)
+            optimizePath();
     }
+    */
     float rayColor[3];
     float selectionColor[3];
 
 protected:
     void _print();
-    TRACERSTATUS tracerstatus;
-    std::map<PointIndex,PointData>::iterator it_pointdata;
-    std::deque<Point> m_path;
+    TRACERSTATUS tracerstatus;    
+
 	//overidden from ccHObject
     //virtual void drawMeOnly(CC_DRAW_CONTEXT& context) override;
     bool m_waitforinput;
@@ -243,7 +228,6 @@ protected:
     //ccPointCloud* m_cloud=0; //pointer to ccPointCloud object this is linked to (slightly different to polylines as we know this data is sampled from a real cloud)
     PointCloud* m_cloud;
 
-    std::vector< std::deque< Point > > m_trace; //contains an ordered list of indices which define this trace. Note that indices representing nodes MAY be inserted twice.
     std::vector<Point> m_waypoints; //list of waypoint indices
     int m_previous; //for undoing waypoints
 
@@ -265,6 +249,13 @@ private:
 
     float traceColor[3];
     float waypointColor[3];
+
+    int m_playerid;
+    static const int MAX_COST=99999;
+    Interaction* interactionClass;
+
+    void checkOnTraces();
+    std::vector< TracingSegment* > m_trace; //contains an ordered list of indices which define this trace. Note that indices representing nodes MAY be inserted twice.
 };
 }; // namespave gigapoint
 #endif

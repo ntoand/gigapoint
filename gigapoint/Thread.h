@@ -1,3 +1,6 @@
+#ifndef _THREAD_H
+#define _THREAD_H
+
 #include <pthread.h>
 
 // ref: http://vichargrave.com/multithreaded-work-queue-in-c/
@@ -24,3 +27,5 @@ class Thread
 };
 
 }; //namespace gigapoint
+
+#endif
