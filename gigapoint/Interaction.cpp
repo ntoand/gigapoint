@@ -152,12 +152,15 @@ void Interaction::drawTrace()
         } else { tracerBLUE->render();}
 }
 
-void Interaction::useSelectedPointAsTracePoint()
+void Interaction::useSelectedPointAsTracePoint(int playerid)
 {
-    if (hitPoints.size()==0)
-        return;
-    cout << "Inserting new Tracepoint Node / PointIndex:" << hitPoints[0]->node->getName() << " / " << hitPoints[0]->index << std::endl;
-    Point p1(hitPoints[0]->node,hitPoints[0]->index);
+    if(!selectionPoints[playerid-1].first)
+	return;
+
+    //if (hitPoints.size()==0)
+    //    return;
+    //cout << "Inserting new Tracepoint Node / PointIndex:" << hitPoints[0]->node->getName() << " / " << hitPoints[0]->index << std::endl;
+    Point p1(selectionPoints[playerid-1].second.node,selectionPoints[playerid-1].second.index);
     p1.index.node->getPointData(p1);
     tracer->insertWaypoint(p1);
 }

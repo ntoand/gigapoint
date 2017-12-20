@@ -166,7 +166,7 @@ public:
     void setDrawTrace(bool b) {interaction->setDrawTrace(b);}
     void pickPointFromRay(const omega::Vector3f &origin,const omega::Vector3f &direction,int playerid)
         { interaction->pickPointFromRay(origin,direction,playerid);}
-    void useSelectedPointAsTracePoint() {interaction->useSelectedPointAsTracePoint();}
+    void useSelectedPointAsTracePoint(int playerid) {interaction->useSelectedPointAsTracePoint(playerid);}
     void resetTracer(int playerid) {interaction->resetTracer(playerid);}
     void setTracerPointScale(float scale) {interaction->setTracerPointScale(scale);}
     void next() {interaction->next();}

@@ -50,7 +50,7 @@ public:
     void setDrawTrace(bool b){m_drawTrace=b;}
     void next();
     void pickPointFromRay(const omega::Vector3f &origin,const omega::Vector3f &direction,int playerid);
-    void useSelectedPointAsTracePoint();
+    void useSelectedPointAsTracePoint(int playerid);
     void resetTracer(int playerid);
     int test(int playerID);
     void setTracerPointScale(float scale);
