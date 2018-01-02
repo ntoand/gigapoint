@@ -166,11 +166,28 @@ public:
     void setDrawTrace(bool b) {interaction->setDrawTrace(b);}
     void pickPointFromRay(const omega::Vector3f &origin,const omega::Vector3f &direction,int playerid)
         { interaction->pickPointFromRay(origin,direction,playerid);}
+    void updateRay(const omega::Vector3f &origin,const omega::Vector3f &direction,int playerid)
+        { interaction->updateRay(origin,direction,playerid);}
     void useSelectedPointAsTracePoint(int playerid) {interaction->useSelectedPointAsTracePoint(playerid);}
     void resetTracer(int playerid) {interaction->resetTracer(playerid);}
     void setTracerPointScale(float scale) {interaction->setTracerPointScale(scale);}
     void next() {interaction->next();}
     void setTracerColor(std::string tracer,std::string component,float r,float g,float b){interaction->setColor(tracer,component,r,g,b);}
+    void printTODO() {
+        string RED="\033[0;31m";
+        string NOCOLOR="\033[0m";
+        cout << RED
+             << "Andreas TODO List" << endl
+             << "\t3 controllers and tracers \n"
+             << "\t3 colors for drawing traces and interaction \n"
+             << "\tnodelevel searchdepht setter\n"
+             << "\tPointerOff2theright\n"
+             << "\t\n"
+             << NOCOLOR << endl;
+    }
+
+
+
 #endif
 
 }; //class GigapointRenderModule
@@ -238,23 +255,12 @@ void GigapointRenderModule::initializeRenderer(Renderer* r)
 ///////////////////////////////////////////////////////////////////////////////
 GigapointRenderModule* initialize()
 {
-
-    string RED="\033[0;31m";
-    string NOCOLOR="\033[0m";
-    string INDENT1="\t";
-    cout << RED
-         << "Andreas TODO List" << endl
-         << " 3 controllers and tracers \n"                  
-         << INDENT1 << "3 colors for drawing traces and interaction \n"
-         << INDENT1 << " implement fixed nodelevel in memory and for search to keep all nodes euqal\n"
-         << "onlineupdate demo using a lasfile ordered by scantime \n"
-         << NOCOLOR << endl;
-
     GigapointRenderModule* prm = new GigapointRenderModule();
     ModuleServices::addModule(prm);
     prm->doInitialize(Engine::instance());
     return prm;
 }
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -285,11 +291,12 @@ BOOST_PYTHON_MODULE(gigapoint)
         PYAPI_METHOD(GigapointRenderModule, test)
         PYAPI_METHOD(GigapointRenderModule, setDrawTrace)
         PYAPI_METHOD(GigapointRenderModule, pickPointFromRay)
+        PYAPI_METHOD(GigapointRenderModule, updateRay)
         PYAPI_METHOD(GigapointRenderModule, useSelectedPointAsTracePoint)
         PYAPI_METHOD(GigapointRenderModule, resetTracer)
         PYAPI_METHOD(GigapointRenderModule, setTracerPointScale)
-        PYAPI_METHOD(GigapointRenderModule, setTracerColor)
-        //PYAPI_METHOD(GigapointRenderModule, next)
+        PYAPI_METHOD(GigapointRenderModule, setTracerColor)        
+        PYAPI_METHOD(GigapointRenderModule, printTODO)
     ;
 
 

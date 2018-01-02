@@ -39,7 +39,7 @@ public:
     ~Interaction();
 
     // interaction
-    void updateRay(const omega::Ray& r, int playerid);
+    void updateRay(const omega::Vector3f &origin,const omega::Vector3f &direction, int playerid);
     bool findHitPoint(int playerid);
     void traceFracture(int playerid);
     void traceAllFractures();

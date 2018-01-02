@@ -98,7 +98,7 @@ void Interaction::setTracerPointScale(float scale)
 void Interaction::draw()
 {
     // draw interaction
-    if(interactMode != INTERACT_NONE) {        
+    if(interactMode != INTERACT_NONE || interactMode == INTERACT_MULTIFRACTURE) {
 
         //draw ray line
         Vector3f spos;
@@ -176,8 +176,9 @@ void Interaction::pickPointFromRay(const omega::Vector3f &origin,const omega::Ve
 
 
 // interaction
-void Interaction::updateRay(const omega::Ray& r, int playerid) {
-    rays[playerid-1] = r;
+void Interaction::updateRay(const omega::Vector3f &origin,const omega::Vector3f &direction, int playerid) {
+    rays[playerid-1].setOrigin(origin);
+    rays[playerid-1].setDirection(direction);
 }
 
 
@@ -229,7 +230,7 @@ bool hitpointcomparator (HitPoint* i,HitPoint* j) { return (i->distance<j->dista
 
 bool Interaction::findHitPoint(int playerid) {
 
-    if (interactMode == INTERACT_POINT) {
+    if (interactMode == INTERACT_POINT || interactMode == INTERACT_MULTIFRACTURE) {
         omega::Ray ray = rays[playerid-1];
         unsigned int start_time = Utils::getTime();
         hitPoints.clear();
