@@ -128,8 +128,8 @@ public:
 
     Point getPointFromIndex(const PointIndex_ &index);
     std::vector< Point > getPointsInSphericalNeighbourhood(Point current, float search_r)
-    {
-        return root->getPointsInSphericalNeighbourhood(current,search_r);
+    {        
+        return root->getPointsInSphericalNeighbourhood(current,search_r,option->preloadToLevel);
     }
 
     //interface facade

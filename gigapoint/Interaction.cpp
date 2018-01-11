@@ -245,10 +245,10 @@ bool Interaction::findHitPoint(int playerid) {
         if(point->distance != -1) {
             hitPoints.push_back(point);
             selectionPoints[playerid-1]=std::pair<bool,HitPoint>(true,HitPoint(hitPoints[0]));
-            cout << "find time: " << Utils::getTime() - start_time << " size: " << hitPoints.size()
+            /*cout << "find time: " << Utils::getTime() - start_time << " size: " << hitPoints.size()
                 << " dis: " << hitPoints[0]->distance
                 << " pos: " << hitPoints[0]->position[0] << " " << hitPoints[0]->position[1] << " "
-                << hitPoints[0]->position[2] << endl;
+                << hitPoints[0]->position[2] << endl;*/
            /* if (hitPoints.size() >=2 ) {
                 float dis=Utils::distance(hitPoints[0]->position,hitPoints[1]->position);
                 cout << "distance between first and second point is: " << dis << endl;

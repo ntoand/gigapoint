@@ -124,7 +124,7 @@ public:
 
     //tracer
     Point getPoint(PointIndex ind);
-    std::vector< Point > getPointsInSphericalNeighbourhood(Point current, float search_r);
+    std::vector< Point > getPointsInSphericalNeighbourhood(Point current, float search_r, int depthLevel);
     void getPointData(Point &point);
     void setPointColor(Point &point,int r,int g,int b);
 

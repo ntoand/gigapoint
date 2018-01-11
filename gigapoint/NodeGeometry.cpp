@@ -511,7 +511,7 @@ void NodeGeometry::setPointColor(Point &point, int r, int g, int b)
     colors[3*point.index.index+2]=(unsigned char)b;
 }
 
-std::vector< Point > NodeGeometry::getPointsInSphericalNeighbourhood(Point current, float search_r){
+std::vector< Point > NodeGeometry::getPointsInSphericalNeighbourhood(Point current, float search_r, int depthLevel){
     std::vector< Point > points;
     std::vector<NodeGeometry *> nodesInRange;
     nodesInRange.push_back(this);
@@ -553,7 +553,7 @@ std::vector< Point > NodeGeometry::getPointsInSphericalNeighbourhood(Point curre
 
 
         // stop at certain treedepth. treenodes might not be present on other cave nodes        
-        if (node->level >= MIN_TREE_DEPTH)
+        if (node->level >= depthLevel)
         {
             //cout << "ignoring node " << node->getName() << endl;
             continue;
@@ -585,9 +585,7 @@ std::vector< Point > NodeGeometry::getPointsInSphericalNeighbourhood(Point curre
 void NodeGeometry::findHitPoint(const omega::Ray& r, HitPoint* point) {
     int numhits=0;
 	// check with the whole node first
-    Vector3f pos;
-    //Vector3f pos = Vector3f(spherecentre[0], spherecentre[1], spherecentre[2]);
-    //std::pair<bool, omega::real> result = r.intersects(Sphere(pos, sphereradius));
+    Vector3f pos;    
 
     std::pair<bool, omega::real> result = r.intersects(AlignedBox3(bbox[0],bbox[1],bbox[2],bbox[3],bbox[4],bbox[5]));
 	if(!result.first)

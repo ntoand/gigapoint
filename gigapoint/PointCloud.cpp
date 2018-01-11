@@ -96,7 +96,6 @@ int PointCloud::initPointCloud() {
 	
     }
 
-
     preloadUpToLevel(option->preloadToLevel);
 
 	return 1;

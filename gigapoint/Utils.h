@@ -55,8 +55,6 @@ namespace gigapoint {
 #define INTERACT_POINT 	0
 #define INTERACT_MULTIFRACTURE	1
 
-#define MIN_TREE_DEPTH 6
-
 #define FILTER_NONE 0
 #define FILTER_EDL 1
 
