@@ -66,11 +66,13 @@ Input parematers are stored in a json file. A sample configuration file (other c
 
 <pre>
 {
+	"version": 1
 	<b>"dataDir": "/path/to/potree_data",</b>
 	"shaderDir": "/path/to/custom/shaders",
 	"visiblePointTarget": 5000000,
 	"minNodePixelSize": 100,
 	"material": "rgb",
+	"elevationDirection": 2,
 	"elevationRange": [0, 0.5],
 	"pointScale": [0.01,0.01,0.5],
 	"pointSizeRange": [2, 400],
@@ -82,19 +84,23 @@ Input parematers are stored in a json file. A sample configuration file (other c
 	"maxLoadSize": 300,
 	"cameraSpeed": 10,
 	"cameraPosition": [-90.478,-18.9424,466],
+	"cameraTarget": [-90.478,-18.9424,464],
+	"cameraUp": [0, 0, 1],
 	"cameraOrientation": [0.63, 0.52,-0.34,-0.45],
 	"filter": "edl",
-	"filterEdl": [0.5, 1]
+	"filterEdl": [0.4, 1.4]
 }
 </pre>
 
 <b>*bold: mandatory</b>
 
+- version (int): version 1 uses cameraOrientation, other versions use cameraTarget parameter instead
 - <b>dataDir (string)</b>: directory stores potree data. Defaults to current directory "./"
 - shaderDir (string): points to your custom shaders (point.vert, point.frag, edl.vert, edl.frag). Defaults to "gigapoint_resource/shaders"
 - visiblePointTarget (integer): target number of visible points on each rendering node. Defaults to 1000000 points
 - minNodePixelSize (integer): octree nodes that have less than this value will be ignored. Defaults to 100
 - material {"rgb", "elevation"}. Defaults to "rgb"
+- elevationDirection ({0, 1, 2} for x, y, z axes respectively
 - elevationRange (float array[2]): cutoff elevation range (z direction). Defaults to [0, 1]
 - pointScale (float array[3]): [point scale value, min value, max value]. Defaults to [0.1, 0.01, 1.0]
 - pointSizeRange (float array 2]: [minimum point size on screen, maximum point size on screen]. Defaults to [2, 50]
@@ -106,7 +112,9 @@ Input parematers are stored in a json file. A sample configuration file (other c
 - maxLoadSize (integer): maximum number of nodes store in loading queue. Defaults to 300
 - cameraSpeed (float): Omegalib camera speed. Defaults to 10
 - cameraPosition (float array[3]): inital position (x, y, z) of camera. Defaults to [0, 0, 0]
-- cameraOrientation (float array[4]): inital orientation (quaterion) of camera. Defaults to [1, 0, 0, 0]
+- cameraTarget (float array[3]): lookat point. Defaults to [0, 0, -2]. This parameter is used in version > 1
+- cameraUp (float array[3]): up vector. Defaults to [0, 0, 1]
+- cameraOrientation (float array[4]): inital orientation (quaterion) of camera. Defaults to [1, 0, 0, 0]. This parameter is used in version 1
 - filter {"none", "edl"}: edl = Eye Dome Lighting. Defaults to "none"
 - filterEdl (float array[2]): EDL options [EDL strength, EDL radius]. Defaults to [1.0, 1.4]
 
