@@ -64,11 +64,13 @@ namespace gigapoint {
 
 
 typedef struct Option_t {
+    int version;                // 2: use cameraTarget
 	string dataDir;
 	string shaderDir;
 	unsigned int visiblePointTarget;
 	float minNodePixelSize;
 	int material;
+    int elevationDirection;     //0: X, 1: Y, 2: Z
 	float elevationRange[2];	//min, max in [0, 1]
 	float pointScale[3];
 	float pointSizeRange[2];
@@ -82,7 +84,9 @@ typedef struct Option_t {
 	float cameraSpeed;
 	bool cameraUpdatePosOri;
 	float cameraPosition[3];
-	float cameraOrientation[4];
+    float cameraTarget[3];
+    float cameraUp[3];
+	float cameraOrientation[4]; // deprecated! use cameraTarget instead
 	int filter;
 	float filterEdl[2];			//[strength radius]
 

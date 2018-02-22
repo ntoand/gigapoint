@@ -7,12 +7,17 @@
 	"pointSizeRange": [2, 50],
 	"sizeType": "adaptive",
 	"quality": "circle",
+	"elevationDirection": 1,
+	"elevationRange": [0, 1],
+	"filter": "edl",
+	"filterEdl": [0.4, 1.4],
 	"numReadThread": 2,
 	"preloadToLevel": 3,
 	"maxNodeInMem": 50000,
 	"maxLoadSize": 100,
-	"cameraSpeed": 100,
-	"cameraUpdatePosOri": 0.5,
-	"cameraPosition": [196.64, 21.32, 269.73],
-	"cameraOrientation": [0.96, 0.03, 0.26, -0.01]
+	"cameraSpeed": 1,
+	"cameraUpdatePosOri": 1,
+	"cameraPosition": [210.949, 189.089, 72.882],
+	"cameraTarget": [210.283, 188.474, 72.4606],
+	"cameraUp": [0, 1, 0]
 }

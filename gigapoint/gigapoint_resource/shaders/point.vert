@@ -4,6 +4,7 @@ attribute vec3 VertexColor;
 #endif
 
 uniform sampler2D uColorTexture;
+uniform int uElevationDirection;
 uniform vec2 uHeightMinMax;
 uniform float uScreenHeight;
 uniform float uPointScale;
@@ -44,7 +45,8 @@ void main()
     vColor = vec3(VertexColor.x / 255.0, VertexColor.y/255.0, VertexColor.z/255.0) ;
 #endif
 #if defined MATERIAL_ELEVATION
-    float w = (VertexPosition.z - uHeightMinMax[0]) / (uHeightMinMax[1]-uHeightMinMax[0]);
+    //float w = (VertexPosition.z - uHeightMinMax[0]) / (uHeightMinMax[1]-uHeightMinMax[0]);
+    float w = (VertexPosition[uElevationDirection] - uHeightMinMax[0]) / (uHeightMinMax[1]-uHeightMinMax[0]);
     w = clamp(w, 0.01, 0.99);
     vColor = texture2D(uColorTexture, vec2(w,0.5)).rgb;
 #endif

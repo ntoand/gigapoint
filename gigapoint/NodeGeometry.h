@@ -78,6 +78,9 @@ private:
                 return true;
         return false;
     }
+    
+private:
+    void getRangeInfo(const Option* option, float &min, float &max, float &range);
 
 public:
 	NodeGeometry(string name);

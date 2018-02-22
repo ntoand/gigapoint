@@ -110,13 +110,18 @@ static void window_size_callback(GLFWwindow* window, int width, int height) {
 void init_resources(string configfile, bool zup = false)
 {
     option = Utils::loadOption(configfile);
+    Utils::printOption(option);
     
     camera = new Camera();
-    if(option->cameraUpdatePosOri)
-        camera->SetPosition(glm::vec3(option->cameraPosition[0], option->cameraPosition[1], option->cameraPosition[1]));
-    else
+    if(option->cameraUpdatePosOri) {
+        camera->SetPosition(glm::vec3(option->cameraPosition[0], option->cameraPosition[1], option->cameraPosition[2]));
+        camera->SetLookAt(glm::vec3(option->cameraTarget[0], option->cameraTarget[1], option->cameraTarget[2]));
+    }
+    else {
         camera->SetPosition(glm::vec3(0, 0, 2));
-    camera->SetLookAt(glm::vec3(0, 0, 0));
+        camera->SetLookAt(glm::vec3(0, 0, 0));
+    }
+    
     if(zup)
         camera->camera_up = glm::vec3(0, 0, 1);
     camera->SetViewport(0, 0, WIDTH, HEIGHT);
@@ -126,7 +131,7 @@ void init_resources(string configfile, bool zup = false)
     
     pointcloud = new PointCloud(option);
     pointcloud->initPointCloud();
-    pointcloud->setPrintInfo(true);
+    //pointcloud->setPrintInfo(true);
 }
 
 void free_resources()
@@ -287,8 +292,8 @@ void mainLoop()
 
 int main(int argc, char* argv[]) {
     
-    //string configfile = "gigapoint_resource/config/gigapoint_century_local.json";
-    string configfile = "gigapoint_resource/config/gigapoint_WP_07_local.json";
+    string configfile = "gigapoint_resource/config/gigapoint_century_local.json";
+    //string configfile = "gigapoint_resource/config/gigapoint_WP_07_local.json";
     //string configfile = "gigapoint_resource/config/gigapoint_HoyoVerde_local.json";
     bool zup = true;
     

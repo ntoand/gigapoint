@@ -50,8 +50,14 @@ public:
 
 		if(option->cameraUpdatePosOri) {
 			cam->setPosition(Vector3f(option->cameraPosition[0], option->cameraPosition[1], option->cameraPosition[2]));
-			cam->setOrientation(Quaternion(option->cameraOrientation[0], option->cameraOrientation[1], 
-											option->cameraOrientation[2], option->cameraOrientation[3]));
+            if(option->version == 1) {
+                cam->setOrientation(Quaternion(option->cameraOrientation[0], option->cameraOrientation[1], 
+                                            option->cameraOrientation[2], option->cameraOrientation[3]));
+            }
+			else {
+                cam->lookAt(Vector3f(option->cameraTarget[0], option->cameraTarget[1], option->cameraTarget[2]), 
+                            Vector3f(option->cameraUp[0], option->cameraUp[1], option->cameraUp[2]));
+            }
 		}	
     }
 

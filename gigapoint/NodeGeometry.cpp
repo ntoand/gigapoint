@@ -341,6 +341,24 @@ int NodeGeometry::initVBO() {
 
     return 0;
 }
+    
+void NodeGeometry::getRangeInfo(const Option* option, float &range_min, float &range_max, float &range) {
+    if(option->elevationDirection == 0) {
+        range = info->tightBoundingBox[3] - info->tightBoundingBox[0];
+        range_min = info->tightBoundingBox[0] + option->elevationRange[0] * range;
+        range_max = info->tightBoundingBox[0] + option->elevationRange[1] * range;
+    }
+    else if (option->elevationDirection == 1) {
+        range = info->tightBoundingBox[4] - info->tightBoundingBox[1];
+        range_min = info->tightBoundingBox[1] + option->elevationRange[0] * range;
+        range_max = info->tightBoundingBox[1] + option->elevationRange[1] * range;
+    }
+    else {
+        range = info->tightBoundingBox[5] - info->tightBoundingBox[2];
+        range_min = info->tightBoundingBox[2] + option->elevationRange[0] * range;
+        range_max = info->tightBoundingBox[2] + option->elevationRange[1] * range;
+    }
+}
 
 #ifdef STANDALONE_APP
 void NodeGeometry::draw(const float MV[16], const float MVP[16], Material* material, const int height) {
@@ -399,9 +417,9 @@ void NodeGeometry::draw(Material* material, const int height) {
     }
 	
 	shader->transmitUniform("uColorTexture", (int)0);
-	float range = info->tightBoundingBox[5] - info->tightBoundingBox[2];
-	float range_min = info->tightBoundingBox[2] + option->elevationRange[0] * range;
-	float range_max = info->tightBoundingBox[2] + option->elevationRange[1] * range;
+    float range, range_min, range_max;
+    getRangeInfo(option, range_min, range_max, range);
+    shader->transmitUniform("uElevationDirection", option->elevationDirection);
 	shader->transmitUniform("uHeightMinMax", range_min, range_max);
 	shader->transmitUniform("uScreenHeight", (float)height);
     shader->transmitUniform("uPointScale", (float)option->pointScale[0]);

@@ -226,6 +226,8 @@ Option* Utils::loadOption(const string filename) {
     }
     else {
         option = new Option();
+        
+        option->version = getJsonItemInt(json, "version", 1);
 
         option->dataDir = getJsonItemString(json, "dataDir", "./");
         option->dataDir.append("/");
@@ -233,14 +235,14 @@ Option* Utils::loadOption(const string filename) {
         if (jtmp != NULL )
             option->onlineUpdate = jtmp->valueint > 0;
 
-	cJSON* sp = cJSON_GetObjectItem(json, "shaderDir");
-	if(sp) {
-		option->shaderDir = sp->valuestring;
-		option->shaderDir.append("/");
-	}
-	else {
-		option->shaderDir = "gigapoint_resource/shaders/";
-	}
+        cJSON* sp = cJSON_GetObjectItem(json, "shaderDir");
+        if(sp) {
+            option->shaderDir = sp->valuestring;
+            option->shaderDir.append("/");
+        }
+        else {
+            option->shaderDir = "gigapoint_resource/shaders/";
+        }
 
         option->visiblePointTarget = getJsonItemDouble(json, "visiblePointTarget", 1000000);
         option->minNodePixelSize = getJsonItemDouble(json, "minNodePixelSize", 100);
@@ -255,6 +257,8 @@ Option* Utils::loadOption(const string filename) {
         else
             option->material = MATERIAL_RGB;
 
+        
+        option->elevationDirection = getJsonItemInt(json, "elevationDirection", 2); // default to Z axis
 
         cJSON* er = cJSON_GetObjectItem(json, "elevationRange");
         if(er) {
@@ -313,7 +317,6 @@ Option* Utils::loadOption(const string filename) {
         else
             option->quality = QUALITY_SQUARE;
 
-
         option->numReadThread = getJsonItemInt(json, "numReadThread", 2);
         option->preloadToLevel = getJsonItemInt(json, "preloadToLevel", 5);
         option->maxNodeInMem = getJsonItemInt(json, "maxNodeInMem", 50000);  
@@ -321,29 +324,38 @@ Option* Utils::loadOption(const string filename) {
         option->cameraSpeed = getJsonItemInt(json, "cameraSpeed", 10);
 
         option->cameraUpdatePosOri = getJsonItemInt(json, "cameraUpdatePosOri", 1) > 0;
-        if(option->cameraUpdatePosOri) {
-            cJSON* campos = cJSON_GetObjectItem(json, "cameraPosition");
-            if(campos) {
-                option->cameraPosition[0] = cJSON_GetArrayItem(campos, 0)->valuedouble;
-                option->cameraPosition[1] = cJSON_GetArrayItem(campos, 1)->valuedouble;
-                option->cameraPosition[2] = cJSON_GetArrayItem(campos, 2)->valuedouble;
-            }
-            else {
-                option->cameraPosition[0] = option->cameraPosition[1] = option->cameraPosition[2] = 0;
-            }
-            
-            cJSON* camori = cJSON_GetObjectItem(json, "cameraOrientation");
-            if(camori) {
-                option->cameraOrientation[0] = cJSON_GetArrayItem(camori, 0)->valuedouble;
-                option->cameraOrientation[1] = cJSON_GetArrayItem(camori, 1)->valuedouble;
-                option->cameraOrientation[2] = cJSON_GetArrayItem(camori, 2)->valuedouble;
-                option->cameraOrientation[3] = cJSON_GetArrayItem(camori, 3)->valuedouble;
-            }
-            else {
-                option->cameraOrientation[0] = 1;
-                option->cameraOrientation[1] = option->cameraOrientation[2] = option->cameraOrientation[3] = 0;
-            }
-            
+        option->cameraPosition[0] = option->cameraPosition[1] = option->cameraPosition[2] = 0;
+        option->cameraTarget[0] = option->cameraTarget[1] = option->cameraTarget[2] = -1;
+        option->cameraUp[0] = 0; option->cameraUp[1] = 1; option->cameraUp[2] = 0;
+        option->cameraOrientation[0] = option->cameraOrientation[1] = option->cameraOrientation[2] = 0; option->cameraOrientation[3] = 1;
+        
+        cJSON* campos = cJSON_GetObjectItem(json, "cameraPosition");
+        if(campos) {
+            option->cameraPosition[0] = cJSON_GetArrayItem(campos, 0)->valuedouble;
+            option->cameraPosition[1] = cJSON_GetArrayItem(campos, 1)->valuedouble;
+            option->cameraPosition[2] = cJSON_GetArrayItem(campos, 2)->valuedouble;
+        }
+        
+        cJSON* camtarget = cJSON_GetObjectItem(json, "cameraTarget");
+        if(camtarget) {
+            option->cameraTarget[0] = cJSON_GetArrayItem(camtarget, 0)->valuedouble;
+            option->cameraTarget[1] = cJSON_GetArrayItem(camtarget, 1)->valuedouble;
+            option->cameraTarget[2] = cJSON_GetArrayItem(camtarget, 2)->valuedouble;
+        }
+        
+        cJSON* camup = cJSON_GetObjectItem(json, "cameraUp");
+        if(camup) {
+            option->cameraUp[0] = cJSON_GetArrayItem(camup, 0)->valuedouble;
+            option->cameraUp[1] = cJSON_GetArrayItem(camup, 1)->valuedouble;
+            option->cameraUp[2] = cJSON_GetArrayItem(camup, 2)->valuedouble;
+        }
+        
+        cJSON* camori = cJSON_GetObjectItem(json, "cameraOrientation");
+        if(camori) {
+            option->cameraOrientation[0] = cJSON_GetArrayItem(camori, 0)->valuedouble;
+            option->cameraOrientation[1] = cJSON_GetArrayItem(camori, 1)->valuedouble;
+            option->cameraOrientation[2] = cJSON_GetArrayItem(camori, 2)->valuedouble;
+            option->cameraOrientation[3] = cJSON_GetArrayItem(camori, 3)->valuedouble;
         }
 
         //filter
@@ -362,7 +374,6 @@ Option* Utils::loadOption(const string filename) {
             option->filterEdl[0] = 1.0;
             option->filterEdl[1] = 1.4;
         }
-        
     }
 
     cJSON_Delete(json);
@@ -372,13 +383,16 @@ Option* Utils::loadOption(const string filename) {
 
 void Utils::printOption(const Option* option) {
     cout << "==== OPTION ====" << endl;
+    cout << "version: " << option->version << endl;
     cout << "data dir: " << option->dataDir << endl;
     cout << "shader dir: " << option->shaderDir << endl;
     cout << "visiblePointTarget: " << option->visiblePointTarget << endl;
     cout << "minNodePixelSize: " << option->minNodePixelSize << endl;
     cout << "material: " << option->material << endl;
-    if(option->material == MATERIAL_ELEVATION)
-        cout << "elevation range: " << option->elevationRange[0] << " " << option->elevationRange[1] << endl;
+    cout << "elevation direction: " << option->elevationDirection;
+    cout << "elevation range: " << option->elevationRange[0] << " " << option->elevationRange[1] << endl;
+    cout << "filter: " << option->filter << endl;
+    cout << "filterEDL: " << option->filterEdl[0] << " " << option->filterEdl[1] << endl;
     cout << "pointScale: " << option->pointScale[0] << " " << option->pointScale[1] << " " << option->pointScale[2] << endl;
     cout << "pointSizeRange: " << option->pointSizeRange[0] << " " << option->pointSizeRange[1] << endl;
     cout << "sizeType: " << option->sizeType << endl;
@@ -396,10 +410,16 @@ void Utils::printOption(const Option* option) {
         for(int i=0; i < 3; i++)
             cout << option->cameraPosition[i] << " ";
         cout << endl;
+        cout << "cameraTarget: ";
+        for(int i=0; i < 3; i++)
+            cout << option->cameraTarget[i] << " ";
+        cout << endl;
+        /*
         cout << "cameraOrientation: ";
         for(int i=0; i < 4; i++)
             cout << option->cameraOrientation[i] << " ";
         cout << endl;
+        */
     }
     
     if(option->filter == FILTER_EDL)

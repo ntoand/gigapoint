@@ -41,6 +41,7 @@ MaterialPoint::MaterialPoint(Option* option) : Material(option), texture(0) {
 	uniforms.push_back("uPointScale");
 	uniforms.push_back("uPointSizeRange");
 	uniforms.push_back("uColorTexture");
+    uniforms.push_back("uElevationDirection");
 	uniforms.push_back("uHeightMinMax");
 #ifdef STANDALONE_APP
     uniforms.push_back("uMV");
