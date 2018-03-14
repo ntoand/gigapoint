@@ -1,8 +1,8 @@
 close all
 clear
 
-infilename = 'PLASMA.png';
-outfilename = '../colortable_plasma.dat';
+infilename = 'SPECTRAL.png';
+outfilename = '../colortable_spectral.dat';
 
 I = imread(infilename);
 nrows = size(I, 1);

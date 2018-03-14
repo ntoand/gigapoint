@@ -28,8 +28,8 @@ MaterialPoint::MaterialPoint(Option* option) : Material(option), texture(0) {
 	name = "point";
 
 	//color texture
-	std::cout << "gigapoint_resource/colortable_plasma.dat" << std::endl;
-	texture = new ColorTexture("gigapoint_resource/colortable_plasma.dat");
+	std::cout << "gigapoint_resource/colortable_spectral.dat" << std::endl;
+	texture = new ColorTexture("gigapoint_resource/colortable_spectral.dat");
 	
 	//shader
 	attributes.clear(); uniforms.clear();
