@@ -326,7 +326,7 @@ Option* Utils::loadOption(const string filename) {
         option->cameraUpdatePosOri = getJsonItemInt(json, "cameraUpdatePosOri", 1) > 0;
         option->cameraPosition[0] = option->cameraPosition[1] = option->cameraPosition[2] = 0;
         option->cameraTarget[0] = option->cameraTarget[1] = option->cameraTarget[2] = -1;
-        option->cameraUp[0] = 0; option->cameraUp[1] = 1; option->cameraUp[2] = 0;
+        option->cameraUp[0] = 0; option->cameraUp[1] = 0; option->cameraUp[2] = 1;
         option->cameraOrientation[0] = option->cameraOrientation[1] = option->cameraOrientation[2] = 0; option->cameraOrientation[3] = 1;
         
         cJSON* campos = cJSON_GetObjectItem(json, "cameraPosition");

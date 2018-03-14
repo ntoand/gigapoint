@@ -123,6 +123,31 @@ public:
         pointcloud->setReloadShader(false);
     }
 
+    void updateElevationDirection(const int direction)
+    {
+        option->elevationDirection = direction;
+        pointcloud->setReloadShader(false);
+    }
+
+    void updateElevationMin(const float val)
+    {
+        option->elevationRange[0] = val;
+        pointcloud->setReloadShader(false);
+    }
+
+    void updateElevationMax(const float val)
+    {
+        option->elevationRange[1] = val;
+        pointcloud->setReloadShader(false);
+    }
+
+    void updateElevationRange(const float val1, const float val2)
+    {
+        option->elevationRange[0] = val1;
+        option->elevationRange[1] = val2;
+        pointcloud->setReloadShader(false);
+    }
+
     void printInfo()
     {
 	if(pointcloud)
@@ -216,6 +241,10 @@ BOOST_PYTHON_MODULE(gigapoint)
     PYAPI_METHOD(GigapointRenderModule, printInfo)
     PYAPI_METHOD(GigapointRenderModule, updateFilter)
     PYAPI_METHOD(GigapointRenderModule, updateEdl)
+    PYAPI_METHOD(GigapointRenderModule, updateElevationDirection)
+    PYAPI_METHOD(GigapointRenderModule, updateElevationMin)
+    PYAPI_METHOD(GigapointRenderModule, updateElevationMax)
+    PYAPI_METHOD(GigapointRenderModule, updateElevationRange)
     ;
 
     def("initialize", initialize, PYAPI_RETURN_REF);
