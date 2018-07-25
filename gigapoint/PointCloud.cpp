@@ -85,11 +85,7 @@ int PointCloud::initPointCloud() {
 	string name = "r";
 	root = new NodeGeometry(name);
 	root->setInfo(pcinfo);
-    if(root->loadHierachy(lrucache)) {
-		cout << "fail to load root hierachy" << endl;
-		return -1;
-	}
-	if(root->loadData()) {
+    if(root->loadData(lrucache)) {
 		cout << "fail to load root data " << endl;
 		return -1;
 	}
@@ -100,7 +96,7 @@ int PointCloud::initPointCloud() {
 	// reading threads
 	if(nodeLoaderThreads.size() == 0) {
     	for(int i = 0; i < numLoaderThread; i++) {
-    		NodeLoaderThread* t = new NodeLoaderThread(nodeQueue, option->maxLoadSize);
+    		NodeLoaderThread* t = new NodeLoaderThread(nodeQueue, lrucache, option->maxLoadSize);
     		t->start();
     		nodeLoaderThreads.push_back(t);
 	    }
@@ -134,8 +130,7 @@ int PointCloud::preloadUpToLevel(const int level) {
     	if(!canload)
     		continue;
 
-        node->loadHierachy(lrucache);
-		node->loadData();
+        node->loadData(lrucache);
 		lrucache->insert(node->getName(), node);
 
 		if(node->getLevel() >= level)
@@ -170,22 +165,18 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3], con
     unsigned int start_time = Utils::getTime();
     if (!root)
         return 1;
-    root->loadHierachy(lrucache);
-
+    
     if (option->onlineUpdate) {
-        //Utils::updatePCInfo(option->dataDir,root->getInfo());
-
-        //root->checkForUpdate();
         root->Update();
     }
-
 
     priority_queue<NodeWeight> priority_queue;
     priority_queue.push(NodeWeight(root, 1));
 
+    int numHierarchyNodeLoadThisFrame = 0;
     while(priority_queue.size() > 0){
     	NodeGeometry* node = priority_queue.top().node;
-    	priority_queue.pop();
+        priority_queue.pop();
     	bool visible = false;
 
         if (option->onlineUpdate)
@@ -193,29 +184,31 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3], con
 
     	if(Utils::testFrustum(V, node->getBBox()) >= 0 && numVisiblePoints + node->getNumPoints() < option->visiblePointTarget)
     		visible = true;
-	    
-	    if(!visible)
-	    	continue; 
-
-	    numVisibleNodes++;
-		numVisiblePoints += node->getNumPoints();
-
-        node->loadHierachy(lrucache);
-
-        if(!node->inQueue() && node->canAddToQueue() ) {
+        
+        if(!visible)
+	    	continue;
+        
+        bool addToQueue = false;
+        if ( (!node->inQueue() && node->canAddToQueue() ) || ( node->isDirty() && !node->isUpdating() ) )
+            addToQueue = true;
+        
+        if(addToQueue && numHierarchyNodeLoadThisFrame < 2) {
             node->setState(STATE_INQUEUE);
-            //cout << "adding " << node->getName() << " to queue" << niq << ncaq << endl;
-			nodeQueue.add(node);
-		}
-        else if (node->isDirty() && !node->isUpdating() ) {
-            node->setState(STATE_INQUEUE);
-            //cout << "adding " << node->getName() << " to queue because its dirty" << endl;
             nodeQueue.add(node);
-        }		
+            if(node->canLoadHierarchy())
+                numHierarchyNodeLoadThisFrame++;
+        }
+        
+        if(!node->isLoaded()) {
+            continue;
+        }
+        
+        numVisibleNodes++;
+        numVisiblePoints += node->getNumPoints();
 		displayList.push_back(node);
 		lrucache->insert(node->getName(), node);
 
-		if(Utils::getTime() - start_time > 150)
+		if(Utils::getTime() - start_time > 30)
 			return 0;
 		
 		// add children to priority_queue

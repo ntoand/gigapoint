@@ -18,11 +18,11 @@ class FractureTracer;
 
 struct NodeWeight {
 	NodeGeometry* node;
-	float weight;
+    float weight;
 	
 	NodeWeight(NodeGeometry* n, float w) {
 		node = n;
-		weight = w;
+    	weight = w;
 	}
 
 	bool operator<(const NodeWeight& nw) const {
@@ -33,23 +33,26 @@ struct NodeWeight {
 class NodeLoaderThread: public Thread {    
 private:
 	wqueue<NodeGeometry*>& m_queue;
+    LRUCache* lrucache;
 	int maxLoadSize;
 
 public:
-	NodeLoaderThread(wqueue<NodeGeometry*>& queue, int m) : m_queue(queue), maxLoadSize(m) {}
+	NodeLoaderThread(wqueue<NodeGeometry*>& queue, LRUCache* lru, int m) : m_queue(queue), lrucache(lru), maxLoadSize(m) {}
 
 	void* run() {
         for (;;) {
             NodeGeometry* node = (NodeGeometry*)m_queue.remove();
-            if(m_queue.size() < maxLoadSize)
+            if(m_queue.size() < maxLoadSize) {
                 node->setState(STATE_LOADING);
-            
-            if(!node->isDirty()) {
-                node->loadData();
-            } else {
-                node->initUpdateCache();
-                //node->updateCache->loadHierachy(); // called during update visibility
-                node->getUpdateCache()->loadData();
+                if(!node->isDirty()) {
+                    node->loadData(lrucache);
+                } else {
+                    node->initUpdateCache();
+                    node->getUpdateCache()->loadData(lrucache);
+                }
+            }
+            else {
+                node->setState(STATE_NONE);
             }
         }
         return NULL;

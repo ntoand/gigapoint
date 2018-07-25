@@ -125,7 +125,7 @@ public:
 	string getHierarchyPath();
     int loadHierachy(LRUCache* lrucache, bool force=false);
     bool canLoadHierarchy() {return (level % info->hierarchyStepSize) == 0;}
-	int loadData();
+	int loadData(LRUCache* lrucache);
 	void printInfo();
 	int initVBO();
 #ifdef STANDALONE_APP

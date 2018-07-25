@@ -89,7 +89,7 @@ int NodeGeometry::loadHierachy(LRUCache* lrucache, bool force) {
 
 	assert(info);
 
-    cout << "Load hierachy file: " << hrc_filename << endl;   
+    //cout << "Load hierachy file: " << hrc_filename << endl;   
     NodeGeometry* n = this;
 
 	if(level == 0) { // root
@@ -189,7 +189,7 @@ int NodeGeometry::loadHierachy(LRUCache* lrucache, bool force) {
             //cnode->printInfo();
             pnode->addChild(cnode);
             pnode->setHasChildren(true);
-            cnode->loadHierachy(lrucache);
+            //cnode->loadHierachy(lrucache);
             nodes[item.name] = cnode;
         }
     }
@@ -205,7 +205,7 @@ ifstream::pos_type NodeGeometry::getFilesize(const char* filename)
         return in.tellg();
 }
 
-int NodeGeometry::loadData() {
+int NodeGeometry::loadData(LRUCache* lrucache) {
 
     if(isLoaded())
         return 0;
@@ -213,6 +213,8 @@ int NodeGeometry::loadData() {
 	assert(info);
 
     loadstate = STATE_LOADING;
+    
+    loadHierachy(lrucache);
 
 	string filename = info->dataDir + info->octreeDir + "/" + getHierarchyPath() + name + ".bin";
     // cout << "Load file: " << filename << endl;

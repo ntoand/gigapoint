@@ -292,7 +292,7 @@ void mainLoop()
 
 int main(int argc, char* argv[]) {
     
-    string configfile = "gigapoint_resource/config/gigapoint_century_local.json";
+    string configfile = "gigapoint_resource/config/gigapoint_century_hres_local.json";
     //string configfile = "gigapoint_resource/config/gigapoint_WP_07_local.json";
     //string configfile = "gigapoint_resource/config/gigapoint_HoyoVerde_local.json";
     bool zup = true;

@@ -1,6 +1,6 @@
 {
 	"dataDir": "/Users/toand/git/mivp/gigapoint/testdata/century",
-	"visiblePointTarget": 5000000,
+	"visiblePointTarget": 10000000,
 	"minNodePixelSize": 100,
 	"material": "rgb",
 	"pointScale": [0.2,0.01,0.5],
@@ -12,7 +12,7 @@
 	"filter": "edl",
 	"filterEdl": [0.4, 1.4],
 	"numReadThread": 2,
-	"preloadToLevel": 3,
+	"preloadToLevel": 2,
 	"maxNodeInMem": 50000,
 	"maxLoadSize": 100,
 	"cameraSpeed": 1,
