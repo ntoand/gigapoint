@@ -382,7 +382,7 @@ Option* Utils::loadOption(const string filename) {
 }
 
 void Utils::printOption(const Option* option) {
-    cout << "==== OPTION ====" << endl;
+    cout << "==== OPTION build ====" << endl;
     cout << "version: " << option->version << endl;
     cout << "data dir: " << option->dataDir << endl;
     cout << "shader dir: " << option->shaderDir << endl;
@@ -423,9 +423,9 @@ void Utils::printOption(const Option* option) {
     }
     
     if(option->filter == FILTER_EDL)
-        cout << "EDL: ON, strength: " << option->filterEdl[0] << ", radius: " << option->filterEdl[1] << endl;
+        cout << "EDL: on, strength: " << option->filterEdl[0] << ", radius: " << option->filterEdl[1] << endl;
     else
-        cout << "Filter: NONE" << endl;
+        cout << "Filter: none" << endl;
 }
 
 // PC Loader

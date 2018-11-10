@@ -192,7 +192,8 @@ int PointCloud::updateVisibility(const float MVP[16], const float campos[3], con
         if ( (!node->inQueue() && node->canAddToQueue() ) || ( node->isDirty() && !node->isUpdating() ) )
             addToQueue = true;
         
-        if(addToQueue && numHierarchyNodeLoadThisFrame < 2) {
+        //if(addToQueue && numHierarchyNodeLoadThisFrame < 4) {
+        if(addToQueue) {
             node->setState(STATE_INQUEUE);
             nodeQueue.add(node);
             if(node->canLoadHierarchy())
